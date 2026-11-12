@@ -47,7 +47,7 @@ async function loadCounts() {
     }
   };
   // The SDK clients are large. Load them here, not with the page, so the home page opens fast.
-  const [functions, buckets, instances, logGroups, alarms, databases, secretCount, apis, distributions] = await Promise.all([
+  const [functions, buckets, instances, logGroups, alarms, databases, secretCount, apis, distributions, queues, topics, parameters] = await Promise.all([
     safe(async () => (await (await import("./lambda/Functions")).listAllFunctions()).length),
     safe(async () => {
       const [{ s3 }, { ListBucketsCommand }] = await Promise.all([import("../clients/s3"), import("@aws-sdk/client-s3")]);
@@ -71,8 +71,11 @@ async function loadCounts() {
     safe(async () => (await (await import("./secretsmanager/Secrets")).listAllSecrets()).length),
     safe(async () => (await (await import("./apigateway/apiutil")).listApis()).length),
     safe(async () => (await (await import("./cloudfront/Distributions")).listDistributions()).length),
+    safe(async () => (await (await import("./sqs/sqsutil")).listQueues()).length),
+    safe(async () => (await (await import("./sns/snsutil")).listTopics()).length),
+    safe(async () => (await (await import("./ssm/Parameters")).listParameters()).length),
   ]);
-  return { functions, buckets, instances, logGroups, alarms, databases, secretCount, apis, distributions };
+  return { functions, buckets, instances, logGroups, alarms, databases, secretCount, apis, distributions, queues, topics, parameters };
 }
 
 export default function Home() {
@@ -140,6 +143,9 @@ export default function Home() {
                 <Stat label="API Gateway APIs" value={c?.apis} to="/apigateway/apis" loading={counts.loading} />
                 <Stat label="CloudFront distributions" value={c?.distributions} to="/cloudfront/distributions" loading={counts.loading} />
                 <Stat label="Secrets" value={c?.secretCount} to="/secretsmanager/secrets" loading={counts.loading} />
+                <Stat label="SQS queues" value={c?.queues} to="/sqs/queues" loading={counts.loading} />
+                <Stat label="SNS topics" value={c?.topics} to="/sns/topics" loading={counts.loading} />
+                <Stat label="Parameters" value={c?.parameters} to="/ssm/parameters" loading={counts.loading} />
                 <Stat label="Alarms in alarm" value={c?.alarms?.firing} to="/cloudwatch/alarms" loading={counts.loading} hint={c?.alarms ? `${c.alarms.total} total` : undefined} />
               </ColumnLayout>
             </Container>

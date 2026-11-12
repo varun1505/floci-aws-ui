@@ -17,6 +17,14 @@ It is built with [Cloudscape](https://cloudscape.design), the open source design
 | **CloudFront** | List, create, enable, disable and delete distributions. See origins and behaviors. Create invalidations. |
 | **RDS** | Create, stop, start, reboot and delete databases. Shows the connect command. Snapshots and subnet groups. |
 | **Secrets Manager** | Store, read, edit and delete secrets, as key/value pairs or plain text. |
+| **IAM** | Users, user groups, roles and policies. Attach and detach policies. Create access keys. Edit trust policies. |
+| **Parameter Store** | Create, edit and delete parameters. Version history. Show and hide SecureString values. |
+| **SQS** | Create, purge and delete queues, standard and FIFO. Send a message. Poll for messages and read them. |
+| **SNS** | Topics and subscriptions. Subscribe a queue, a function, a URL or an email address. Publish a message. |
+| **SES** | Verify email addresses and domains. Send a test email. A mailbox page shows every email the environment captured. |
+| **ElastiCache** | Create and delete Valkey, Redis OSS and Memcached caches. Shows the connect command. Replication groups. |
+| **Load balancers** | Under EC2. Load balancers, listeners, target groups and registered targets. |
+| **KMS** | Customer managed and AWS managed keys. Create, enable, disable and schedule deletion. Aliases, key policy, encrypt and decrypt. |
 
 The top bar has a search box for services and pages. Every page has a help panel with the CLI profile.
 
@@ -85,6 +93,9 @@ browser  ->  this server (/aws/*)  ->  floci (:4566)
 - floci does not write the `START`, `END` and `REPORT` lines to Lambda logs. You only see what your code prints.
 - floci does not publish Lambda or EC2 metrics on its own. The Metrics page shows only metrics your apps send.
 - EC2 instances run as containers on the floci host. There is no serial console output.
+- IAM stores users, roles and policies, but floci does not enforce them. A call that a policy denies still works here.
+- SES sends no real email. Read sent messages on the Mailbox page.
+- Load balancers are created and listed. Sending traffic through one is not tested.
 - An RDS endpoint address is internal to Docker. Connect to the floci host on the port the page shows.
 - API Gateway stages answer at `<console>/aws/_aws/execute-api/<api-id>/<stage>/<path>`, not at an `amazonaws.com` URL.
 - A CloudFront distribution gets a `cloudfront.net` name, but that name does not resolve on your network. Serving content through a distribution is not tested.

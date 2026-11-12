@@ -49,6 +49,10 @@ const SesMailbox = lazy(() => import("./pages/ses/Mailbox"));
 const Caches = lazy(() => import("./pages/elasticache/Caches"));
 const CacheDetail = lazy(() => import("./pages/elasticache/CacheDetail"));
 const ReplicationGroups = lazy(() => import("./pages/elasticache/ReplicationGroups"));
+const LoadBalancers = lazy(() => import("./pages/elb/LoadBalancers"));
+const LoadBalancerDetail = lazy(() => import("./pages/elb/LoadBalancerDetail"));
+const TargetGroups = lazy(() => import("./pages/elb/TargetGroups"));
+const TargetGroupDetail = lazy(() => import("./pages/elb/TargetGroupDetail"));
 const Functions = lazy(() => import("./pages/lambda/Functions"));
 const CreateFunction = lazy(() => import("./pages/lambda/CreateFunction"));
 const FunctionDetail = lazy(() => import("./pages/lambda/FunctionDetail"));
@@ -129,6 +133,11 @@ export default function App() {
         <Route path="/elasticache/caches" element={<Caches />} />
         <Route path="/elasticache/caches/:id" element={<CacheDetail />} />
         <Route path="/elasticache/replication-groups" element={<ReplicationGroups />} />
+
+        <Route path="/ec2/load-balancers" element={<LoadBalancers />} />
+        <Route path="/ec2/load-balancer" element={<LoadBalancerDetail />} />
+        <Route path="/ec2/target-groups" element={<TargetGroups />} />
+        <Route path="/ec2/target-group" element={<TargetGroupDetail />} />
 
         <Route path="/s3" element={<Navigate to="/s3/buckets" replace />} />
         <Route path="/s3/buckets" element={<Buckets />} />
