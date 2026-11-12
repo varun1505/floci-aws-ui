@@ -37,6 +37,13 @@ const Parameters = lazy(() => import("./pages/ssm/Parameters"));
 const ParameterDetail = lazy(() => import("./pages/ssm/ParameterDetail"));
 const Keys = lazy(() => import("./pages/kms/Keys"));
 const KeyDetail = lazy(() => import("./pages/kms/KeyDetail"));
+const IamUsers = lazy(() => import("./pages/iam/Users"));
+const IamUserDetail = lazy(() => import("./pages/iam/UserDetail"));
+const IamGroups = lazy(() => import("./pages/iam/Groups"));
+const IamRoles = lazy(() => import("./pages/iam/Roles"));
+const IamRoleDetail = lazy(() => import("./pages/iam/RoleDetail"));
+const IamPolicies = lazy(() => import("./pages/iam/Policies"));
+const IamPolicyDetail = lazy(() => import("./pages/iam/PolicyDetail"));
 const Functions = lazy(() => import("./pages/lambda/Functions"));
 const CreateFunction = lazy(() => import("./pages/lambda/CreateFunction"));
 const FunctionDetail = lazy(() => import("./pages/lambda/FunctionDetail"));
@@ -99,6 +106,15 @@ export default function App() {
         <Route path="/kms/keys" element={<Keys manager="CUSTOMER" />} />
         <Route path="/kms/aws-keys" element={<Keys manager="AWS" />} />
         <Route path="/kms/keys/:id" element={<KeyDetail />} />
+
+        <Route path="/iam" element={<Navigate to="/iam/roles" replace />} />
+        <Route path="/iam/users" element={<IamUsers />} />
+        <Route path="/iam/users/:name" element={<IamUserDetail />} />
+        <Route path="/iam/groups" element={<IamGroups />} />
+        <Route path="/iam/roles" element={<IamRoles />} />
+        <Route path="/iam/roles/:name" element={<IamRoleDetail />} />
+        <Route path="/iam/policies" element={<IamPolicies />} />
+        <Route path="/iam/policy" element={<IamPolicyDetail />} />
 
         <Route path="/s3" element={<Navigate to="/s3/buckets" replace />} />
         <Route path="/s3/buckets" element={<Buckets />} />
