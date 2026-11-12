@@ -176,10 +176,11 @@ export function Shell({
 
   // Highlight the side-nav item whose href starts the current path.
   const flat = nav.items.flatMap((i) => (i.type === "section" ? i.items : [i])) as { href?: string }[];
-  const active = flat
-    .map((i) => i.href ?? "")
-    .filter((h) => h && location.pathname.startsWith(h))
-    .sort((a, b) => b.length - a.length)[0];
+  // Detail pages use singular paths (/s3/bucket) under a plural list (/s3/buckets), so match both ways.
+  const hrefs = flat.map((i) => i.href ?? "").filter(Boolean);
+  const active =
+    hrefs.filter((h) => location.pathname.startsWith(h) || h.startsWith(location.pathname)).sort((a, b) => b.length - a.length)[0] ??
+    (service === "home" ? undefined : hrefs[0]);
 
   return (
     <>
