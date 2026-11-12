@@ -2,6 +2,8 @@ import { GetRestApisCommand } from "@aws-sdk/client-api-gateway";
 import { GetApisCommand } from "@aws-sdk/client-apigatewayv2";
 import { apigw } from "../../clients/apigw";
 import { apigwv2 } from "../../clients/apigwv2";
+import Box from "@cloudscape-design/components/box";
+import type { ReactNode } from "react";
 import { PROXY_BASE } from "../../config";
 
 export type ApiRow = {
@@ -48,4 +50,30 @@ export const apiHref = (api: Pick<ApiRow, "id" | "protocol">) => (api.protocol =
 /** Where a deployed stage answers requests in this environment. */
 export function invokeUrl(apiId: string, stage: string): string {
   return `${PROXY_BASE}/_aws/execute-api/${apiId}/${stage}`;
+}
+
+export const HTTP_METHODS = ["ANY", "GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"];
+
+/** The URI API Gateway uses to call a Lambda function from a REST API. */
+export const lambdaUri = (region: string, functionArn: string) => `arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/${functionArn}/invocations`;
+
+/** Pulls the function name back out of an integration URI or ARN, for display. */
+export function integrationTarget(uri?: string): string {
+  if (!uri) return "-";
+  const fn = uri.match(/function:([^/:]+)/);
+  return fn ? `Lambda: ${fn[1]}` : uri;
+}
+
+export async function listFunctionArns(): Promise<{ label: string; value: string }[]> {
+  const { listAllFunctions } = await import("../lambda/Functions");
+  return (await listAllFunctions()).map((f) => ({ label: f.FunctionName ?? "", value: f.FunctionArn ?? "" }));
+}
+
+export function Pair({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <Box variant="awsui-key-label">{label}</Box>
+      <div style={{ wordBreak: "break-all" }}>{children || "-"}</div>
+    </div>
+  );
 }

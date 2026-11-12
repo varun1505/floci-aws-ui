@@ -13,6 +13,10 @@ It is built with [Cloudscape](https://cloudscape.design), the open source design
 | **S3** | Create, empty and delete buckets. Browse folders. Upload, download, open, preview and delete objects. |
 | **CloudWatch** | Overview. Browse log groups and streams. Read log events with a time filter and live tail. Create and delete alarms. Graph metrics. |
 | **EC2** | Dashboard. Launch, start, stop, reboot and terminate instances. Manage security groups, key pairs, volumes, snapshots and Elastic IPs. List AMIs. |
+| **API Gateway** | REST APIs: resources, methods (Lambda, HTTP or mock), deploy to a stage. HTTP APIs: routes, integrations, stages. Send a test request to a stage from the page. |
+| **CloudFront** | List, create, enable, disable and delete distributions. See origins and behaviors. Create invalidations. |
+| **RDS** | Create, stop, start, reboot and delete databases. Shows the connect command. Snapshots and subnet groups. |
+| **Secrets Manager** | Store, read, edit and delete secrets, as key/value pairs or plain text. |
 
 The top bar has a search box for services and pages. Every page has a help panel with the CLI profile.
 
@@ -81,6 +85,9 @@ browser  ->  this server (/aws/*)  ->  floci (:4566)
 - floci does not write the `START`, `END` and `REPORT` lines to Lambda logs. You only see what your code prints.
 - floci does not publish Lambda or EC2 metrics on its own. The Metrics page shows only metrics your apps send.
 - EC2 instances run as containers on the floci host. There is no serial console output.
+- An RDS endpoint address is internal to Docker. Connect to the floci host on the port the page shows.
+- API Gateway stages answer at `<console>/aws/_aws/execute-api/<api-id>/<stage>/<path>`, not at an `amazonaws.com` URL.
+- CloudFront distributions exist as records only. floci does not serve traffic at the `cloudfront.net` name.
 
 ## Add a service
 

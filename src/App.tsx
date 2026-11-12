@@ -25,6 +25,9 @@ const SubnetGroups = lazy(() => import("./pages/rds/SubnetGroups"));
 const Distributions = lazy(() => import("./pages/cloudfront/Distributions"));
 const CreateDistribution = lazy(() => import("./pages/cloudfront/CreateDistribution"));
 const DistributionDetail = lazy(() => import("./pages/cloudfront/DistributionDetail"));
+const Apis = lazy(() => import("./pages/apigateway/Apis"));
+const RestApiDetail = lazy(() => import("./pages/apigateway/RestApiDetail"));
+const HttpApiDetail = lazy(() => import("./pages/apigateway/HttpApiDetail"));
 const Functions = lazy(() => import("./pages/lambda/Functions"));
 const CreateFunction = lazy(() => import("./pages/lambda/CreateFunction"));
 const FunctionDetail = lazy(() => import("./pages/lambda/FunctionDetail"));
@@ -64,6 +67,11 @@ export default function App() {
         <Route path="/lambda/functions" element={<Functions />} />
         <Route path="/lambda/functions/create" element={<CreateFunction />} />
         <Route path="/lambda/functions/:name" element={<FunctionDetail />} />
+
+        <Route path="/apigateway" element={<Navigate to="/apigateway/apis" replace />} />
+        <Route path="/apigateway/apis" element={<Apis />} />
+        <Route path="/apigateway/rest/:id" element={<RestApiDetail />} />
+        <Route path="/apigateway/http/:id" element={<HttpApiDetail />} />
 
         <Route path="/s3" element={<Navigate to="/s3/buckets" replace />} />
         <Route path="/s3/buckets" element={<Buckets />} />
