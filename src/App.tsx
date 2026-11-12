@@ -16,6 +16,11 @@ const ElasticIps = lazy(() => import("./pages/ec2/ElasticIps"));
 const Secrets = lazy(() => import("./pages/secretsmanager/Secrets"));
 const CreateSecret = lazy(() => import("./pages/secretsmanager/CreateSecret"));
 const SecretDetail = lazy(() => import("./pages/secretsmanager/SecretDetail"));
+const Databases = lazy(() => import("./pages/rds/Databases"));
+const CreateDatabase = lazy(() => import("./pages/rds/CreateDatabase"));
+const DatabaseDetail = lazy(() => import("./pages/rds/DatabaseDetail"));
+const DbSnapshots = lazy(() => import("./pages/rds/Snapshots"));
+const SubnetGroups = lazy(() => import("./pages/rds/SubnetGroups"));
 const Functions = lazy(() => import("./pages/lambda/Functions"));
 const CreateFunction = lazy(() => import("./pages/lambda/CreateFunction"));
 const FunctionDetail = lazy(() => import("./pages/lambda/FunctionDetail"));
@@ -83,6 +88,13 @@ export default function App() {
         <Route path="/secretsmanager/secrets" element={<Secrets />} />
         <Route path="/secretsmanager/secrets/create" element={<CreateSecret />} />
         <Route path="/secretsmanager/secret" element={<SecretDetail />} />
+
+        <Route path="/rds" element={<Navigate to="/rds/databases" replace />} />
+        <Route path="/rds/databases" element={<Databases />} />
+        <Route path="/rds/databases/create" element={<CreateDatabase />} />
+        <Route path="/rds/databases/:id" element={<DatabaseDetail />} />
+        <Route path="/rds/snapshots" element={<DbSnapshots />} />
+        <Route path="/rds/subnet-groups" element={<SubnetGroups />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
