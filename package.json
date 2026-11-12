@@ -1,0 +1,35 @@
+{
+  "name": "floci-console",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cloudwatch": "^3.1167.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.1167.0",
+    "@aws-sdk/client-ec2": "^3.1167.0",
+    "@aws-sdk/client-lambda": "^3.1167.0",
+    "@aws-sdk/client-s3": "^3.1167.0",
+    "@cloudscape-design/collection-hooks": "^1.0.111",
+    "@cloudscape-design/components": "^3.0.1413",
+    "@cloudscape-design/global-styles": "^1.0.72",
+    "ace-builds": "^1.45.2",
+    "fflate": "^0.8.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8"
+  }
+}
