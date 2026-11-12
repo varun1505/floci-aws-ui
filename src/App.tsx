@@ -44,6 +44,11 @@ const IamRoles = lazy(() => import("./pages/iam/Roles"));
 const IamRoleDetail = lazy(() => import("./pages/iam/RoleDetail"));
 const IamPolicies = lazy(() => import("./pages/iam/Policies"));
 const IamPolicyDetail = lazy(() => import("./pages/iam/PolicyDetail"));
+const SesIdentities = lazy(() => import("./pages/ses/Identities"));
+const SesMailbox = lazy(() => import("./pages/ses/Mailbox"));
+const Caches = lazy(() => import("./pages/elasticache/Caches"));
+const CacheDetail = lazy(() => import("./pages/elasticache/CacheDetail"));
+const ReplicationGroups = lazy(() => import("./pages/elasticache/ReplicationGroups"));
 const Functions = lazy(() => import("./pages/lambda/Functions"));
 const CreateFunction = lazy(() => import("./pages/lambda/CreateFunction"));
 const FunctionDetail = lazy(() => import("./pages/lambda/FunctionDetail"));
@@ -115,6 +120,15 @@ export default function App() {
         <Route path="/iam/roles/:name" element={<IamRoleDetail />} />
         <Route path="/iam/policies" element={<IamPolicies />} />
         <Route path="/iam/policy" element={<IamPolicyDetail />} />
+
+        <Route path="/ses" element={<Navigate to="/ses/identities" replace />} />
+        <Route path="/ses/identities" element={<SesIdentities />} />
+        <Route path="/ses/mailbox" element={<SesMailbox />} />
+
+        <Route path="/elasticache" element={<Navigate to="/elasticache/caches" replace />} />
+        <Route path="/elasticache/caches" element={<Caches />} />
+        <Route path="/elasticache/caches/:id" element={<CacheDetail />} />
+        <Route path="/elasticache/replication-groups" element={<ReplicationGroups />} />
 
         <Route path="/s3" element={<Navigate to="/s3/buckets" replace />} />
         <Route path="/s3/buckets" element={<Buckets />} />
