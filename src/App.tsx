@@ -1,7 +1,8 @@
 import { Suspense, lazy } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Box from "@cloudscape-design/components/box";
 import Spinner from "@cloudscape-design/components/spinner";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import Home from "./pages/Home";
 
 // Each service loads its own code only when it is first opened. The AWS SDK clients are large.
@@ -21,6 +22,9 @@ const CreateDatabase = lazy(() => import("./pages/rds/CreateDatabase"));
 const DatabaseDetail = lazy(() => import("./pages/rds/DatabaseDetail"));
 const DbSnapshots = lazy(() => import("./pages/rds/Snapshots"));
 const SubnetGroups = lazy(() => import("./pages/rds/SubnetGroups"));
+const Distributions = lazy(() => import("./pages/cloudfront/Distributions"));
+const CreateDistribution = lazy(() => import("./pages/cloudfront/CreateDistribution"));
+const DistributionDetail = lazy(() => import("./pages/cloudfront/DistributionDetail"));
 const Functions = lazy(() => import("./pages/lambda/Functions"));
 const CreateFunction = lazy(() => import("./pages/lambda/CreateFunction"));
 const FunctionDetail = lazy(() => import("./pages/lambda/FunctionDetail"));
@@ -46,7 +50,9 @@ const loading = (
 );
 
 export default function App() {
+  const location = useLocation();
   return (
+    <ErrorBoundary resetKey={location.pathname}>
     <Suspense fallback={loading}>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -96,8 +102,14 @@ export default function App() {
         <Route path="/rds/snapshots" element={<DbSnapshots />} />
         <Route path="/rds/subnet-groups" element={<SubnetGroups />} />
 
+        <Route path="/cloudfront" element={<Navigate to="/cloudfront/distributions" replace />} />
+        <Route path="/cloudfront/distributions" element={<Distributions />} />
+        <Route path="/cloudfront/distributions/create" element={<CreateDistribution />} />
+        <Route path="/cloudfront/distributions/:id" element={<DistributionDetail />} />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
+    </ErrorBoundary>
   );
 }

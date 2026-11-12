@@ -24,6 +24,10 @@ const HEALTH_KEYS: Record<string, string[]> = {
   lambda: ["lambda"],
   s3: ["s3"],
   cloudwatch: ["logs", "monitoring"],
+  apigateway: ["apigateway", "apigatewayv2"],
+  cloudfront: ["cloudfront"],
+  rds: ["rds"],
+  secretsmanager: ["secretsmanager"],
 };
 
 /** One count per service. A failed call gives undefined, shown as "-". */
@@ -36,7 +40,7 @@ async function loadCounts() {
     }
   };
   // The SDK clients are large. Load them here, not with the page, so the home page opens fast.
-  const [functions, buckets, instances, logGroups, alarms] = await Promise.all([
+  const [functions, buckets, instances, logGroups, alarms, databases, secretCount, apis, distributions] = await Promise.all([
     safe(async () => (await (await import("./lambda/Functions")).listAllFunctions()).length),
     safe(async () => {
       const [{ s3 }, { ListBucketsCommand }] = await Promise.all([import("../clients/s3"), import("@aws-sdk/client-s3")]);
@@ -56,8 +60,12 @@ async function loadCounts() {
       const list = (await cloudwatch.send(new DescribeAlarmsCommand({}))).MetricAlarms ?? [];
       return { total: list.length, firing: list.filter((a) => a.StateValue === "ALARM").length };
     }),
+    safe(async () => (await (await import("./rds/rdsutil")).listDatabases()).length),
+    safe(async () => (await (await import("./secretsmanager/Secrets")).listAllSecrets()).length),
+    safe(async () => (await (await import("./apigateway/apiutil")).listApis()).length),
+    safe(async () => (await (await import("./cloudfront/Distributions")).listDistributions()).length),
   ]);
-  return { functions, buckets, instances, logGroups, alarms };
+  return { functions, buckets, instances, logGroups, alarms, databases, secretCount, apis, distributions };
 }
 
 export default function Home() {
@@ -76,7 +84,7 @@ export default function Home() {
   const status = (id: string) => {
     if (health.loading) return <StatusIndicator type="loading">Checking</StatusIndicator>;
     if (health.error) return <StatusIndicator type="error">Unreachable</StatusIndicator>;
-    const up = HEALTH_KEYS[id].every((k) => health.data?.services?.[k] === "running");
+    const up = (HEALTH_KEYS[id] ?? []).every((k) => health.data?.services?.[k] === "running");
     return up ? <StatusIndicator type="success">Operating normally</StatusIndicator> : <StatusIndicator type="warning">Not running</StatusIndicator>;
   };
 
@@ -121,6 +129,10 @@ export default function Home() {
                 <Stat label="Lambda functions" value={c?.functions} to="/lambda/functions" loading={counts.loading} />
                 <Stat label="S3 buckets" value={c?.buckets} to="/s3/buckets" loading={counts.loading} />
                 <Stat label="CloudWatch log groups" value={c?.logGroups} to="/cloudwatch/log-groups" loading={counts.loading} />
+                <Stat label="RDS databases" value={c?.databases} to="/rds/databases" loading={counts.loading} />
+                <Stat label="API Gateway APIs" value={c?.apis} to="/apigateway/apis" loading={counts.loading} />
+                <Stat label="CloudFront distributions" value={c?.distributions} to="/cloudfront/distributions" loading={counts.loading} />
+                <Stat label="Secrets" value={c?.secretCount} to="/secretsmanager/secrets" loading={counts.loading} />
                 <Stat label="Alarms in alarm" value={c?.alarms?.firing} to="/cloudwatch/alarms" loading={counts.loading} hint={c?.alarms ? `${c.alarms.total} total` : undefined} />
               </ColumnLayout>
             </Container>
@@ -132,6 +144,8 @@ export default function Home() {
                   { title: "Run a serverless function", with: "With Lambda", to: "/lambda/functions/create" },
                   { title: "Store and retrieve files", with: "With S3", to: "/s3/buckets" },
                   { title: "Read application logs", with: "With CloudWatch", to: "/cloudwatch/log-groups" },
+                  { title: "Create a database", with: "With RDS", to: "/rds/databases/create" },
+                  { title: "Publish an API", with: "With API Gateway", to: "/apigateway/apis" },
                 ].map((t) => (
                   <div key={t.to}>
                     <RouterLink to={t.to} fontSize="heading-s">
