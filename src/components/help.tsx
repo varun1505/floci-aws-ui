@@ -46,6 +46,47 @@ const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: str
     ),
     docs: [{ text: "CloudWatch user guide", href: "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html" }],
   },
+  apigateway: {
+    title: "API Gateway",
+    body: (
+      <>
+        <p>API Gateway puts an HTTP front door on Lambda functions and other backends.</p>
+        <p>REST APIs must be deployed to a stage before they answer requests. Each stage page shows its invoke URL in this environment.</p>
+      </>
+    ),
+    docs: [{ text: "API Gateway developer guide", href: "https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html" }],
+  },
+  cloudfront: {
+    title: "CloudFront",
+    body: (
+      <>
+        <p>CloudFront serves content from origins such as S3 buckets through a content delivery network.</p>
+        <p>This environment stores the distribution settings and answers the API. It does not run real edge locations.</p>
+        <p>A distribution must be disabled before it can be deleted.</p>
+      </>
+    ),
+    docs: [{ text: "CloudFront developer guide", href: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html" }],
+  },
+  rds: {
+    title: "Aurora and RDS",
+    body: (
+      <>
+        <p>RDS runs relational databases for you. In this environment each database runs as a real database container on the host.</p>
+        <p>The endpoint address that the API returns is internal to the host. From your machine, connect to the host name and the port shown on the database page.</p>
+      </>
+    ),
+    docs: [{ text: "RDS user guide", href: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Welcome.html" }],
+  },
+  secretsmanager: {
+    title: "Secrets Manager",
+    body: (
+      <>
+        <p>Secrets Manager stores credentials, API keys and other secrets. Applications read them at run time, so secrets stay out of code.</p>
+        <p>This is a non-production environment. Do not store production secrets here.</p>
+      </>
+    ),
+    docs: [{ text: "Secrets Manager user guide", href: "https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html" }],
+  },
   ec2: {
     title: "EC2",
     body: (
@@ -110,4 +151,8 @@ const EXAMPLE: Record<Exclude<Service, "home">, string> = {
   s3: "s3 ls",
   cloudwatch: "logs describe-log-groups",
   ec2: "ec2 describe-instances",
+  apigateway: "apigateway get-rest-apis",
+  cloudfront: "cloudfront list-distributions",
+  rds: "rds describe-db-instances",
+  secretsmanager: "secretsmanager list-secrets",
 };

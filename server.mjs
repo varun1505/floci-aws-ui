@@ -61,6 +61,10 @@ function serveStatic(req, res) {
 
 http
   .createServer((req, res) => {
+    if (req.url === "/console-config.json") {
+      res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache" });
+      return res.end(JSON.stringify({ flociHost: target.hostname }));
+    }
     if (req.url === "/aws" || req.url.startsWith("/aws/") || req.url.startsWith("/aws?")) return proxy(req, res);
     serveStatic(req, res);
   })

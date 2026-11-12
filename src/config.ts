@@ -43,3 +43,14 @@ export function viaProxy(url: string): string {
   const u = new URL(url);
   return `${PROXY_BASE}${u.pathname}${u.search}`;
 }
+
+let flociHostPromise: Promise<string> | undefined;
+
+/** Host name of the floci machine, as the console server sees it. Empty if unknown. */
+export function flociHost(): Promise<string> {
+  flociHostPromise ??= fetch("/console-config.json")
+    .then((r) => r.json())
+    .then((c: { flociHost?: string }) => c.flociHost ?? "")
+    .catch(() => "");
+  return flociHostPromise;
+}

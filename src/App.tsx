@@ -13,6 +13,9 @@ const Ec2Dashboard = lazy(() => import("./pages/ec2/Dashboard"));
 const Volumes = lazy(() => import("./pages/ec2/Volumes"));
 const Snapshots = lazy(() => import("./pages/ec2/Snapshots"));
 const ElasticIps = lazy(() => import("./pages/ec2/ElasticIps"));
+const Secrets = lazy(() => import("./pages/secretsmanager/Secrets"));
+const CreateSecret = lazy(() => import("./pages/secretsmanager/CreateSecret"));
+const SecretDetail = lazy(() => import("./pages/secretsmanager/SecretDetail"));
 const Functions = lazy(() => import("./pages/lambda/Functions"));
 const CreateFunction = lazy(() => import("./pages/lambda/CreateFunction"));
 const FunctionDetail = lazy(() => import("./pages/lambda/FunctionDetail"));
@@ -75,6 +78,11 @@ export default function App() {
         <Route path="/ec2/security-groups/:id" element={<SecurityGroupDetail />} />
         <Route path="/ec2/key-pairs" element={<KeyPairs />} />
         <Route path="/ec2/images" element={<Images />} />
+
+        <Route path="/secretsmanager" element={<Navigate to="/secretsmanager/secrets" replace />} />
+        <Route path="/secretsmanager/secrets" element={<Secrets />} />
+        <Route path="/secretsmanager/secrets/create" element={<CreateSecret />} />
+        <Route path="/secretsmanager/secret" element={<SecretDetail />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -1,13 +1,17 @@
 import type { SideNavigationProps } from "@cloudscape-design/components/side-navigation";
 
-export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2";
+export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager";
 export type ServiceId = Exclude<Service, "home">;
 
 export const SERVICES: { id: ServiceId; name: string; fullName: string; href: string; description: string }[] = [
+  { id: "apigateway", name: "API Gateway", fullName: "API Gateway", href: "/apigateway/apis", description: "Build, deploy and manage APIs" },
+  { id: "cloudfront", name: "CloudFront", fullName: "CloudFront", href: "/cloudfront/distributions", description: "Global content delivery network" },
+  { id: "cloudwatch", name: "CloudWatch", fullName: "CloudWatch", href: "/cloudwatch/home", description: "Monitor resources and applications" },
   { id: "ec2", name: "EC2", fullName: "EC2", href: "/ec2/home", description: "Virtual servers in the cloud" },
   { id: "lambda", name: "Lambda", fullName: "Lambda", href: "/lambda/functions", description: "Run code without thinking about servers" },
+  { id: "rds", name: "RDS", fullName: "Aurora and RDS", href: "/rds/databases", description: "Managed relational database service" },
   { id: "s3", name: "S3", fullName: "Amazon S3", href: "/s3/buckets", description: "Scalable storage in the cloud" },
-  { id: "cloudwatch", name: "CloudWatch", fullName: "CloudWatch", href: "/cloudwatch/home", description: "Monitor resources and applications" },
+  { id: "secretsmanager", name: "Secrets Manager", fullName: "Secrets Manager", href: "/secretsmanager/secrets", description: "Rotate, manage and retrieve secrets" },
 ];
 
 const link = (text: string, href: string): SideNavigationProps.Link => ({ type: "link", text, href });
@@ -39,6 +43,22 @@ export const NAV: Record<Service, { header: SideNavigationProps.Header; items: S
       section("Logs", [link("Log groups", "/cloudwatch/log-groups")]),
       section("Metrics", [link("All metrics", "/cloudwatch/metrics")]),
     ],
+  },
+  apigateway: {
+    header: { text: "API Gateway", href: "/apigateway/apis" },
+    items: [link("APIs", "/apigateway/apis")],
+  },
+  cloudfront: {
+    header: { text: "CloudFront", href: "/cloudfront/distributions" },
+    items: [link("Distributions", "/cloudfront/distributions")],
+  },
+  rds: {
+    header: { text: "Aurora and RDS", href: "/rds/databases" },
+    items: [link("Databases", "/rds/databases"), link("Snapshots", "/rds/snapshots"), link("Subnet groups", "/rds/subnet-groups")],
+  },
+  secretsmanager: {
+    header: { text: "Secrets Manager", href: "/secretsmanager/secrets" },
+    items: [link("Secrets", "/secretsmanager/secrets")],
   },
   ec2: {
     header: { text: "EC2", href: "/ec2/home" },
