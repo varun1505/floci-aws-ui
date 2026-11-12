@@ -28,6 +28,13 @@ const HEALTH_KEYS: Record<string, string[]> = {
   cloudfront: ["cloudfront"],
   rds: ["rds"],
   secretsmanager: ["secretsmanager"],
+  iam: ["iam"],
+  ssm: ["ssm"],
+  sqs: ["sqs"],
+  sns: ["sns"],
+  ses: ["email"],
+  elasticache: ["elasticache"],
+  kms: ["kms"],
 };
 
 /** One count per service. A failed call gives undefined, shown as "-". */

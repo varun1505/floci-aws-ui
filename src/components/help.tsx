@@ -87,6 +87,75 @@ const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: str
     ),
     docs: [{ text: "Secrets Manager user guide", href: "https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html" }],
   },
+  iam: {
+    title: "IAM",
+    body: (
+      <>
+        <p>IAM holds users, groups, roles and policies. Lambda functions and other services need a role to run.</p>
+        <p>This environment stores IAM resources but does not block calls that a policy would deny. Test real permissions in AWS.</p>
+      </>
+    ),
+    docs: [{ text: "IAM user guide", href: "https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html" }],
+  },
+  ssm: {
+    title: "Parameter Store",
+    body: (
+      <>
+        <p>Parameter Store holds configuration values and secrets as named parameters. Use a path such as /my-app/dev/db-url to group them.</p>
+        <p>SecureString parameters are for passwords and keys.</p>
+      </>
+    ),
+    docs: [{ text: "Parameter Store user guide", href: "https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html" }],
+  },
+  sqs: {
+    title: "Amazon SQS",
+    body: (
+      <>
+        <p>SQS queues hold messages until a consumer reads them. Use them to run work in the background.</p>
+        <p>Standard queues deliver at least once. FIFO queues keep order and remove duplicates.</p>
+      </>
+    ),
+    docs: [{ text: "SQS developer guide", href: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html" }],
+  },
+  sns: {
+    title: "Amazon SNS",
+    body: (
+      <>
+        <p>SNS topics send one message to many subscribers. A subscriber can be an SQS queue, a Lambda function, an HTTP endpoint or an email address.</p>
+      </>
+    ),
+    docs: [{ text: "SNS developer guide", href: "https://docs.aws.amazon.com/sns/latest/dg/welcome.html" }],
+  },
+  ses: {
+    title: "Amazon SES",
+    body: (
+      <>
+        <p>SES sends email from your applications. Verify an email address or a domain before you send from it.</p>
+        <p>In this environment no email leaves the network. Every message is captured in the Mailbox page so you can read what your application sent.</p>
+      </>
+    ),
+    docs: [{ text: "SES developer guide", href: "https://docs.aws.amazon.com/ses/latest/dg/Welcome.html" }],
+  },
+  elasticache: {
+    title: "ElastiCache",
+    body: (
+      <>
+        <p>ElastiCache runs Redis OSS, Valkey and Memcached. In this environment each cache runs as a container on the host.</p>
+        <p>Connect with the host and port shown on the cache page.</p>
+      </>
+    ),
+    docs: [{ text: "ElastiCache user guide", href: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/WhatIs.html" }],
+  },
+  kms: {
+    title: "KMS",
+    body: (
+      <>
+        <p>KMS creates and stores encryption keys. Other services use them to encrypt data, and applications call Encrypt and Decrypt directly.</p>
+        <p>Keys here protect test data only. Do not reuse them for production.</p>
+      </>
+    ),
+    docs: [{ text: "KMS developer guide", href: "https://docs.aws.amazon.com/kms/latest/developerguide/overview.html" }],
+  },
   ec2: {
     title: "EC2",
     body: (
@@ -155,4 +224,11 @@ const EXAMPLE: Record<Exclude<Service, "home">, string> = {
   cloudfront: "cloudfront list-distributions",
   rds: "rds describe-db-instances",
   secretsmanager: "secretsmanager list-secrets",
+  iam: "iam list-roles",
+  ssm: "ssm describe-parameters",
+  sqs: "sqs list-queues",
+  sns: "sns list-topics",
+  ses: "ses list-identities",
+  elasticache: "elasticache describe-cache-clusters",
+  kms: "kms list-keys",
 };

@@ -1,6 +1,6 @@
 import type { SideNavigationProps } from "@cloudscape-design/components/side-navigation";
 
-export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager";
+export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms";
 export type ServiceId = Exclude<Service, "home">;
 
 export const SERVICES: { id: ServiceId; name: string; fullName: string; href: string; description: string }[] = [
@@ -8,10 +8,17 @@ export const SERVICES: { id: ServiceId; name: string; fullName: string; href: st
   { id: "cloudfront", name: "CloudFront", fullName: "CloudFront", href: "/cloudfront/distributions", description: "Global content delivery network" },
   { id: "cloudwatch", name: "CloudWatch", fullName: "CloudWatch", href: "/cloudwatch/home", description: "Monitor resources and applications" },
   { id: "ec2", name: "EC2", fullName: "EC2", href: "/ec2/home", description: "Virtual servers in the cloud" },
+  { id: "elasticache", name: "ElastiCache", fullName: "ElastiCache", href: "/elasticache/caches", description: "In-memory cache with Redis OSS, Valkey and Memcached" },
+  { id: "iam", name: "IAM", fullName: "IAM", href: "/iam/roles", description: "Manage access to resources" },
+  { id: "kms", name: "KMS", fullName: "Key Management Service", href: "/kms/keys", description: "Create and manage encryption keys" },
   { id: "lambda", name: "Lambda", fullName: "Lambda", href: "/lambda/functions", description: "Run code without thinking about servers" },
   { id: "rds", name: "RDS", fullName: "Aurora and RDS", href: "/rds/databases", description: "Managed relational database service" },
   { id: "s3", name: "S3", fullName: "Amazon S3", href: "/s3/buckets", description: "Scalable storage in the cloud" },
   { id: "secretsmanager", name: "Secrets Manager", fullName: "Secrets Manager", href: "/secretsmanager/secrets", description: "Rotate, manage and retrieve secrets" },
+  { id: "ses", name: "SES", fullName: "Simple Email Service", href: "/ses/identities", description: "Send email from your applications" },
+  { id: "sns", name: "SNS", fullName: "Simple Notification Service", href: "/sns/topics", description: "Pub/sub messaging and notifications" },
+  { id: "sqs", name: "SQS", fullName: "Simple Queue Service", href: "/sqs/queues", description: "Managed message queues" },
+  { id: "ssm", name: "Systems Manager", fullName: "Systems Manager", href: "/ssm/parameters", description: "Parameter Store for configuration data" },
 ];
 
 const link = (text: string, href: string): SideNavigationProps.Link => ({ type: "link", text, href });
@@ -60,6 +67,34 @@ export const NAV: Record<Service, { header: SideNavigationProps.Header; items: S
     header: { text: "Secrets Manager", href: "/secretsmanager/secrets" },
     items: [link("Secrets", "/secretsmanager/secrets")],
   },
+  iam: {
+    header: { text: "Identity and Access Management (IAM)", href: "/iam/roles" },
+    items: [section("Access management", [link("User groups", "/iam/groups"), link("Users", "/iam/users"), link("Roles", "/iam/roles"), link("Policies", "/iam/policies")])],
+  },
+  ssm: {
+    header: { text: "Systems Manager", href: "/ssm/parameters" },
+    items: [section("Application Tools", [link("Parameter Store", "/ssm/parameters")])],
+  },
+  sqs: {
+    header: { text: "Amazon SQS", href: "/sqs/queues" },
+    items: [link("Queues", "/sqs/queues")],
+  },
+  sns: {
+    header: { text: "Amazon SNS", href: "/sns/topics" },
+    items: [link("Topics", "/sns/topics"), link("Subscriptions", "/sns/subscriptions")],
+  },
+  ses: {
+    header: { text: "Amazon SES", href: "/ses/identities" },
+    items: [section("Configuration", [link("Identities", "/ses/identities")]), section("Non-production tools", [link("Mailbox", "/ses/mailbox")])],
+  },
+  elasticache: {
+    header: { text: "ElastiCache", href: "/elasticache/caches" },
+    items: [section("Resources", [link("Caches", "/elasticache/caches"), link("Replication groups", "/elasticache/replication-groups")])],
+  },
+  kms: {
+    header: { text: "Key Management Service (KMS)", href: "/kms/keys" },
+    items: [link("Customer managed keys", "/kms/keys"), link("AWS managed keys", "/kms/aws-keys")],
+  },
   ec2: {
     header: { text: "EC2", href: "/ec2/home" },
     items: [
@@ -72,6 +107,7 @@ export const NAV: Record<Service, { header: SideNavigationProps.Header; items: S
         link("Elastic IPs", "/ec2/elastic-ips"),
         link("Key Pairs", "/ec2/key-pairs"),
       ]),
+      section("Load Balancing", [link("Load Balancers", "/ec2/load-balancers"), link("Target Groups", "/ec2/target-groups")]),
     ],
   },
 };

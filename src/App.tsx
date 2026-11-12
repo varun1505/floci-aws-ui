@@ -28,6 +28,11 @@ const DistributionDetail = lazy(() => import("./pages/cloudfront/DistributionDet
 const Apis = lazy(() => import("./pages/apigateway/Apis"));
 const RestApiDetail = lazy(() => import("./pages/apigateway/RestApiDetail"));
 const HttpApiDetail = lazy(() => import("./pages/apigateway/HttpApiDetail"));
+const Queues = lazy(() => import("./pages/sqs/Queues"));
+const QueueDetail = lazy(() => import("./pages/sqs/QueueDetail"));
+const Topics = lazy(() => import("./pages/sns/Topics"));
+const TopicDetail = lazy(() => import("./pages/sns/TopicDetail"));
+const Subscriptions = lazy(() => import("./pages/sns/Subscriptions"));
 const Functions = lazy(() => import("./pages/lambda/Functions"));
 const CreateFunction = lazy(() => import("./pages/lambda/CreateFunction"));
 const FunctionDetail = lazy(() => import("./pages/lambda/FunctionDetail"));
@@ -72,6 +77,15 @@ export default function App() {
         <Route path="/apigateway/apis" element={<Apis />} />
         <Route path="/apigateway/rest/:id" element={<RestApiDetail />} />
         <Route path="/apigateway/http/:id" element={<HttpApiDetail />} />
+
+        <Route path="/sqs" element={<Navigate to="/sqs/queues" replace />} />
+        <Route path="/sqs/queues" element={<Queues />} />
+        <Route path="/sqs/queue" element={<QueueDetail />} />
+
+        <Route path="/sns" element={<Navigate to="/sns/topics" replace />} />
+        <Route path="/sns/topics" element={<Topics />} />
+        <Route path="/sns/topic" element={<TopicDetail />} />
+        <Route path="/sns/subscriptions" element={<Subscriptions />} />
 
         <Route path="/s3" element={<Navigate to="/s3/buckets" replace />} />
         <Route path="/s3/buckets" element={<Buckets />} />
