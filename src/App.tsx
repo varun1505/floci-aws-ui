@@ -33,6 +33,10 @@ const QueueDetail = lazy(() => import("./pages/sqs/QueueDetail"));
 const Topics = lazy(() => import("./pages/sns/Topics"));
 const TopicDetail = lazy(() => import("./pages/sns/TopicDetail"));
 const Subscriptions = lazy(() => import("./pages/sns/Subscriptions"));
+const Parameters = lazy(() => import("./pages/ssm/Parameters"));
+const ParameterDetail = lazy(() => import("./pages/ssm/ParameterDetail"));
+const Keys = lazy(() => import("./pages/kms/Keys"));
+const KeyDetail = lazy(() => import("./pages/kms/KeyDetail"));
 const Functions = lazy(() => import("./pages/lambda/Functions"));
 const CreateFunction = lazy(() => import("./pages/lambda/CreateFunction"));
 const FunctionDetail = lazy(() => import("./pages/lambda/FunctionDetail"));
@@ -86,6 +90,15 @@ export default function App() {
         <Route path="/sns/topics" element={<Topics />} />
         <Route path="/sns/topic" element={<TopicDetail />} />
         <Route path="/sns/subscriptions" element={<Subscriptions />} />
+
+        <Route path="/ssm" element={<Navigate to="/ssm/parameters" replace />} />
+        <Route path="/ssm/parameters" element={<Parameters />} />
+        <Route path="/ssm/parameter" element={<ParameterDetail />} />
+
+        <Route path="/kms" element={<Navigate to="/kms/keys" replace />} />
+        <Route path="/kms/keys" element={<Keys manager="CUSTOMER" />} />
+        <Route path="/kms/aws-keys" element={<Keys manager="AWS" />} />
+        <Route path="/kms/keys/:id" element={<KeyDetail />} />
 
         <Route path="/s3" element={<Navigate to="/s3/buckets" replace />} />
         <Route path="/s3/buckets" element={<Buckets />} />
