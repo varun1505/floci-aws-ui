@@ -86,6 +86,9 @@ function initialMode(): Mode {
   }
 }
 
+// Kept outside React so the side navigation stays open or closed across pages.
+let navOpenState = true;
+
 let currentMode = initialMode();
 applyMode(currentMode);
 
@@ -163,7 +166,11 @@ export function Shell({
   const follow = useFollow();
   const location = useLocation();
   const notify = useNotify();
-  const [navOpen, setNavOpen] = useState(true);
+  const [navOpen, setNavOpenLocal] = useState(navOpenState);
+  const setNavOpen = (open: boolean) => {
+    navOpenState = open;
+    setNavOpenLocal(open);
+  };
   const nav = NAV[service];
   const topNav = document.getElementById("top-nav");
 
