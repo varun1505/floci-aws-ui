@@ -10,6 +10,13 @@ import LogGroups from "./pages/cloudwatch/LogGroups";
 import LogGroupDetail from "./pages/cloudwatch/LogGroupDetail";
 import Alarms from "./pages/cloudwatch/Alarms";
 import Metrics from "./pages/cloudwatch/Metrics";
+import Instances from "./pages/ec2/Instances";
+import LaunchInstance from "./pages/ec2/LaunchInstance";
+import InstanceDetail from "./pages/ec2/InstanceDetail";
+import SecurityGroups from "./pages/ec2/SecurityGroups";
+import SecurityGroupDetail from "./pages/ec2/SecurityGroupDetail";
+import KeyPairs from "./pages/ec2/KeyPairs";
+import Images from "./pages/ec2/Images";
 
 export default function App() {
   return (
@@ -28,6 +35,14 @@ export default function App() {
       <Route path="/cloudwatch/log-group" element={<LogGroupDetail />} />
       <Route path="/cloudwatch/alarms" element={<Alarms />} />
       <Route path="/cloudwatch/metrics" element={<Metrics />} />
+      <Route path="/ec2" element={<Navigate to="/ec2/instances" replace />} />
+      <Route path="/ec2/instances" element={<Instances />} />
+      <Route path="/ec2/instances/launch" element={<LaunchInstance />} />
+      <Route path="/ec2/instances/:id" element={<InstanceDetail />} />
+      <Route path="/ec2/security-groups" element={<SecurityGroups />} />
+      <Route path="/ec2/security-groups/:id" element={<SecurityGroupDetail />} />
+      <Route path="/ec2/key-pairs" element={<KeyPairs />} />
+      <Route path="/ec2/images" element={<Images />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
