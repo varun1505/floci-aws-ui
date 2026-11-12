@@ -7,7 +7,7 @@ import Input from "@cloudscape-design/components/input";
 import Modal from "@cloudscape-design/components/modal";
 import RadioGroup from "@cloudscape-design/components/radio-group";
 import SpaceBetween from "@cloudscape-design/components/space-between";
-import { ec2 } from "../../aws";
+import { ec2 } from "../../clients/ec2";
 import { ConfirmDelete } from "../../components/ConfirmDelete";
 import { ResourceTable } from "../../components/ResourceTable";
 import { Shell } from "../../components/Shell";

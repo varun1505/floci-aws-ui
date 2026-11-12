@@ -7,7 +7,7 @@ import Flashbar from "@cloudscape-design/components/flashbar";
 import SideNavigation, { type SideNavigationProps } from "@cloudscape-design/components/side-navigation";
 import TopNavigation from "@cloudscape-design/components/top-navigation";
 import { applyMode, Mode } from "@cloudscape-design/global-styles";
-import { REGIONS, getRegion, setRegion } from "../aws";
+import { REGIONS, getRegion, setRegion } from "../config";
 import { useNotify } from "../lib/notify";
 import { useFollow } from "./RouterLink";
 

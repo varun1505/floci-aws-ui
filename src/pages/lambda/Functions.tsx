@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { DeleteFunctionCommand, ListFunctionsCommand, type FunctionConfiguration } from "@aws-sdk/client-lambda";
 import Button from "@cloudscape-design/components/button";
 import ButtonDropdown from "@cloudscape-design/components/button-dropdown";
-import { lambda } from "../../aws";
+import { lambda } from "../../clients/lambda";
 import { ConfirmDelete } from "../../components/ConfirmDelete";
 import { ResourceTable } from "../../components/ResourceTable";
 import { RouterLink } from "../../components/RouterLink";

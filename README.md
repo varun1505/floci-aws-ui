@@ -1,0 +1,71 @@
+# Floci Console
+
+A web console for [floci](https://floci.io), the local AWS emulator. It looks and works like the AWS console, so a team that knows AWS can use an on-prem non-prod environment without learning a new tool.
+
+It is built with [Cloudscape](https://cloudscape.design), the open source design system that the AWS console itself uses.
+
+## What it covers
+
+| Service | What you can do |
+|---------|-----------------|
+| **Lambda** | List, create and delete functions. Edit code in the browser and deploy. Run test events. Read logs. Change memory, timeout, handler and environment variables. |
+| **S3** | Create, empty and delete buckets. Browse folders. Upload, download, open, preview and delete objects. |
+| **CloudWatch** | Browse log groups and streams. Read log events with a time filter and live tail. Create and delete alarms. Graph metrics. |
+| **EC2** | Launch, start, stop, reboot and terminate instances. Manage security groups and their rules. Create key pairs. List AMIs. |
+
+## Run it locally
+
+You need Node 22 or newer, pnpm, and a running floci.
+
+```sh
+pnpm install
+cp .env.example .env.local   # then set FLOCI_ENDPOINT to your floci address
+pnpm dev                     # http://localhost:5173
+```
+
+## Run it for a team
+
+```sh
+pnpm build
+FLOCI_ENDPOINT=http://your-floci-host:4566 PORT=8080 pnpm start
+```
+
+Or with Docker:
+
+```sh
+docker build -t floci-console .
+docker run -d -p 8080:8080 -e FLOCI_ENDPOINT=http://your-floci-host:4566 floci-console
+```
+
+## How it works
+
+```
+browser  ->  this server (/aws/*)  ->  floci (:4566)
+```
+
+- The pages use the normal AWS SDK for JavaScript. The SDK points at `/aws` on the same server.
+- The server forwards `/aws/*` to floci. This is needed because floci does not answer browser CORS preflight requests.
+- floci accepts any credentials. The console sends `test` / `test`. Nothing reaches real AWS.
+
+## Settings
+
+| Variable | Default | Meaning |
+|----------|---------|---------|
+| `FLOCI_ENDPOINT` | `http://localhost:4566` | Where floci listens. |
+| `PORT` | `8080` | Port for the production server. |
+
+## Known limits
+
+- **No login.** Anyone who can open the console can change everything in floci. Keep it on a private network.
+- **floci keeps state in memory** unless it was started with `--persist`. A floci restart wipes all resources.
+- floci does not write the `START`, `END` and `REPORT` lines to Lambda logs. You only see what your code prints.
+- floci does not publish Lambda or EC2 metrics on its own. The Metrics page shows only metrics your apps send.
+- EC2 instances run as containers on the floci host. There is no serial console output.
+
+## Add a service
+
+1. Add a client in `src/clients/`.
+2. Add pages in `src/pages/<service>/`. `ResourceTable` gives you the standard list page.
+3. Add the routes in `src/App.tsx` and the side navigation in `src/components/Shell.tsx`.
+
+This project is not affiliated with Amazon Web Services.

@@ -17,7 +17,7 @@ import CopyToClipboard from "@cloudscape-design/components/copy-to-clipboard";
 import Header from "@cloudscape-design/components/header";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import Tabs from "@cloudscape-design/components/tabs";
-import { logs } from "../../aws";
+import { logs } from "../../clients/logs";
 import { ConfirmDelete } from "../../components/ConfirmDelete";
 import { LogEvents } from "../../components/LogEvents";
 import { ResourceTable } from "../../components/ResourceTable";

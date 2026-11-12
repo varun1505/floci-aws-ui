@@ -20,7 +20,7 @@ import Multiselect from "@cloudscape-design/components/multiselect";
 import Select, { type SelectProps } from "@cloudscape-design/components/select";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import Textarea from "@cloudscape-design/components/textarea";
-import { ec2 } from "../../aws";
+import { ec2 } from "../../clients/ec2";
 import { Shell } from "../../components/Shell";
 import { errorMessage } from "../../lib/format";
 import { useNotify } from "../../lib/notify";

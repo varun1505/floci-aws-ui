@@ -14,7 +14,7 @@ import RadioGroup from "@cloudscape-design/components/radio-group";
 import Select from "@cloudscape-design/components/select";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import Tiles from "@cloudscape-design/components/tiles";
-import { lambda } from "../../aws";
+import { lambda } from "../../clients/lambda";
 import { Shell } from "../../components/Shell";
 import { errorMessage } from "../../lib/format";
 import { useNotify } from "../../lib/notify";

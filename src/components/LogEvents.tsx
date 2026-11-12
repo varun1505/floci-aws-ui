@@ -4,7 +4,7 @@ import Box from "@cloudscape-design/components/box";
 import Select from "@cloudscape-design/components/select";
 import Toggle from "@cloudscape-design/components/toggle";
 import type { TableProps } from "@cloudscape-design/components/table";
-import { logs } from "../aws";
+import { logs } from "../clients/logs";
 import { formatDate } from "../lib/format";
 import { useLoad } from "../lib/useLoad";
 import { ResourceTable } from "./ResourceTable";

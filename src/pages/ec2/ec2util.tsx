@@ -2,7 +2,7 @@ import { DescribeInstancesCommand, type Instance, type Tag } from "@aws-sdk/clie
 import StatusIndicator, { type StatusIndicatorProps } from "@cloudscape-design/components/status-indicator";
 import Box from "@cloudscape-design/components/box";
 import type { ReactNode } from "react";
-import { ec2 } from "../../aws";
+import { ec2 } from "../../clients/ec2";
 
 export const tagName = (tags?: Tag[]) => tags?.find((t) => t.Key === "Name")?.Value ?? "";
 

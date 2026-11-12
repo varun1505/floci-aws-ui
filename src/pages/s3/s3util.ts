@@ -1,5 +1,5 @@
 import { DeleteObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
-import { s3 } from "../../aws";
+import { s3 } from "../../clients/s3";
 
 /** Every object key under a prefix. An empty prefix means the whole bucket. */
 export async function listAllKeys(bucket: string, prefix = ""): Promise<string[]> {

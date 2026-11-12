@@ -6,7 +6,7 @@ import ContentLayout from "@cloudscape-design/components/content-layout";
 import Header from "@cloudscape-design/components/header";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import StatusIndicator from "@cloudscape-design/components/status-indicator";
-import { ACCOUNT_ID, PROXY_BASE, getRegion } from "../aws";
+import { ACCOUNT_ID, PROXY_BASE, getRegion } from "../config";
 import { RouterLink } from "../components/RouterLink";
 import { SERVICES, Shell } from "../components/Shell";
 import { useLoad } from "../lib/useLoad";

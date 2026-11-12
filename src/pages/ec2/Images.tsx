@@ -1,5 +1,5 @@
 import { DescribeImagesCommand } from "@aws-sdk/client-ec2";
-import { ec2 } from "../../aws";
+import { ec2 } from "../../clients/ec2";
 import { ResourceTable } from "../../components/ResourceTable";
 import { Shell } from "../../components/Shell";
 import { useLoad } from "../../lib/useLoad";

@@ -10,7 +10,7 @@ import {
 import Box from "@cloudscape-design/components/box";
 import Button from "@cloudscape-design/components/button";
 import ButtonDropdown from "@cloudscape-design/components/button-dropdown";
-import { ec2 } from "../../aws";
+import { ec2 } from "../../clients/ec2";
 import { ConfirmDelete } from "../../components/ConfirmDelete";
 import { ResourceTable } from "../../components/ResourceTable";
 import { RouterLink } from "../../components/RouterLink";

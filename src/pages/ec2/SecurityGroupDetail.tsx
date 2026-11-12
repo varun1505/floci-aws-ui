@@ -22,7 +22,7 @@ import Select from "@cloudscape-design/components/select";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import Table from "@cloudscape-design/components/table";
 import Tabs from "@cloudscape-design/components/tabs";
-import { ec2 } from "../../aws";
+import { ec2 } from "../../clients/ec2";
 import { Shell } from "../../components/Shell";
 import { errorMessage } from "../../lib/format";
 import { useNotify } from "../../lib/notify";

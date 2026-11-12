@@ -13,7 +13,7 @@ import SpaceBetween from "@cloudscape-design/components/space-between";
 import Spinner from "@cloudscape-design/components/spinner";
 import Table from "@cloudscape-design/components/table";
 import Tabs from "@cloudscape-design/components/tabs";
-import { ACCOUNT_ID, getRegion } from "../../aws";
+import { ACCOUNT_ID, getRegion } from "../../config";
 import { ConfirmDelete } from "../../components/ConfirmDelete";
 import { RouterLink } from "../../components/RouterLink";
 import { Shell } from "../../components/Shell";

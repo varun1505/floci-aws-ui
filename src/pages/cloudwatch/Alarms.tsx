@@ -17,7 +17,7 @@ import Modal from "@cloudscape-design/components/modal";
 import Select from "@cloudscape-design/components/select";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import StatusIndicator from "@cloudscape-design/components/status-indicator";
-import { cloudwatch } from "../../aws";
+import { cloudwatch } from "../../clients/cloudwatch";
 import { ConfirmDelete } from "../../components/ConfirmDelete";
 import { ResourceTable } from "../../components/ResourceTable";
 import { Shell } from "../../components/Shell";

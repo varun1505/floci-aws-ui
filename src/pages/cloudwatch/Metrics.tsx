@@ -6,7 +6,7 @@ import Header from "@cloudscape-design/components/header";
 import LineChart from "@cloudscape-design/components/line-chart";
 import Select from "@cloudscape-design/components/select";
 import SpaceBetween from "@cloudscape-design/components/space-between";
-import { cloudwatch } from "../../aws";
+import { cloudwatch } from "../../clients/cloudwatch";
 import { ResourceTable } from "../../components/ResourceTable";
 import { Shell } from "../../components/Shell";
 import { useLoad } from "../../lib/useLoad";

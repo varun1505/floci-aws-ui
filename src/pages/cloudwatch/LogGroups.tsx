@@ -13,7 +13,7 @@ import Input from "@cloudscape-design/components/input";
 import Modal from "@cloudscape-design/components/modal";
 import Select from "@cloudscape-design/components/select";
 import SpaceBetween from "@cloudscape-design/components/space-between";
-import { logs } from "../../aws";
+import { logs } from "../../clients/logs";
 import { ConfirmDelete } from "../../components/ConfirmDelete";
 import { ResourceTable } from "../../components/ResourceTable";
 import { RouterLink } from "../../components/RouterLink";

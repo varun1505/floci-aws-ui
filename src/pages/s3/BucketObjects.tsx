@@ -11,7 +11,7 @@ import Input from "@cloudscape-design/components/input";
 import Modal from "@cloudscape-design/components/modal";
 import ProgressBar from "@cloudscape-design/components/progress-bar";
 import SpaceBetween from "@cloudscape-design/components/space-between";
-import { s3 } from "../../aws";
+import { s3 } from "../../clients/s3";
 import { ConfirmDelete } from "../../components/ConfirmDelete";
 import { ResourceTable } from "../../components/ResourceTable";
 import { RouterLink } from "../../components/RouterLink";
