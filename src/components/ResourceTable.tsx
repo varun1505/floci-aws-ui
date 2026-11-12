@@ -8,6 +8,7 @@ import Pagination from "@cloudscape-design/components/pagination";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import Table, { type TableProps } from "@cloudscape-design/components/table";
 import TextFilter from "@cloudscape-design/components/text-filter";
+import { REGIONS, getRegion } from "../config";
 
 /** The list page table used all over the console: header, counter, filter, pagination, refresh. */
 export function ResourceTable<T>({
@@ -33,6 +34,9 @@ export function ResourceTable<T>({
   stickyHeader = true,
   wrapLines,
   extraFilter,
+  emptyDescription,
+  emptyCli,
+  global,
 }: {
   title: string;
   description?: ReactNode;
@@ -56,7 +60,15 @@ export function ResourceTable<T>({
   stickyHeader?: boolean;
   wrapLines?: boolean;
   extraFilter?: ReactNode;
+  /** Extra line in the empty state, such as what the resource is for. */
+  emptyDescription?: ReactNode;
+  /** CLI arguments that create the resource, shown in the empty state. */
+  emptyCli?: string;
+  /** True for resources that are not tied to a Region, such as S3 buckets. */
+  global?: boolean;
 }) {
+  const region = getRegion();
+  const regionLabel = REGIONS.find((r) => r.id === region)?.label ?? region;
   const all = items ?? [];
   const { items: visible, collectionProps, filterProps, paginationProps, filteredItemsCount } = useCollection(all, {
     filtering: {
@@ -66,10 +78,20 @@ export function ResourceTable<T>({
             <div>
               <b>No {resourceName}</b>
               <Box variant="p" color="inherit">
-                You don't have any {resourceName} in this Region.
+                {global ? `You don't have any ${resourceName}.` : `You don't have any ${resourceName} in ${regionLabel} (${region}).`}
               </Box>
+              {emptyDescription && (
+                <Box variant="p" color="text-body-secondary">
+                  {emptyDescription}
+                </Box>
+              )}
             </div>
             {emptyAction}
+            {emptyCli && (
+              <Box color="text-body-secondary" fontSize="body-s">
+                Or use the CLI: <Box variant="code">aws --profile floci {emptyCli}</Box>
+              </Box>
+            )}
           </SpaceBetween>
         </Box>
       ),

@@ -77,7 +77,7 @@ export default function SecurityGroups() {
   };
 
   return (
-    <Shell service="ec2" contentType="table" breadcrumbs={[{ text: "EC2", href: "/ec2/instances" }, { text: "Security Groups", href: "/ec2/security-groups" }]}>
+    <Shell service="ec2" contentType="table" breadcrumbs={[{ text: "EC2", href: "/ec2/home" }, { text: "Security Groups", href: "/ec2/security-groups" }]}>
       <ResourceTable
         title="Security Groups"
         resourceName="security groups"

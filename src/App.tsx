@@ -5,6 +5,14 @@ import Spinner from "@cloudscape-design/components/spinner";
 import Home from "./pages/Home";
 
 // Each service loads its own code only when it is first opened. The AWS SDK clients are large.
+const LambdaDashboard = lazy(() => import("./pages/lambda/Dashboard"));
+const Layers = lazy(() => import("./pages/lambda/Layers"));
+const EventSourceMappings = lazy(() => import("./pages/lambda/EventSourceMappings"));
+const CloudWatchOverview = lazy(() => import("./pages/cloudwatch/Overview"));
+const Ec2Dashboard = lazy(() => import("./pages/ec2/Dashboard"));
+const Volumes = lazy(() => import("./pages/ec2/Volumes"));
+const Snapshots = lazy(() => import("./pages/ec2/Snapshots"));
+const ElasticIps = lazy(() => import("./pages/ec2/ElasticIps"));
 const Functions = lazy(() => import("./pages/lambda/Functions"));
 const CreateFunction = lazy(() => import("./pages/lambda/CreateFunction"));
 const FunctionDetail = lazy(() => import("./pages/lambda/FunctionDetail"));
@@ -35,7 +43,10 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
 
-        <Route path="/lambda" element={<Navigate to="/lambda/functions" replace />} />
+        <Route path="/lambda" element={<Navigate to="/lambda/home" replace />} />
+        <Route path="/lambda/home" element={<LambdaDashboard />} />
+        <Route path="/lambda/layers" element={<Layers />} />
+        <Route path="/lambda/event-source-mappings" element={<EventSourceMappings />} />
         <Route path="/lambda/functions" element={<Functions />} />
         <Route path="/lambda/functions/create" element={<CreateFunction />} />
         <Route path="/lambda/functions/:name" element={<FunctionDetail />} />
@@ -45,13 +56,18 @@ export default function App() {
         <Route path="/s3/bucket" element={<BucketObjects />} />
         <Route path="/s3/object" element={<ObjectDetail />} />
 
-        <Route path="/cloudwatch" element={<Navigate to="/cloudwatch/log-groups" replace />} />
+        <Route path="/cloudwatch" element={<Navigate to="/cloudwatch/home" replace />} />
+        <Route path="/cloudwatch/home" element={<CloudWatchOverview />} />
         <Route path="/cloudwatch/log-groups" element={<LogGroups />} />
         <Route path="/cloudwatch/log-group" element={<LogGroupDetail />} />
         <Route path="/cloudwatch/alarms" element={<Alarms />} />
         <Route path="/cloudwatch/metrics" element={<Metrics />} />
 
-        <Route path="/ec2" element={<Navigate to="/ec2/instances" replace />} />
+        <Route path="/ec2" element={<Navigate to="/ec2/home" replace />} />
+        <Route path="/ec2/home" element={<Ec2Dashboard />} />
+        <Route path="/ec2/volumes" element={<Volumes />} />
+        <Route path="/ec2/snapshots" element={<Snapshots />} />
+        <Route path="/ec2/elastic-ips" element={<ElasticIps />} />
         <Route path="/ec2/instances" element={<Instances />} />
         <Route path="/ec2/instances/launch" element={<LaunchInstance />} />
         <Route path="/ec2/instances/:id" element={<InstanceDetail />} />

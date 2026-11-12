@@ -581,7 +581,7 @@ export default function FunctionDetail() {
     <Shell
       service="lambda"
       breadcrumbs={[
-        { text: "Lambda", href: "/lambda/functions" },
+        { text: "Lambda", href: "/lambda/home" },
         { text: "Functions", href: "/lambda/functions" },
         { text: name, href: `/lambda/functions/${name}` },
       ]}

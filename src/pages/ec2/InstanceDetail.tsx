@@ -62,7 +62,7 @@ export default function InstanceDetail() {
     <Shell
       service="ec2"
       breadcrumbs={[
-        { text: "EC2", href: "/ec2/instances" },
+        { text: "EC2", href: "/ec2/home" },
         { text: "Instances", href: "/ec2/instances" },
         { text: id, href: `/ec2/instances/${id}` },
       ]}

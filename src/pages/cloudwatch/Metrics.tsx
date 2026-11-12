@@ -103,7 +103,7 @@ export default function Metrics() {
   const [selected, setSelected] = useState<Metric[]>([]);
 
   return (
-    <Shell service="cloudwatch" breadcrumbs={[{ text: "CloudWatch", href: "/cloudwatch/log-groups" }, { text: "Metrics", href: "/cloudwatch/metrics" }]}>
+    <Shell service="cloudwatch" breadcrumbs={[{ text: "CloudWatch", href: "/cloudwatch/home" }, { text: "Metrics", href: "/cloudwatch/metrics" }]}>
       <SpaceBetween size="l">
         {selected[0] && <Graph metric={selected[0]} />}
         <ResourceTable

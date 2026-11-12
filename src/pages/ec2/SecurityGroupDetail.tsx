@@ -178,7 +178,7 @@ export default function SecurityGroupDetail() {
     <Shell
       service="ec2"
       breadcrumbs={[
-        { text: "EC2", href: "/ec2/instances" },
+        { text: "EC2", href: "/ec2/home" },
         { text: "Security Groups", href: "/ec2/security-groups" },
         { text: id, href: `/ec2/security-groups/${id}` },
       ]}

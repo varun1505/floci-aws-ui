@@ -67,7 +67,7 @@ export default function LogGroupDetail() {
   }, [name]);
 
   const crumbs = [
-    { text: "CloudWatch", href: "/cloudwatch/log-groups" },
+    { text: "CloudWatch", href: "/cloudwatch/home" },
     { text: "Log groups", href: "/cloudwatch/log-groups" },
     { text: name, href: groupHref(name) },
   ];

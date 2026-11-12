@@ -71,10 +71,12 @@ export default function Instances() {
   };
 
   return (
-    <Shell service="ec2" contentType="table" breadcrumbs={[{ text: "EC2", href: "/ec2/instances" }, { text: "Instances", href: "/ec2/instances" }]}>
+    <Shell service="ec2" contentType="table" breadcrumbs={[{ text: "EC2", href: "/ec2/home" }, { text: "Instances", href: "/ec2/instances" }]}>
       <ResourceTable
         title="Instances"
         resourceName="instances"
+        emptyDescription="An instance is a virtual server. Launch one to get started."
+        emptyCli="ec2 run-instances --image-id ami-ubuntu2204 --instance-type t2.micro"
         filterPlaceholder="Find instance by attribute or tag"
         items={instances.data}
         loading={instances.loading}

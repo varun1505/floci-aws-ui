@@ -84,6 +84,9 @@ export default function Buckets() {
         title="General purpose buckets"
         description="Buckets are containers for data stored in S3."
         resourceName="buckets"
+        global
+        emptyDescription="A bucket is a container for objects. Create one to start storing files."
+        emptyCli="s3 mb s3://my-bucket"
         filterPlaceholder="Find buckets by name"
         items={buckets.data}
         loading={buckets.loading}

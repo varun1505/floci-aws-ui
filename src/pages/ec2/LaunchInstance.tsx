@@ -116,7 +116,7 @@ export default function LaunchInstance() {
       service="ec2"
       contentType="form"
       breadcrumbs={[
-        { text: "EC2", href: "/ec2/instances" },
+        { text: "EC2", href: "/ec2/home" },
         { text: "Instances", href: "/ec2/instances" },
         { text: "Launch an instance", href: "/ec2/instances/launch" },
       ]}

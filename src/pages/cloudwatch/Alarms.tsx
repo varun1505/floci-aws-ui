@@ -129,7 +129,7 @@ export default function Alarms() {
   const sign = (op?: string) => OPERATORS.find((o) => o.value === op)?.sign ?? op ?? "";
 
   return (
-    <Shell service="cloudwatch" contentType="table" breadcrumbs={[{ text: "CloudWatch", href: "/cloudwatch/log-groups" }, { text: "Alarms", href: "/cloudwatch/alarms" }]}>
+    <Shell service="cloudwatch" contentType="table" breadcrumbs={[{ text: "CloudWatch", href: "/cloudwatch/home" }, { text: "Alarms", href: "/cloudwatch/alarms" }]}>
       <ResourceTable
         title="Alarms"
         resourceName="alarms"

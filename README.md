@@ -8,10 +8,30 @@ It is built with [Cloudscape](https://cloudscape.design), the open source design
 
 | Service | What you can do |
 |---------|-----------------|
-| **Lambda** | List, create and delete functions. Edit code in the browser and deploy. Run test events. Read logs. Change memory, timeout, handler and environment variables. |
+| **Console Home** | See resource counts, service health and the CLI profile for this environment. |
+| **Lambda** | Dashboard. List, create and delete functions. Edit code in the browser and deploy. Run test events. Read logs. Change memory, timeout, handler and environment variables. Manage layers and event source mappings. |
 | **S3** | Create, empty and delete buckets. Browse folders. Upload, download, open, preview and delete objects. |
-| **CloudWatch** | Browse log groups and streams. Read log events with a time filter and live tail. Create and delete alarms. Graph metrics. |
-| **EC2** | Launch, start, stop, reboot and terminate instances. Manage security groups and their rules. Create key pairs. List AMIs. |
+| **CloudWatch** | Overview. Browse log groups and streams. Read log events with a time filter and live tail. Create and delete alarms. Graph metrics. |
+| **EC2** | Dashboard. Launch, start, stop, reboot and terminate instances. Manage security groups, key pairs, volumes, snapshots and Elastic IPs. List AMIs. |
+
+The top bar has a search box for services and pages. Every page has a help panel with the CLI profile.
+
+## Use the AWS CLI through the console
+
+The console's own `/aws` path is a full AWS endpoint. A team needs only one URL:
+
+```ini
+# ~/.aws/config
+[profile floci]
+region = us-east-1
+endpoint_url = http://your-console-host:8080/aws
+aws_access_key_id = test
+aws_secret_access_key = test
+```
+
+```sh
+aws --profile floci s3 ls
+```
 
 ## Run it locally
 

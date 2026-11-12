@@ -56,7 +56,7 @@ export default function KeyPairs() {
   };
 
   return (
-    <Shell service="ec2" contentType="table" breadcrumbs={[{ text: "EC2", href: "/ec2/instances" }, { text: "Key pairs", href: "/ec2/key-pairs" }]}>
+    <Shell service="ec2" contentType="table" breadcrumbs={[{ text: "EC2", href: "/ec2/home" }, { text: "Key pairs", href: "/ec2/key-pairs" }]}>
       <ResourceTable
         title="Key pairs"
         resourceName="key pairs"

@@ -89,12 +89,14 @@ export default function LogGroups() {
     <Shell
       service="cloudwatch"
       contentType="table"
-      breadcrumbs={[{ text: "CloudWatch", href: "/cloudwatch/log-groups" }, { text: "Log groups", href: "/cloudwatch/log-groups" }]}
+      breadcrumbs={[{ text: "CloudWatch", href: "/cloudwatch/home" }, { text: "Log groups", href: "/cloudwatch/log-groups" }]}
     >
       <ResourceTable
         title="Log groups"
         description="By default, we only load up to 10000 log groups."
         resourceName="log groups"
+        emptyDescription="Log groups appear on their own when a Lambda function or an application writes logs."
+        emptyCli="logs create-log-group --log-group-name /my-app/dev"
         filterPlaceholder="Filter log groups"
         items={groups.data}
         loading={groups.loading}

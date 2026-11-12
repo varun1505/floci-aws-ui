@@ -43,10 +43,12 @@ export default function Functions() {
   };
 
   return (
-    <Shell service="lambda" contentType="table" breadcrumbs={[{ text: "Lambda", href: "/lambda/functions" }, { text: "Functions", href: "/lambda/functions" }]}>
+    <Shell service="lambda" contentType="table" breadcrumbs={[{ text: "Lambda", href: "/lambda/home" }, { text: "Functions", href: "/lambda/functions" }]}>
       <ResourceTable
         title="Functions"
         resourceName="functions"
+        emptyDescription="A function is code that runs when something invokes it. You do not manage servers."
+        emptyCli="lambda create-function --function-name my-function --runtime python3.12 --handler app.handler --role arn:aws:iam::000000000000:role/lambda-role --zip-file fileb://function.zip"
         filterPlaceholder="Filter by function name, runtime or description"
         items={fns.data}
         loading={fns.loading}

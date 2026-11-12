@@ -77,7 +77,7 @@ export default function CreateFunction() {
       service="lambda"
       contentType="form"
       breadcrumbs={[
-        { text: "Lambda", href: "/lambda/functions" },
+        { text: "Lambda", href: "/lambda/home" },
         { text: "Functions", href: "/lambda/functions" },
         { text: "Create function", href: "/lambda/functions/create" },
       ]}

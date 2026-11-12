@@ -7,7 +7,7 @@ import { useLoad } from "../../lib/useLoad";
 export default function Images() {
   const images = useLoad(async () => (await ec2.send(new DescribeImagesCommand({}))).Images ?? [], []);
   return (
-    <Shell service="ec2" contentType="table" breadcrumbs={[{ text: "EC2", href: "/ec2/instances" }, { text: "AMIs", href: "/ec2/images" }]}>
+    <Shell service="ec2" contentType="table" breadcrumbs={[{ text: "EC2", href: "/ec2/home" }, { text: "AMIs", href: "/ec2/images" }]}>
       <ResourceTable
         title="Amazon Machine Images (AMIs)"
         resourceName="AMIs"
