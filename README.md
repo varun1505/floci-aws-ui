@@ -87,7 +87,7 @@ browser  ->  this server (/aws/*)  ->  floci (:4566)
 - EC2 instances run as containers on the floci host. There is no serial console output.
 - An RDS endpoint address is internal to Docker. Connect to the floci host on the port the page shows.
 - API Gateway stages answer at `<console>/aws/_aws/execute-api/<api-id>/<stage>/<path>`, not at an `amazonaws.com` URL.
-- CloudFront distributions exist as records only. floci does not serve traffic at the `cloudfront.net` name.
+- A CloudFront distribution gets a `cloudfront.net` name, but that name does not resolve on your network. Serving content through a distribution is not tested.
 
 ## Add a service
 
