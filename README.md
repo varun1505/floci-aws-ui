@@ -25,11 +25,11 @@ Then open http://localhost:8080.
 | `--port`, `-p` | `8080` | Port for the console. |
 | `--host`, `-H` | `127.0.0.1` | Address to listen on. Use `0.0.0.0` to let other machines in. |
 
-## Watch it (21 seconds)
+## See it in 21 seconds
 
-[![Floci Console video: 15 AWS services, one local console](docs/video/floci-console.jpg)](docs/video/floci-console.mp4)
+![Floci Console in use: start it with one command, then create an SQS queue](docs/video/floci-console.gif)
 
-Click the picture to play the video.
+The same clip with sound: [docs/video/floci-console.mp4](docs/video/floci-console.mp4). GitHub cannot play it in the page, so download it.
 
 ## Screenshots
 
