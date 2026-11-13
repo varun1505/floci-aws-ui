@@ -19,6 +19,8 @@ npx floci-aws-ui serve --floci http://your-floci-host:4566 --port 9000
 
 Then open http://localhost:8080.
 
+The command checks that floci answers. If it does not, it prints how to start floci and keeps running.
+
 | Option | Default | Meaning |
 |--------|---------|---------|
 | `--floci`, `-f` | `http://localhost:4566` | Where floci listens. |

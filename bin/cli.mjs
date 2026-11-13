@@ -78,3 +78,24 @@ process.env.PORT = port;
 process.env.HOST = host;
 
 await import("../server.mjs");
+
+// The console is useless without floci. Check once, and say how to fix it. The console keeps running either way.
+try {
+  const res = await fetch(new URL("/_floci/health", url), { signal: AbortSignal.timeout(3000) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const health = await res.json().catch(() => ({}));
+  console.log(`floci${health.version ? ` ${health.version}` : ""} is running at ${url.origin}.`);
+} catch {
+  console.error(`
+Warning: no floci answers at ${url.origin}. The console is open, but every page will show an error.
+
+  Start floci with Docker:
+    docker run -d --name floci -p 127.0.0.1:4566:4566 -v /var/run/docker.sock:/var/run/docker.sock floci/floci:latest
+
+  Or, if floci runs somewhere else, stop this and point to it:
+    floci-aws-ui serve --floci http://your-floci-host:4566
+
+  More options: floci-aws-ui --help
+  floci docs:   https://floci.io
+`);
+}

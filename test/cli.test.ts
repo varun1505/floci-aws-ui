@@ -50,7 +50,7 @@ function serve(args: string[], env: Record<string, string> = {}): Promise<{ line
     const child = spawn(process.execPath, [cli, "serve", ...args], { env: { ...cleanEnv(), ...env }, stdio: ["ignore", "pipe", "pipe"] });
     let err = "";
     child.stderr.on("data", (d) => (err += d));
-    child.stdout.on("data", (d) => resolve({ line: String(d).trim(), stop: () => child.kill() }));
+    child.stdout.on("data", (d) => resolve({ line: String(d).split("\n")[0].trim(), stop: () => child.kill() }));
     child.on("exit", (code) => reject(new Error(`cli exited with code ${code}: ${err}`)));
   });
 }
@@ -138,5 +138,48 @@ describe("floci-aws-ui serve", () => {
     } finally {
       server.stop();
     }
+  });
+
+  /** Starts `serve` and waits until its output matches. Gives back stdout and stderr. */
+  function serveUntil(args: string[], wanted: RegExp): Promise<{ out: string; err: string }> {
+    return new Promise((resolve, reject) => {
+      const child = spawn(process.execPath, [cli, "serve", ...args], { env: cleanEnv(), stdio: ["ignore", "pipe", "pipe"] });
+      let out = "";
+      let err = "";
+      const check = () => {
+        if (!wanted.test(out + err)) return;
+        child.kill();
+        resolve({ out, err });
+      };
+      child.stdout.on("data", (d) => ((out += d), check()));
+      child.stderr.on("data", (d) => ((err += d), check()));
+      child.on("exit", (code) => code !== null && reject(new Error(`cli exited with code ${code}: ${err}`)));
+    });
+  }
+
+  it("says which floci it found", async () => {
+    const floci = http.createServer((req, res) => {
+      res.setHeader("content-type", "application/json");
+      res.end(req.url === "/_floci/health" ? JSON.stringify({ version: "1.2.3" }) : "{}");
+    });
+    await new Promise<void>((r) => floci.listen(0, "127.0.0.1", r));
+    const flociPort = (floci.address() as AddressInfo).port;
+    try {
+      const { out, err } = await serveUntil(["--port", String(await freePort()), "--floci", `http://127.0.0.1:${flociPort}`], /is running at/);
+      expect(out).toContain(`floci 1.2.3 is running at http://127.0.0.1:${flociPort}.`);
+      expect(err).toBe("");
+    } finally {
+      floci.close();
+    }
+  });
+
+  it("warns and keeps running when floci does not answer", async () => {
+    const deadPort = await freePort();
+    const port = await freePort();
+    const { out, err } = await serveUntil(["--port", String(port), "--floci", `http://127.0.0.1:${deadPort}`], /floci-aws-ui --help/);
+    expect(out).toContain(`Console on http://127.0.0.1:${port}`);
+    expect(err).toContain(`Warning: no floci answers at http://127.0.0.1:${deadPort}.`);
+    expect(err).toContain("docker run -d --name floci");
+    expect(err).toContain("floci-aws-ui serve --floci");
   });
 });
