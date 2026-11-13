@@ -120,3 +120,7 @@ browser  ->  this server (/aws/*)  ->  floci (:4566)
 3. Add the routes in `src/App.tsx` and the side navigation in `src/components/nav.ts`.
 
 See [docs/STATUS.md](docs/STATUS.md) for what was tested, what floci does differently, and how the code is laid out.
+
+## License
+
+[Apache-2.0](LICENSE)
