@@ -4,6 +4,10 @@ A web console for [floci](https://floci.io), the local AWS emulator. It looks an
 
 It is built with [Cloudscape](https://cloudscape.design), the open source design system that the AWS console itself uses.
 
+> **The console has no login.** Anyone who can open it can change everything in floci. Run it only on a private network.
+
+This is a community project. It is not part of floci and it is not affiliated with Amazon Web Services.
+
 ## What it covers
 
 | Service | What you can do |
@@ -69,6 +73,15 @@ docker build -t floci-console .
 docker run -d -p 8080:8080 -e FLOCI_ENDPOINT=http://your-floci-host:4566 floci-console
 ```
 
+## Tests
+
+```sh
+pnpm test        # run all tests once
+pnpm typecheck   # check the types
+```
+
+The tests need no floci and no network. They cover the helper functions, the shared components, the navigation, one full page (SQS queues) with a fake SDK client, and the production server with a fake floci.
+
 ## How it works
 
 ```
@@ -107,5 +120,3 @@ browser  ->  this server (/aws/*)  ->  floci (:4566)
 3. Add the routes in `src/App.tsx` and the side navigation in `src/components/nav.ts`.
 
 See [docs/STATUS.md](docs/STATUS.md) for what was tested, what floci does differently, and how the code is laid out.
-
-This project is not affiliated with Amazon Web Services.

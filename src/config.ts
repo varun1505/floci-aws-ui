@@ -54,3 +54,9 @@ export function flociHost(): Promise<string> {
     .catch(() => "");
   return flociHostPromise;
 }
+
+/** The name shown in the top bar, the page title and the help panel. */
+export const APP_NAME = "Floci Console";
+
+/** The AWS CLI profile name the console suggests in its examples. */
+export const CLI_PROFILE = "floci";

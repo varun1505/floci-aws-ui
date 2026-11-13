@@ -8,7 +8,7 @@ import Flashbar from "@cloudscape-design/components/flashbar";
 import SideNavigation from "@cloudscape-design/components/side-navigation";
 import TopNavigation from "@cloudscape-design/components/top-navigation";
 import { applyMode, Mode } from "@cloudscape-design/global-styles";
-import { ACCOUNT_ID, PROXY_BASE, REGIONS, getRegion, setRegion } from "../config";
+import { ACCOUNT_ID, APP_NAME, PROXY_BASE, REGIONS, getRegion, setRegion } from "../config";
 import { useNotify } from "../lib/notify";
 import { ServiceHelp } from "./help";
 import { NAV, SERVICES, markVisited, searchIndex, type Service } from "./nav";
@@ -71,7 +71,7 @@ function TopBar() {
 
   return (
     <TopNavigation
-      identity={{ href: "/", title: "Floci Console", onFollow: (e) => follow(e as never) }}
+      identity={{ href: "/", title: APP_NAME, onFollow: (e) => follow(e as never) }}
       search={<Search />}
       utilities={[
         {
@@ -121,7 +121,7 @@ function Footer() {
   } as const;
   return (
     <div style={bar}>
-      <span>Floci Console</span>
+      <span>{APP_NAME}</span>
       <span>On-prem non-production environment</span>
       <span style={{ marginLeft: "auto" }}>
         API endpoint: <code style={{ color: "#fff" }}>{PROXY_BASE}</code>

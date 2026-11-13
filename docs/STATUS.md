@@ -3,7 +3,8 @@
 **Summary**
 
 - The console covers **15 AWS services** plus load balancers. All pages build and type-check.
-- Everything was checked by hand in a browser against **floci 2.4.0**. There are **no automated tests** yet.
+- The pages were checked by hand in a browser against **floci 2.4.0**.
+- **82 automated tests** cover the helpers, the shared components, the navigation, one page and the server. Most pages have no test of their own yet.
 - This file lists what was tested, what was not, and what floci does differently from AWS.
 
 ## 1. What was tested
@@ -63,6 +64,7 @@ src/components/       shared parts (Shell, ResourceTable, FormModal, ConfirmDele
 src/lib/              hooks (useLoad, useSubmit, useNotify) and formatters
 src/components/nav.ts the service list and side navigation
 src/App.tsx           all routes, loaded lazily per page
+test/                 test setup, and the tests of server.mjs
 ```
 
 **Patterns to follow**
@@ -77,5 +79,6 @@ src/App.tsx           all routes, loaded lazily per page
 ## 4. Known gaps
 
 - **No login.** Anyone who can open the console can change everything.
-- **No automated tests and no CI.**
-- The product name and CLI profile name are fixed in the code.
+- **Most pages have no automated test.** Only the SQS queues page has one. Use `src/pages/sqs/Queues.test.tsx` as the pattern.
+- **No test runs against a real floci.** The page tests use a fake SDK client.
+- The product name and CLI profile name are constants in `src/config.ts`. They are not settings.

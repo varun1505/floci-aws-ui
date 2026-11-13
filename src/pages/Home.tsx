@@ -9,7 +9,7 @@ import Grid from "@cloudscape-design/components/grid";
 import Header from "@cloudscape-design/components/header";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import StatusIndicator from "@cloudscape-design/components/status-indicator";
-import { ACCOUNT_ID, PROXY_BASE, REGIONS, getRegion } from "../config";
+import { ACCOUNT_ID, CLI_PROFILE, PROXY_BASE, REGIONS, getRegion } from "../config";
 import { cliProfile } from "../components/help";
 import { SERVICES, recentServices } from "../components/nav";
 import { RouterLink } from "../components/RouterLink";
@@ -224,7 +224,7 @@ export default function Home() {
                   <pre style={{ margin: 0, fontSize: 12, whiteSpace: "pre-wrap", wordBreak: "break-all" }}>{cliProfile()}</pre>
                 </Box>
                 <Box variant="code">
-                  <pre style={{ margin: 0, fontSize: 12, whiteSpace: "pre-wrap" }}>aws --profile floci s3 ls</pre>
+                  <pre style={{ margin: 0, fontSize: 12, whiteSpace: "pre-wrap" }}>aws --profile {CLI_PROFILE} s3 ls</pre>
                 </Box>
                 <Button variant="inline-link" onClick={() => navigate("/s3/buckets")}>
                   Or browse S3 in the console

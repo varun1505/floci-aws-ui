@@ -8,7 +8,7 @@ import Pagination from "@cloudscape-design/components/pagination";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import Table, { type TableProps } from "@cloudscape-design/components/table";
 import TextFilter from "@cloudscape-design/components/text-filter";
-import { REGIONS, getRegion } from "../config";
+import { CLI_PROFILE, REGIONS, getRegion } from "../config";
 
 /** The list page table used all over the console: header, counter, filter, pagination, refresh. */
 export function ResourceTable<T>({
@@ -89,7 +89,7 @@ export function ResourceTable<T>({
             {emptyAction}
             {emptyCli && (
               <Box color="text-body-secondary" fontSize="body-s">
-                Or use the CLI: <Box variant="code">aws --profile floci {emptyCli}</Box>
+                Or use the CLI: <Box variant="code">aws --profile {CLI_PROFILE} {emptyCli}</Box>
               </Box>
             )}
           </SpaceBetween>

@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 import Box from "@cloudscape-design/components/box";
 import HelpPanel from "@cloudscape-design/components/help-panel";
-import { PROXY_BASE, getRegion } from "../config";
+import { APP_NAME, CLI_PROFILE, PROXY_BASE, getRegion } from "../config";
 import type { Service } from "./nav";
 
 const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: string; href: string }[] }> = {
   home: {
-    title: "Floci Console",
+    title: APP_NAME,
     body: (
       <p>
         This console manages the on-prem non-production environment. It speaks the same APIs as AWS, so the AWS CLI, the SDKs and Terraform work
@@ -172,7 +172,7 @@ const pre = { margin: 0, fontSize: 12, whiteSpace: "pre-wrap", wordBreak: "break
 
 /** The CLI profile that points at this environment. Shown in the help panel and on the home page. */
 export function cliProfile() {
-  return `[profile floci]
+  return `[profile ${CLI_PROFILE}]
 region = ${getRegion()}
 endpoint_url = ${PROXY_BASE}
 aws_access_key_id = test
@@ -209,7 +209,7 @@ export function ServiceHelp({ service }: { service: Service }) {
       </Box>
       <p>Then run your usual commands with the profile:</p>
       <Box variant="code">
-        <pre style={pre}>aws --profile floci {service === "home" ? "s3 ls" : EXAMPLE[service]}</pre>
+        <pre style={pre}>aws --profile {CLI_PROFILE} {service === "home" ? "s3 ls" : EXAMPLE[service]}</pre>
       </Box>
     </HelpPanel>
   );
