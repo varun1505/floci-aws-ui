@@ -104,6 +104,8 @@ browser  ->  this server (/aws/*)  ->  floci (:4566)
 
 1. Add a client in `src/clients/`.
 2. Add pages in `src/pages/<service>/`. `ResourceTable` gives you the standard list page.
-3. Add the routes in `src/App.tsx` and the side navigation in `src/components/Shell.tsx`.
+3. Add the routes in `src/App.tsx` and the side navigation in `src/components/nav.ts`.
+
+See [docs/STATUS.md](docs/STATUS.md) for what was tested, what floci does differently, and how the code is laid out.
 
 This project is not affiliated with Amazon Web Services.
