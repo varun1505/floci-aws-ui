@@ -1,0 +1,41 @@
+# floci and this console together. Run: docker compose up -d
+# Then open http://localhost:8080
+#
+# Both ports listen on this machine only. The console has no login and floci accepts
+# any credentials, so do not publish them to a network you do not trust.
+
+services:
+  floci:
+    image: floci/floci:latest
+    ports:
+      - "127.0.0.1:4566:4566"
+    environment:
+      # Keeps the containers floci starts (Lambda, RDS, ElastiCache, ...) apart from
+      # those of other floci instances on the same Docker host.
+      FLOCI_DOCKER_RESOURCE_NAMESPACE: floci-console
+      FLOCI_SERVICES_DOCKER_NETWORK: floci-console-net
+      # Keep state in the volume below. Remove both to start empty every time.
+      FLOCI_STORAGE_MODE: persistent
+    volumes:
+      # Needed by services that run real containers (Lambda, RDS, ElastiCache, ...).
+      - /var/run/docker.sock:/var/run/docker.sock
+      - floci-data:/app/data
+
+  console:
+    image: ghcr.io/varun1505/floci-aws-ui:latest
+    # To build from this folder instead of pulling, comment out `image` and use:
+    # build: .
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      FLOCI_ENDPOINT: http://floci:4566
+    depends_on:
+      floci:
+        condition: service_healthy
+
+volumes:
+  floci-data:
+
+networks:
+  default:
+    name: floci-console-net

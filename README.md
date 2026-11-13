@@ -84,12 +84,32 @@ pnpm build
 FLOCI_ENDPOINT=http://your-floci-host:4566 PORT=8080 pnpm start
 ```
 
-Or with Docker:
+## Run it with Docker
+
+**You already have floci.** Pull the image and point it at floci:
 
 ```sh
-docker build -t floci-console .
-docker run -d -p 8080:8080 -e FLOCI_ENDPOINT=http://your-floci-host:4566 floci-console
+docker run -d -p 127.0.0.1:8080:8080 \
+  -e FLOCI_ENDPOINT=http://your-floci-host:4566 \
+  ghcr.io/varun1505/floci-aws-ui:latest
 ```
+
+Then open http://localhost:8080.
+
+**You have nothing yet.** `compose.yaml` starts floci and the console together:
+
+```sh
+docker compose up -d
+```
+
+Both commands listen on your own machine only. Use `-p 8080:8080` to let other machines in. Read the warning about login above first.
+
+| Image tag | What it is |
+|-----------|------------|
+| `latest` | The newest commit on `main`. |
+| `1.2.3`, `1.2` | A release. |
+
+The image runs on `amd64` and `arm64`. To build it yourself: `docker build -t floci-console .`
 
 ## Tests
 

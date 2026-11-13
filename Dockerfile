@@ -1,5 +1,6 @@
 # Build the app, then serve it with the small Node server that also proxies /aws to floci.
-FROM node:22-alpine AS build
+# The build output is plain JavaScript, so build once on the builder's own platform.
+FROM --platform=$BUILDPLATFORM node:22-alpine AS build
 WORKDIR /app
 RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
