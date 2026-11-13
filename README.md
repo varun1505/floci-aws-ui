@@ -8,6 +8,24 @@ It is built with [Cloudscape](https://cloudscape.design), the open source design
 
 This is a community project. It is not part of floci and it is not affiliated with Amazon Web Services.
 
+## Screenshots
+
+**Console Home**
+
+![Console Home with the list of services and resource counts](docs/screenshots/home.png)
+
+**SQS queues**
+
+![The SQS queues list](docs/screenshots/sqs-queues.png)
+
+**S3 bucket**
+
+![The objects of an S3 bucket](docs/screenshots/s3-bucket.png)
+
+**Parameter Store**
+
+![The Parameter Store list](docs/screenshots/parameter-store.png)
+
 ## What it covers
 
 | Service | What you can do |
