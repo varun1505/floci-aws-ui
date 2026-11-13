@@ -1,4 +1,5 @@
-import { defineConfig, loadEnv } from "vite";
+import { loadEnv } from "vite";
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 
 // The browser cannot call floci directly: floci does not answer CORS preflight
@@ -20,6 +21,12 @@ export default defineConfig(({ mode }) => {
         },
       },
     ],
+    test: {
+      environment: "jsdom",
+      setupFiles: ["./test/setup.ts"],
+      include: ["src/**/*.test.{ts,tsx}", "test/**/*.test.ts"],
+      css: false,
+    },
     server: {
       host: true,
       proxy: {
