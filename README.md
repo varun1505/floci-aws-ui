@@ -8,6 +8,29 @@ It is built with [Cloudscape](https://cloudscape.design), the open source design
 
 This is a community project. It is not part of floci and it is not affiliated with Amazon Web Services.
 
+## Run it with npx
+
+You need Node 20 or newer and a running floci. Nothing to install or build.
+
+```sh
+npx floci-aws-ui serve                                   # floci on http://localhost:4566
+npx floci-aws-ui serve --floci http://your-floci-host:4566 --port 9000
+```
+
+Then open http://localhost:8080.
+
+| Option | Default | Meaning |
+|--------|---------|---------|
+| `--floci`, `-f` | `http://localhost:4566` | Where floci listens. |
+| `--port`, `-p` | `8080` | Port for the console. |
+| `--host`, `-H` | `127.0.0.1` | Address to listen on. Use `0.0.0.0` to let other machines in. |
+
+## Watch it (21 seconds)
+
+[![Floci Console video: 15 AWS services, one local console](docs/video/floci-console.jpg)](docs/video/floci-console.mp4)
+
+Click the picture to play the video.
+
 ## Screenshots
 
 **Console Home**
@@ -66,23 +89,6 @@ aws_secret_access_key = test
 ```sh
 aws --profile floci s3 ls
 ```
-
-## Run it with npx
-
-You need Node 20 or newer and a running floci. Nothing to install or build.
-
-```sh
-npx floci-aws-ui serve                                   # floci on http://localhost:4566
-npx floci-aws-ui serve --floci http://your-floci-host:4566 --port 9000
-```
-
-Then open http://localhost:8080.
-
-| Option | Default | Meaning |
-|--------|---------|---------|
-| `--floci`, `-f` | `http://localhost:4566` | Where floci listens. |
-| `--port`, `-p` | `8080` | Port for the console. |
-| `--host`, `-H` | `127.0.0.1` | Address to listen on. Use `0.0.0.0` to let other machines in. |
 
 ## Run it from source
 
