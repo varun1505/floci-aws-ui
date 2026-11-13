@@ -1,5 +1,6 @@
 // Production server. Serves the built app from ./dist and forwards /aws/* to floci.
 // No dependencies. Run: FLOCI_ENDPOINT=http://floci:4566 PORT=8080 node server.mjs
+// Set HOST to listen on one address only. Without it the server listens on all of them.
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
@@ -7,6 +8,7 @@ import { fileURLToPath } from "node:url";
 
 const target = new URL(process.env.FLOCI_ENDPOINT || "http://localhost:4566");
 const port = Number(process.env.PORT || 8080);
+const host = process.env.HOST || undefined;
 const dist = path.join(path.dirname(fileURLToPath(import.meta.url)), "dist");
 
 const types = {
@@ -68,4 +70,4 @@ http
     if (req.url === "/aws" || req.url.startsWith("/aws/") || req.url.startsWith("/aws?")) return proxy(req, res);
     serveStatic(req, res);
   })
-  .listen(port, () => console.log(`Console on http://localhost:${port}  ->  floci at ${target.origin}`));
+  .listen(port, host, () => console.log(`Console on http://${host || "localhost"}:${port}  ->  floci at ${target.origin}`));

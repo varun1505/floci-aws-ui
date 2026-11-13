@@ -1,17 +1,43 @@
 {
-  "name": "floci-console",
-  "private": true,
+  "name": "floci-aws-ui",
   "version": "0.1.0",
   "license": "Apache-2.0",
+  "description": "A web console for floci, the local AWS emulator. Looks and works like the AWS console.",
+  "keywords": [
+    "floci",
+    "aws",
+    "emulator",
+    "console",
+    "cloudscape",
+    "local-development"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/varun1505/floci-aws-ui.git"
+  },
+  "homepage": "https://github.com/varun1505/floci-aws-ui#readme",
+  "bugs": "https://github.com/varun1505/floci-aws-ui/issues",
+  "bin": {
+    "floci-aws-ui": "bin/cli.mjs"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "server.mjs"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "start": "node server.mjs"
+    "start": "node server.mjs",
+    "prepublishOnly": "pnpm typecheck && pnpm test && pnpm build"
   },
-  "dependencies": {
+  "devDependencies": {
     "@aws-sdk/client-api-gateway": "^3.1167.0",
     "@aws-sdk/client-apigatewayv2": "^3.1167.0",
     "@aws-sdk/client-cloudfront": "^3.1167.0",
@@ -33,13 +59,6 @@
     "@cloudscape-design/collection-hooks": "^1.0.111",
     "@cloudscape-design/components": "^3.0.1413",
     "@cloudscape-design/global-styles": "^1.0.72",
-    "ace-builds": "^1.45.2",
-    "fflate": "^0.8.3",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1",
-    "react-router-dom": "^7.18.5"
-  },
-  "devDependencies": {
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.10",
@@ -47,7 +66,12 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.3.0",
+    "ace-builds": "^1.45.2",
+    "fflate": "^0.8.3",
     "jsdom": "^31.0.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.5",
     "typescript": "^7.0.2",
     "vite": "^8.3.8",
     "vitest": "^5.1.0"

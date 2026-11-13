@@ -67,14 +67,31 @@ aws_secret_access_key = test
 aws --profile floci s3 ls
 ```
 
-## Run it locally
+## Run it with npx
+
+You need Node 20 or newer and a running floci. Nothing to install or build.
+
+```sh
+npx floci-aws-ui serve                                   # floci on http://localhost:4566
+npx floci-aws-ui serve --floci http://your-floci-host:4566 --port 9000
+```
+
+Then open http://localhost:8080.
+
+| Option | Default | Meaning |
+|--------|---------|---------|
+| `--floci`, `-f` | `http://localhost:4566` | Where floci listens. |
+| `--port`, `-p` | `8080` | Port for the console. |
+| `--host`, `-H` | `127.0.0.1` | Address to listen on. Use `0.0.0.0` to let other machines in. |
+
+## Run it from source
 
 You need Node 22 or newer, pnpm, and a running floci.
 
 ```sh
 pnpm install
 cp .env.example .env.local   # then set FLOCI_ENDPOINT to your floci address
-pnpm dev                     # http://localhost:5173
+pnpm dev                     # http://localhost:5173, with live reload
 ```
 
 ## Run it for a team
@@ -118,7 +135,7 @@ pnpm test        # run all tests once
 pnpm typecheck   # check the types
 ```
 
-The tests need no floci and no network. They cover the helper functions, the shared components, the navigation, one full page (SQS queues) with a fake SDK client, and the production server with a fake floci.
+The tests need no floci and no network. They cover the helper functions, the shared components, the navigation, one full page (SQS queues) with a fake SDK client, the production server with a fake floci, and the `floci-aws-ui` command.
 
 ## How it works
 
@@ -136,6 +153,7 @@ browser  ->  this server (/aws/*)  ->  floci (:4566)
 |----------|---------|---------|
 | `FLOCI_ENDPOINT` | `http://localhost:4566` | Where floci listens. |
 | `PORT` | `8080` | Port for the production server. |
+| `HOST` | all addresses | Address the production server listens on. `npx floci-aws-ui serve` uses `127.0.0.1` unless you set it. |
 
 ## Known limits
 

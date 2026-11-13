@@ -4,7 +4,7 @@
 
 - The console covers **15 AWS services** plus load balancers. All pages build and type-check.
 - The pages were checked by hand in a browser against **floci 2.4.0**.
-- **82 automated tests** cover the helpers, the shared components, the navigation, one page and the server. Most pages have no test of their own yet.
+- **93 automated tests** cover the helpers, the shared components, the navigation, one page, the server and the command line. Most pages have no test of their own yet.
 - This file lists what was tested, what was not, and what floci does differently from AWS.
 
 ## 1. What was tested
@@ -56,6 +56,7 @@ These were found on floci 2.4.0. Check them again on newer versions.
 
 ```
 server.mjs            production server: serves dist/ and proxies /aws/* to floci
+bin/cli.mjs           the `floci-aws-ui serve` command; checks its options, then runs server.mjs
 vite.config.ts        dev server with the same /aws proxy
 src/config.ts         shared SDK client settings (endpoint, region, credentials)
 src/clients/          one SDK client per service
