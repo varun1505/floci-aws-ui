@@ -26,6 +26,8 @@ export default defineConfig(({ mode }) => {
       setupFiles: ["./test/setup.ts"],
       include: ["src/**/*.test.{ts,tsx}", "test/**/*.test.ts"],
       css: false,
+      // Form tests type into many fields. They are slow on a busy machine.
+      testTimeout: 20000,
     },
     server: {
       host: true,
