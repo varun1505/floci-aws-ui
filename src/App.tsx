@@ -70,6 +70,10 @@ const SecurityGroups = lazy(() => import("./pages/ec2/SecurityGroups"));
 const SecurityGroupDetail = lazy(() => import("./pages/ec2/SecurityGroupDetail"));
 const KeyPairs = lazy(() => import("./pages/ec2/KeyPairs"));
 const Images = lazy(() => import("./pages/ec2/Images"));
+const UserPools = lazy(() => import("./pages/cognito/UserPools"));
+const UserPoolDetail = lazy(() => import("./pages/cognito/UserPoolDetail"));
+const CognitoUserDetail = lazy(() => import("./pages/cognito/UserDetail"));
+const IdentityPools = lazy(() => import("./pages/cognito/IdentityPools"));
 
 const loading = (
   <Box textAlign="center" padding="xxxl">
@@ -180,6 +184,12 @@ export default function App() {
         <Route path="/cloudfront/distributions" element={<Distributions />} />
         <Route path="/cloudfront/distributions/create" element={<CreateDistribution />} />
         <Route path="/cloudfront/distributions/:id" element={<DistributionDetail />} />
+
+        <Route path="/cognito" element={<Navigate to="/cognito/user-pools" replace />} />
+        <Route path="/cognito/user-pools" element={<UserPools />} />
+        <Route path="/cognito/user-pools/:id" element={<UserPoolDetail />} />
+        <Route path="/cognito/user-pools/:id/user" element={<CognitoUserDetail />} />
+        <Route path="/cognito/identity-pools" element={<IdentityPools />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

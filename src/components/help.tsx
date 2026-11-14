@@ -156,6 +156,16 @@ const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: str
     ),
     docs: [{ text: "KMS developer guide", href: "https://docs.aws.amazon.com/kms/latest/developerguide/overview.html" }],
   },
+  cognito: {
+    title: "Amazon Cognito",
+    body: (
+      <>
+        <p>A user pool is a user directory. Applications sign users in through an app client of the pool.</p>
+        <p>In this environment no email or SMS is sent. Confirm users from the user page.</p>
+      </>
+    ),
+    docs: [{ text: "Cognito developer guide", href: "https://docs.aws.amazon.com/cognito/latest/developerguide/what-is-amazon-cognito.html" }],
+  },
   ec2: {
     title: "EC2",
     body: (
@@ -231,4 +241,5 @@ const EXAMPLE: Record<Exclude<Service, "home">, string> = {
   ses: "ses list-identities",
   elasticache: "elasticache describe-cache-clusters",
   kms: "kms list-keys",
+  cognito: "cognito-idp list-user-pools --max-results 20",
 };
