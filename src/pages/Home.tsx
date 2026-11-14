@@ -37,6 +37,7 @@ const HEALTH_KEYS: Record<string, string[]> = {
   kms: ["kms"],
   dynamodb: ["dynamodb"],
   cognito: ["cognito-idp", "cognito-identity"],
+  route53: ["route53"],
 };
 
 /** One count per service. A failed call gives undefined, shown as "-". */

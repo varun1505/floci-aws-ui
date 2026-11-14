@@ -78,6 +78,9 @@ const UserPools = lazy(() => import("./pages/cognito/UserPools"));
 const UserPoolDetail = lazy(() => import("./pages/cognito/UserPoolDetail"));
 const CognitoUserDetail = lazy(() => import("./pages/cognito/UserDetail"));
 const IdentityPools = lazy(() => import("./pages/cognito/IdentityPools"));
+const HostedZones = lazy(() => import("./pages/route53/HostedZones"));
+const HostedZoneDetail = lazy(() => import("./pages/route53/HostedZoneDetail"));
+const HealthChecks = lazy(() => import("./pages/route53/HealthChecks"));
 
 const loading = (
   <Box textAlign="center" padding="xxxl">
@@ -200,6 +203,11 @@ export default function App() {
         <Route path="/cognito/user-pools/:id" element={<UserPoolDetail />} />
         <Route path="/cognito/user-pools/:id/user" element={<CognitoUserDetail />} />
         <Route path="/cognito/identity-pools" element={<IdentityPools />} />
+
+        <Route path="/route53" element={<Navigate to="/route53/hosted-zones" replace />} />
+        <Route path="/route53/hosted-zones" element={<HostedZones />} />
+        <Route path="/route53/hosted-zones/:id" element={<HostedZoneDetail />} />
+        <Route path="/route53/health-checks" element={<HealthChecks />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

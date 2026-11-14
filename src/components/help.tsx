@@ -176,6 +176,16 @@ const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: str
     ),
     docs: [{ text: "Cognito developer guide", href: "https://docs.aws.amazon.com/cognito/latest/developerguide/what-is-amazon-cognito.html" }],
   },
+  route53: {
+    title: "Route 53",
+    body: (
+      <>
+        <p>Route 53 holds DNS records in hosted zones.</p>
+        <p>In this environment records of a private hosted zone resolve for containers that use the emulator as their DNS server. Records of a public zone are stored, but only TXT, NS and SOA records are answered. Your own machine does not see any of them.</p>
+      </>
+    ),
+    docs: [{ text: "Route 53 developer guide", href: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/Welcome.html" }],
+  },
   ec2: {
     title: "EC2",
     body: (
@@ -253,4 +263,5 @@ const EXAMPLE: Record<Exclude<Service, "home">, string> = {
   kms: "kms list-keys",
   dynamodb: "dynamodb list-tables",
   cognito: "cognito-idp list-user-pools --max-results 20",
+  route53: "route53 list-hosted-zones",
 };

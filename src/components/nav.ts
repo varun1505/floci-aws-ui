@@ -1,6 +1,6 @@
 import type { SideNavigationProps } from "@cloudscape-design/components/side-navigation";
 
-export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito";
+export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53";
 export type ServiceId = Exclude<Service, "home">;
 
 export const SERVICES: { id: ServiceId; name: string; fullName: string; href: string; description: string }[] = [
@@ -15,6 +15,7 @@ export const SERVICES: { id: ServiceId; name: string; fullName: string; href: st
   { id: "kms", name: "KMS", fullName: "Key Management Service", href: "/kms/keys", description: "Create and manage encryption keys" },
   { id: "lambda", name: "Lambda", fullName: "Lambda", href: "/lambda/functions", description: "Run code without thinking about servers" },
   { id: "rds", name: "RDS", fullName: "Aurora and RDS", href: "/rds/databases", description: "Managed relational database service" },
+  { id: "route53", name: "Route 53", fullName: "Route 53", href: "/route53/hosted-zones", description: "DNS hosted zones and records" },
   { id: "s3", name: "S3", fullName: "Amazon S3", href: "/s3/buckets", description: "Scalable storage in the cloud" },
   { id: "secretsmanager", name: "Secrets Manager", fullName: "Secrets Manager", href: "/secretsmanager/secrets", description: "Rotate, manage and retrieve secrets" },
   { id: "ses", name: "SES", fullName: "Simple Email Service", href: "/ses/identities", description: "Send email from your applications" },
@@ -104,6 +105,10 @@ export const NAV: Record<Service, { header: SideNavigationProps.Header; items: S
   cognito: {
     header: { text: "Amazon Cognito", href: "/cognito/user-pools" },
     items: [link("User pools", "/cognito/user-pools"), link("Identity pools", "/cognito/identity-pools")],
+  },
+  route53: {
+    header: { text: "Route 53", href: "/route53/hosted-zones" },
+    items: [link("Hosted zones", "/route53/hosted-zones"), link("Health checks", "/route53/health-checks")],
   },
   ec2: {
     header: { text: "EC2", href: "/ec2/home" },
