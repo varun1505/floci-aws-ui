@@ -81,6 +81,8 @@ const IdentityPools = lazy(() => import("./pages/cognito/IdentityPools"));
 const HostedZones = lazy(() => import("./pages/route53/HostedZones"));
 const HostedZoneDetail = lazy(() => import("./pages/route53/HostedZoneDetail"));
 const HealthChecks = lazy(() => import("./pages/route53/HealthChecks"));
+const Certificates = lazy(() => import("./pages/acm/Certificates"));
+const CertificateDetail = lazy(() => import("./pages/acm/CertificateDetail"));
 
 const loading = (
   <Box textAlign="center" padding="xxxl">
@@ -208,6 +210,10 @@ export default function App() {
         <Route path="/route53/hosted-zones" element={<HostedZones />} />
         <Route path="/route53/hosted-zones/:id" element={<HostedZoneDetail />} />
         <Route path="/route53/health-checks" element={<HealthChecks />} />
+
+        <Route path="/acm" element={<Navigate to="/acm/certificates" replace />} />
+        <Route path="/acm/certificates" element={<Certificates />} />
+        <Route path="/acm/certificate" element={<CertificateDetail />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

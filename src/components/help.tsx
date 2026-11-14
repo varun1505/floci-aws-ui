@@ -186,6 +186,16 @@ const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: str
     ),
     docs: [{ text: "Route 53 developer guide", href: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/Welcome.html" }],
   },
+  acm: {
+    title: "Certificate Manager",
+    body: (
+      <>
+        <p>ACM issues and stores TLS certificates for load balancers, CloudFront and API Gateway.</p>
+        <p>In this environment a requested certificate is issued at once. No domain validation happens, and no public authority signs it.</p>
+      </>
+    ),
+    docs: [{ text: "ACM user guide", href: "https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html" }],
+  },
   ec2: {
     title: "EC2",
     body: (
@@ -264,4 +274,5 @@ const EXAMPLE: Record<Exclude<Service, "home">, string> = {
   dynamodb: "dynamodb list-tables",
   cognito: "cognito-idp list-user-pools --max-results 20",
   route53: "route53 list-hosted-zones",
+  acm: "acm list-certificates",
 };

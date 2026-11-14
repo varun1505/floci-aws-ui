@@ -1,10 +1,11 @@
 import type { SideNavigationProps } from "@cloudscape-design/components/side-navigation";
 
-export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53";
+export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm";
 export type ServiceId = Exclude<Service, "home">;
 
 export const SERVICES: { id: ServiceId; name: string; fullName: string; href: string; description: string }[] = [
   { id: "apigateway", name: "API Gateway", fullName: "API Gateway", href: "/apigateway/apis", description: "Build, deploy and manage APIs" },
+  { id: "acm", name: "Certificate Manager", fullName: "Certificate Manager", href: "/acm/certificates", description: "Provision and manage SSL/TLS certificates" },
   { id: "cloudfront", name: "CloudFront", fullName: "CloudFront", href: "/cloudfront/distributions", description: "Global content delivery network" },
   { id: "cloudwatch", name: "CloudWatch", fullName: "CloudWatch", href: "/cloudwatch/home", description: "Monitor resources and applications" },
   { id: "cognito", name: "Cognito", fullName: "Cognito", href: "/cognito/user-pools", description: "User sign-up, sign-in and access control" },
@@ -109,6 +110,10 @@ export const NAV: Record<Service, { header: SideNavigationProps.Header; items: S
   route53: {
     header: { text: "Route 53", href: "/route53/hosted-zones" },
     items: [link("Hosted zones", "/route53/hosted-zones"), link("Health checks", "/route53/health-checks")],
+  },
+  acm: {
+    header: { text: "AWS Certificate Manager", href: "/acm/certificates" },
+    items: [link("List certificates", "/acm/certificates")],
   },
   ec2: {
     header: { text: "EC2", href: "/ec2/home" },
