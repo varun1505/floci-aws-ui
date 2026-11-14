@@ -39,6 +39,7 @@ const HEALTH_KEYS: Record<string, string[]> = {
   cognito: ["cognito-idp", "cognito-identity"],
   route53: ["route53"],
   acm: ["acm"],
+  events: ["events", "scheduler"],
 };
 
 /** One count per service. A failed call gives undefined, shown as "-". */

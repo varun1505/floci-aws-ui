@@ -196,6 +196,16 @@ const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: str
     ),
     docs: [{ text: "ACM user guide", href: "https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html" }],
   },
+  events: {
+    title: "Amazon EventBridge",
+    body: (
+      <>
+        <p>An event bus receives events. A rule matches events with a pattern, or runs on a schedule, and sends them to targets.</p>
+        <p>EventBridge Scheduler runs a target once or on a repeating schedule.</p>
+      </>
+    ),
+    docs: [{ text: "EventBridge user guide", href: "https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html" }],
+  },
   ec2: {
     title: "EC2",
     body: (
@@ -275,4 +285,5 @@ const EXAMPLE: Record<Exclude<Service, "home">, string> = {
   cognito: "cognito-idp list-user-pools --max-results 20",
   route53: "route53 list-hosted-zones",
   acm: "acm list-certificates",
+  events: "events list-rules",
 };

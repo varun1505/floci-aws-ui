@@ -83,6 +83,10 @@ const HostedZoneDetail = lazy(() => import("./pages/route53/HostedZoneDetail"));
 const HealthChecks = lazy(() => import("./pages/route53/HealthChecks"));
 const Certificates = lazy(() => import("./pages/acm/Certificates"));
 const CertificateDetail = lazy(() => import("./pages/acm/CertificateDetail"));
+const EventBuses = lazy(() => import("./pages/events/Buses"));
+const EventRules = lazy(() => import("./pages/events/Rules"));
+const EventRuleDetail = lazy(() => import("./pages/events/RuleDetail"));
+const Schedules = lazy(() => import("./pages/events/Schedules"));
 
 const loading = (
   <Box textAlign="center" padding="xxxl">
@@ -214,6 +218,12 @@ export default function App() {
         <Route path="/acm" element={<Navigate to="/acm/certificates" replace />} />
         <Route path="/acm/certificates" element={<Certificates />} />
         <Route path="/acm/certificate" element={<CertificateDetail />} />
+
+        <Route path="/events" element={<Navigate to="/events/buses" replace />} />
+        <Route path="/events/buses" element={<EventBuses />} />
+        <Route path="/events/rules" element={<EventRules />} />
+        <Route path="/events/rule" element={<EventRuleDetail />} />
+        <Route path="/events/schedules" element={<Schedules />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

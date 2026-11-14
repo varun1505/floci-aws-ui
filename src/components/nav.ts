@@ -1,6 +1,6 @@
 import type { SideNavigationProps } from "@cloudscape-design/components/side-navigation";
 
-export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm";
+export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm" | "events";
 export type ServiceId = Exclude<Service, "home">;
 
 export const SERVICES: { id: ServiceId; name: string; fullName: string; href: string; description: string }[] = [
@@ -12,6 +12,7 @@ export const SERVICES: { id: ServiceId; name: string; fullName: string; href: st
   { id: "dynamodb", name: "DynamoDB", fullName: "DynamoDB", href: "/dynamodb/tables", description: "Managed NoSQL database" },
   { id: "ec2", name: "EC2", fullName: "EC2", href: "/ec2/home", description: "Virtual servers in the cloud" },
   { id: "elasticache", name: "ElastiCache", fullName: "ElastiCache", href: "/elasticache/caches", description: "In-memory cache with Redis OSS, Valkey and Memcached" },
+  { id: "events", name: "EventBridge", fullName: "EventBridge", href: "/events/rules", description: "Event buses, rules and schedules" },
   { id: "iam", name: "IAM", fullName: "IAM", href: "/iam/roles", description: "Manage access to resources" },
   { id: "kms", name: "KMS", fullName: "Key Management Service", href: "/kms/keys", description: "Create and manage encryption keys" },
   { id: "lambda", name: "Lambda", fullName: "Lambda", href: "/lambda/functions", description: "Run code without thinking about servers" },
@@ -114,6 +115,10 @@ export const NAV: Record<Service, { header: SideNavigationProps.Header; items: S
   acm: {
     header: { text: "AWS Certificate Manager", href: "/acm/certificates" },
     items: [link("List certificates", "/acm/certificates")],
+  },
+  events: {
+    header: { text: "Amazon EventBridge", href: "/events/rules" },
+    items: [section("Buses", [link("Event buses", "/events/buses"), link("Rules", "/events/rules")]), section("Scheduler", [link("Schedules", "/events/schedules")])],
   },
   ec2: {
     header: { text: "EC2", href: "/ec2/home" },
