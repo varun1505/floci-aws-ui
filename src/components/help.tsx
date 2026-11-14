@@ -206,6 +206,16 @@ const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: str
     ),
     docs: [{ text: "EventBridge user guide", href: "https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html" }],
   },
+  states: {
+    title: "Step Functions",
+    body: (
+      <>
+        <p>A state machine runs a workflow of steps, written in Amazon States Language. Each run is an execution.</p>
+        <p>Open an execution to see its input, its output and every step it took.</p>
+      </>
+    ),
+    docs: [{ text: "Step Functions developer guide", href: "https://docs.aws.amazon.com/step-functions/latest/dg/welcome.html" }],
+  },
   ec2: {
     title: "EC2",
     body: (
@@ -286,4 +296,5 @@ const EXAMPLE: Record<Exclude<Service, "home">, string> = {
   route53: "route53 list-hosted-zones",
   acm: "acm list-certificates",
   events: "events list-rules",
+  states: "stepfunctions list-state-machines",
 };

@@ -87,6 +87,9 @@ const EventBuses = lazy(() => import("./pages/events/Buses"));
 const EventRules = lazy(() => import("./pages/events/Rules"));
 const EventRuleDetail = lazy(() => import("./pages/events/RuleDetail"));
 const Schedules = lazy(() => import("./pages/events/Schedules"));
+const StateMachines = lazy(() => import("./pages/states/StateMachines"));
+const StateMachineDetail = lazy(() => import("./pages/states/StateMachineDetail"));
+const ExecutionDetail = lazy(() => import("./pages/states/ExecutionDetail"));
 
 const loading = (
   <Box textAlign="center" padding="xxxl">
@@ -224,6 +227,11 @@ export default function App() {
         <Route path="/events/rules" element={<EventRules />} />
         <Route path="/events/rule" element={<EventRuleDetail />} />
         <Route path="/events/schedules" element={<Schedules />} />
+
+        <Route path="/states" element={<Navigate to="/states/state-machines" replace />} />
+        <Route path="/states/state-machines" element={<StateMachines />} />
+        <Route path="/states/state-machine" element={<StateMachineDetail />} />
+        <Route path="/states/execution" element={<ExecutionDetail />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

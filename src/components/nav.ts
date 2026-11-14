@@ -1,6 +1,6 @@
 import type { SideNavigationProps } from "@cloudscape-design/components/side-navigation";
 
-export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm" | "events";
+export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm" | "events" | "states";
 export type ServiceId = Exclude<Service, "home">;
 
 export const SERVICES: { id: ServiceId; name: string; fullName: string; href: string; description: string }[] = [
@@ -23,6 +23,7 @@ export const SERVICES: { id: ServiceId; name: string; fullName: string; href: st
   { id: "ses", name: "SES", fullName: "Simple Email Service", href: "/ses/identities", description: "Send email from your applications" },
   { id: "sns", name: "SNS", fullName: "Simple Notification Service", href: "/sns/topics", description: "Pub/sub messaging and notifications" },
   { id: "sqs", name: "SQS", fullName: "Simple Queue Service", href: "/sqs/queues", description: "Managed message queues" },
+  { id: "states", name: "Step Functions", fullName: "Step Functions", href: "/states/state-machines", description: "Coordinate services with state machines" },
   { id: "ssm", name: "Systems Manager", fullName: "Systems Manager", href: "/ssm/parameters", description: "Parameter Store for configuration data" },
 ];
 
@@ -119,6 +120,10 @@ export const NAV: Record<Service, { header: SideNavigationProps.Header; items: S
   events: {
     header: { text: "Amazon EventBridge", href: "/events/rules" },
     items: [section("Buses", [link("Event buses", "/events/buses"), link("Rules", "/events/rules")]), section("Scheduler", [link("Schedules", "/events/schedules")])],
+  },
+  states: {
+    header: { text: "Step Functions", href: "/states/state-machines" },
+    items: [link("State machines", "/states/state-machines")],
   },
   ec2: {
     header: { text: "EC2", href: "/ec2/home" },

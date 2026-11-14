@@ -40,6 +40,7 @@ const HEALTH_KEYS: Record<string, string[]> = {
   route53: ["route53"],
   acm: ["acm"],
   events: ["events", "scheduler"],
+  states: ["states"],
 };
 
 /** One count per service. A failed call gives undefined, shown as "-". */
