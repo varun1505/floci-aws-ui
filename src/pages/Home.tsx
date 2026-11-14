@@ -47,6 +47,7 @@ const HEALTH_KEYS: Record<string, string[]> = {
   cloudformation: ["cloudformation"],
   kinesis: ["kinesis"],
   opensearch: ["es"],
+  appsync: ["appsync"],
 };
 
 /** One count per service. A failed call gives undefined, shown as "-". */

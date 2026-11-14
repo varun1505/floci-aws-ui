@@ -275,6 +275,15 @@ const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: str
     ),
     docs: [{ text: "OpenSearch Service developer guide", href: "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/what-is.html" }],
   },
+  appsync: {
+    title: "AWS AppSync",
+    body: (
+      <>
+        <p>AppSync serves a GraphQL API. A schema defines the types, and resolvers connect fields to data sources.</p>
+      </>
+    ),
+    docs: [{ text: "AppSync developer guide", href: "https://docs.aws.amazon.com/appsync/latest/devguide/what-is-appsync.html" }],
+  },
   ec2: {
     title: "EC2",
     body: (
@@ -362,4 +371,5 @@ const EXAMPLE: Record<Exclude<Service, "home">, string> = {
   cloudformation: "cloudformation describe-stacks",
   kinesis: "kinesis list-streams",
   opensearch: "opensearch list-domain-names",
+  appsync: "appsync list-graphql-apis",
 };

@@ -110,6 +110,8 @@ const KinesisStreams = lazy(() => import("./pages/kinesis/Streams"));
 const KinesisStreamDetail = lazy(() => import("./pages/kinesis/StreamDetail"));
 const OsDomains = lazy(() => import("./pages/opensearch/Domains"));
 const OsDomainDetail = lazy(() => import("./pages/opensearch/DomainDetail"));
+const AppSyncApis = lazy(() => import("./pages/appsync/Apis"));
+const AppSyncApiDetail = lazy(() => import("./pages/appsync/ApiDetail"));
 
 const loading = (
   <Box textAlign="center" padding="xxxl">
@@ -284,6 +286,10 @@ export default function App() {
         <Route path="/opensearch" element={<Navigate to="/opensearch/domains" replace />} />
         <Route path="/opensearch/domains" element={<OsDomains />} />
         <Route path="/opensearch/domains/:name" element={<OsDomainDetail />} />
+
+        <Route path="/appsync" element={<Navigate to="/appsync/apis" replace />} />
+        <Route path="/appsync/apis" element={<AppSyncApis />} />
+        <Route path="/appsync/apis/:id" element={<AppSyncApiDetail />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

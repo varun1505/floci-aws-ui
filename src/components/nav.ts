@@ -1,10 +1,11 @@
 import type { SideNavigationProps } from "@cloudscape-design/components/side-navigation";
 
-export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm" | "ecs" | "ecr" | "events" | "states" | "vpc" | "cloudformation" | "kinesis" | "opensearch";
+export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm" | "ecs" | "ecr" | "events" | "states" | "vpc" | "cloudformation" | "kinesis" | "opensearch" | "appsync";
 export type ServiceId = Exclude<Service, "home">;
 
 export const SERVICES: { id: ServiceId; name: string; fullName: string; href: string; description: string }[] = [
   { id: "apigateway", name: "API Gateway", fullName: "API Gateway", href: "/apigateway/apis", description: "Build, deploy and manage APIs" },
+  { id: "appsync", name: "AppSync", fullName: "AppSync", href: "/appsync/apis", description: "Managed GraphQL APIs" },
   { id: "acm", name: "Certificate Manager", fullName: "Certificate Manager", href: "/acm/certificates", description: "Provision and manage SSL/TLS certificates" },
   { id: "cloudformation", name: "CloudFormation", fullName: "CloudFormation", href: "/cloudformation/stacks", description: "Create and manage resources with templates" },
   { id: "cloudfront", name: "CloudFront", fullName: "CloudFront", href: "/cloudfront/distributions", description: "Global content delivery network" },
@@ -163,6 +164,10 @@ export const NAV: Record<Service, { header: SideNavigationProps.Header; items: S
   opensearch: {
     header: { text: "Amazon OpenSearch Service", href: "/opensearch/domains" },
     items: [link("Domains", "/opensearch/domains")],
+  },
+  appsync: {
+    header: { text: "AWS AppSync", href: "/appsync/apis" },
+    items: [link("APIs", "/appsync/apis")],
   },
   ec2: {
     header: { text: "EC2", href: "/ec2/home" },
