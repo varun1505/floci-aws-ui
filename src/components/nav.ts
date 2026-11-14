@@ -1,6 +1,6 @@
 import type { SideNavigationProps } from "@cloudscape-design/components/side-navigation";
 
-export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm" | "ecs" | "ecr" | "events" | "states" | "vpc" | "cloudformation" | "kinesis";
+export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm" | "ecs" | "ecr" | "events" | "states" | "vpc" | "cloudformation" | "kinesis" | "opensearch";
 export type ServiceId = Exclude<Service, "home">;
 
 export const SERVICES: { id: ServiceId; name: string; fullName: string; href: string; description: string }[] = [
@@ -20,6 +20,7 @@ export const SERVICES: { id: ServiceId; name: string; fullName: string; href: st
   { id: "kinesis", name: "Kinesis", fullName: "Kinesis Data Streams", href: "/kinesis/streams", description: "Collect and process streaming data" },
   { id: "kms", name: "KMS", fullName: "Key Management Service", href: "/kms/keys", description: "Create and manage encryption keys" },
   { id: "lambda", name: "Lambda", fullName: "Lambda", href: "/lambda/functions", description: "Run code without thinking about servers" },
+  { id: "opensearch", name: "OpenSearch", fullName: "OpenSearch Service", href: "/opensearch/domains", description: "Search and analytics domains" },
   { id: "rds", name: "RDS", fullName: "Aurora and RDS", href: "/rds/databases", description: "Managed relational database service" },
   { id: "route53", name: "Route 53", fullName: "Route 53", href: "/route53/hosted-zones", description: "DNS hosted zones and records" },
   { id: "s3", name: "S3", fullName: "Amazon S3", href: "/s3/buckets", description: "Scalable storage in the cloud" },
@@ -158,6 +159,10 @@ export const NAV: Record<Service, { header: SideNavigationProps.Header; items: S
   kinesis: {
     header: { text: "Amazon Kinesis", href: "/kinesis/streams" },
     items: [link("Data streams", "/kinesis/streams")],
+  },
+  opensearch: {
+    header: { text: "Amazon OpenSearch Service", href: "/opensearch/domains" },
+    items: [link("Domains", "/opensearch/domains")],
   },
   ec2: {
     header: { text: "EC2", href: "/ec2/home" },

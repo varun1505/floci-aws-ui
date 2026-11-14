@@ -265,6 +265,16 @@ const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: str
     ),
     docs: [{ text: "Kinesis developer guide", href: "https://docs.aws.amazon.com/streams/latest/dev/introduction.html" }],
   },
+  opensearch: {
+    title: "OpenSearch Service",
+    body: (
+      <>
+        <p>A domain is an OpenSearch cluster.</p>
+        <p>In this environment each domain runs as a real OpenSearch container on the host. The first start takes a while.</p>
+      </>
+    ),
+    docs: [{ text: "OpenSearch Service developer guide", href: "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/what-is.html" }],
+  },
   ec2: {
     title: "EC2",
     body: (
@@ -351,4 +361,5 @@ const EXAMPLE: Record<Exclude<Service, "home">, string> = {
   vpc: "ec2 describe-vpcs",
   cloudformation: "cloudformation describe-stacks",
   kinesis: "kinesis list-streams",
+  opensearch: "opensearch list-domain-names",
 };

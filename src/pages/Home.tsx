@@ -46,6 +46,7 @@ const HEALTH_KEYS: Record<string, string[]> = {
   vpc: ["ec2"],
   cloudformation: ["cloudformation"],
   kinesis: ["kinesis"],
+  opensearch: ["es"],
 };
 
 /** One count per service. A failed call gives undefined, shown as "-". */

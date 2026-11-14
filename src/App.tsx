@@ -108,6 +108,8 @@ const CreateStack = lazy(() => import("./pages/cloudformation/CreateStack"));
 const StackDetail = lazy(() => import("./pages/cloudformation/StackDetail"));
 const KinesisStreams = lazy(() => import("./pages/kinesis/Streams"));
 const KinesisStreamDetail = lazy(() => import("./pages/kinesis/StreamDetail"));
+const OsDomains = lazy(() => import("./pages/opensearch/Domains"));
+const OsDomainDetail = lazy(() => import("./pages/opensearch/DomainDetail"));
 
 const loading = (
   <Box textAlign="center" padding="xxxl">
@@ -278,6 +280,10 @@ export default function App() {
         <Route path="/kinesis" element={<Navigate to="/kinesis/streams" replace />} />
         <Route path="/kinesis/streams" element={<KinesisStreams />} />
         <Route path="/kinesis/streams/:name" element={<KinesisStreamDetail />} />
+
+        <Route path="/opensearch" element={<Navigate to="/opensearch/domains" replace />} />
+        <Route path="/opensearch/domains" element={<OsDomains />} />
+        <Route path="/opensearch/domains/:name" element={<OsDomainDetail />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
