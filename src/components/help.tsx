@@ -196,6 +196,16 @@ const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: str
     ),
     docs: [{ text: "ACM user guide", href: "https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html" }],
   },
+  ecr: {
+    title: "Elastic Container Registry",
+    body: (
+      <>
+        <p>ECR stores container images in repositories.</p>
+        <p>In this environment the images live in a registry container on the host. Push and pull with the docker client, using the repository URI.</p>
+      </>
+    ),
+    docs: [{ text: "ECR user guide", href: "https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html" }],
+  },
   events: {
     title: "Amazon EventBridge",
     body: (
@@ -315,6 +325,7 @@ const EXAMPLE: Record<Exclude<Service, "home">, string> = {
   cognito: "cognito-idp list-user-pools --max-results 20",
   route53: "route53 list-hosted-zones",
   acm: "acm list-certificates",
+  ecr: "ecr describe-repositories",
   events: "events list-rules",
   states: "stepfunctions list-state-machines",
   vpc: "ec2 describe-vpcs",
