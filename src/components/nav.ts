@@ -1,6 +1,6 @@
 import type { SideNavigationProps } from "@cloudscape-design/components/side-navigation";
 
-export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm" | "events" | "states";
+export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm" | "events" | "states" | "vpc";
 export type ServiceId = Exclude<Service, "home">;
 
 export const SERVICES: { id: ServiceId; name: string; fullName: string; href: string; description: string }[] = [
@@ -25,6 +25,7 @@ export const SERVICES: { id: ServiceId; name: string; fullName: string; href: st
   { id: "sqs", name: "SQS", fullName: "Simple Queue Service", href: "/sqs/queues", description: "Managed message queues" },
   { id: "states", name: "Step Functions", fullName: "Step Functions", href: "/states/state-machines", description: "Coordinate services with state machines" },
   { id: "ssm", name: "Systems Manager", fullName: "Systems Manager", href: "/ssm/parameters", description: "Parameter Store for configuration data" },
+  { id: "vpc", name: "VPC", fullName: "VPC", href: "/vpc/vpcs", description: "Isolated networks, subnets and routing" },
 ];
 
 const link = (text: string, href: string): SideNavigationProps.Link => ({ type: "link", text, href });
@@ -124,6 +125,19 @@ export const NAV: Record<Service, { header: SideNavigationProps.Header; items: S
   states: {
     header: { text: "Step Functions", href: "/states/state-machines" },
     items: [link("State machines", "/states/state-machines")],
+  },
+  vpc: {
+    header: { text: "VPC", href: "/vpc/vpcs" },
+    items: [
+      section("Virtual private cloud", [
+        link("Your VPCs", "/vpc/vpcs"),
+        link("Subnets", "/vpc/subnets"),
+        link("Route tables", "/vpc/route-tables"),
+        link("Internet gateways", "/vpc/internet-gateways"),
+        link("NAT gateways", "/vpc/nat-gateways"),
+      ]),
+      section("Security", [link("Security groups", "/ec2/security-groups")]),
+    ],
   },
   ec2: {
     header: { text: "EC2", href: "/ec2/home" },

@@ -216,6 +216,16 @@ const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: str
     ),
     docs: [{ text: "Step Functions developer guide", href: "https://docs.aws.amazon.com/step-functions/latest/dg/welcome.html" }],
   },
+  vpc: {
+    title: "VPC",
+    body: (
+      <>
+        <p>A VPC is a private network. Subnets divide it, and route tables decide where traffic goes.</p>
+        <p>This environment stores these resources and answers the API. It does not route or filter real traffic.</p>
+      </>
+    ),
+    docs: [{ text: "VPC user guide", href: "https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html" }],
+  },
   ec2: {
     title: "EC2",
     body: (
@@ -297,4 +307,5 @@ const EXAMPLE: Record<Exclude<Service, "home">, string> = {
   acm: "acm list-certificates",
   events: "events list-rules",
   states: "stepfunctions list-state-machines",
+  vpc: "ec2 describe-vpcs",
 };

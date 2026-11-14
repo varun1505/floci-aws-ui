@@ -90,6 +90,12 @@ const Schedules = lazy(() => import("./pages/events/Schedules"));
 const StateMachines = lazy(() => import("./pages/states/StateMachines"));
 const StateMachineDetail = lazy(() => import("./pages/states/StateMachineDetail"));
 const ExecutionDetail = lazy(() => import("./pages/states/ExecutionDetail"));
+const Vpcs = lazy(() => import("./pages/vpc/Vpcs"));
+const VpcDetail = lazy(() => import("./pages/vpc/VpcDetail"));
+const Subnets = lazy(() => import("./pages/vpc/Subnets"));
+const RouteTables = lazy(() => import("./pages/vpc/RouteTables"));
+const InternetGateways = lazy(() => import("./pages/vpc/InternetGateways"));
+const NatGateways = lazy(() => import("./pages/vpc/NatGateways"));
 
 const loading = (
   <Box textAlign="center" padding="xxxl">
@@ -232,6 +238,14 @@ export default function App() {
         <Route path="/states/state-machines" element={<StateMachines />} />
         <Route path="/states/state-machine" element={<StateMachineDetail />} />
         <Route path="/states/execution" element={<ExecutionDetail />} />
+
+        <Route path="/vpc" element={<Navigate to="/vpc/vpcs" replace />} />
+        <Route path="/vpc/vpcs" element={<Vpcs />} />
+        <Route path="/vpc/vpcs/:id" element={<VpcDetail />} />
+        <Route path="/vpc/subnets" element={<Subnets />} />
+        <Route path="/vpc/route-tables" element={<RouteTables />} />
+        <Route path="/vpc/internet-gateways" element={<InternetGateways />} />
+        <Route path="/vpc/nat-gateways" element={<NatGateways />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
