@@ -72,6 +72,19 @@ The same clip with sound: [docs/video/floci-console.mp4](docs/video/floci-consol
 | **ElastiCache** | Create and delete Valkey, Redis OSS and Memcached caches. Shows the connect command. Replication groups. |
 | **Load balancers** | Under EC2. Load balancers, listeners, target groups and registered targets. |
 | **KMS** | Customer managed and AWS managed keys. Create, enable, disable and schedule deletion. Aliases, key policy, encrypt and decrypt. |
+| **DynamoDB** | Create and delete tables with indexes. Change capacity, TTL and streams. Scan, query, create, edit and delete items as JSON. |
+| **Cognito** | Create user pools, users, groups and app clients. Manage a user's attributes, password and groups. Test a sign-in and read the token claims. Create identity pools. |
+| **Route 53** | Create public and private hosted zones. Manage DNS records and aliases. Associate VPCs. Create health checks. |
+| **Certificate Manager** | Request or import certificates. See validation records and details. Manage tags. Copy the PEM. |
+| **ECS** | Create clusters. Register task definitions with a form or JSON. Run tasks and services as real containers. Read their logs. |
+| **ECR** | Create repositories. Browse and delete images. Edit lifecycle and repository policies. Get the push commands. |
+| **EventBridge** | Create event buses, rules with targets, and schedules. Send test events and test event patterns. |
+| **Step Functions** | Create and edit state machines. Start and stop executions. Read each execution's input, output and event history. |
+| **VPC** | Create and delete VPCs, subnets, route tables with routes, internet gateways and NAT gateways. Manage VPC tags and DNS settings. |
+| **CloudFormation** | Create, update and delete stacks from a YAML or JSON template. Follow their events, resources, outputs and parameters. |
+| **Kinesis** | Create data streams. Read and put records. Change shards, retention and capacity mode. Manage enhanced fan-out consumers. |
+| **OpenSearch** | Create and delete domains. See how to connect. Edit cluster settings, access policy and tags. |
+| **AppSync** | Create GraphQL APIs. Edit the schema. Add data sources and resolvers. Manage API keys. Run queries. |
 
 The top bar has a search box for services and pages. Every page has a help panel with the CLI profile.
 
