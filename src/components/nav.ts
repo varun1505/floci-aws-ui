@@ -1,6 +1,6 @@
 import type { SideNavigationProps } from "@cloudscape-design/components/side-navigation";
 
-export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "cognito";
+export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito";
 export type ServiceId = Exclude<Service, "home">;
 
 export const SERVICES: { id: ServiceId; name: string; fullName: string; href: string; description: string }[] = [
@@ -8,6 +8,7 @@ export const SERVICES: { id: ServiceId; name: string; fullName: string; href: st
   { id: "cloudfront", name: "CloudFront", fullName: "CloudFront", href: "/cloudfront/distributions", description: "Global content delivery network" },
   { id: "cloudwatch", name: "CloudWatch", fullName: "CloudWatch", href: "/cloudwatch/home", description: "Monitor resources and applications" },
   { id: "cognito", name: "Cognito", fullName: "Cognito", href: "/cognito/user-pools", description: "User sign-up, sign-in and access control" },
+  { id: "dynamodb", name: "DynamoDB", fullName: "DynamoDB", href: "/dynamodb/tables", description: "Managed NoSQL database" },
   { id: "ec2", name: "EC2", fullName: "EC2", href: "/ec2/home", description: "Virtual servers in the cloud" },
   { id: "elasticache", name: "ElastiCache", fullName: "ElastiCache", href: "/elasticache/caches", description: "In-memory cache with Redis OSS, Valkey and Memcached" },
   { id: "iam", name: "IAM", fullName: "IAM", href: "/iam/roles", description: "Manage access to resources" },
@@ -95,6 +96,10 @@ export const NAV: Record<Service, { header: SideNavigationProps.Header; items: S
   kms: {
     header: { text: "Key Management Service (KMS)", href: "/kms/keys" },
     items: [link("Customer managed keys", "/kms/keys"), link("AWS managed keys", "/kms/aws-keys")],
+  },
+  dynamodb: {
+    header: { text: "DynamoDB", href: "/dynamodb/tables" },
+    items: [link("Tables", "/dynamodb/tables"), link("Explore items", "/dynamodb/items")],
   },
   cognito: {
     header: { text: "Amazon Cognito", href: "/cognito/user-pools" },

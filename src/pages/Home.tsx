@@ -35,6 +35,7 @@ const HEALTH_KEYS: Record<string, string[]> = {
   ses: ["email"],
   elasticache: ["elasticache"],
   kms: ["kms"],
+  dynamodb: ["dynamodb"],
   cognito: ["cognito-idp", "cognito-identity"],
 };
 

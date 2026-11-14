@@ -70,6 +70,10 @@ const SecurityGroups = lazy(() => import("./pages/ec2/SecurityGroups"));
 const SecurityGroupDetail = lazy(() => import("./pages/ec2/SecurityGroupDetail"));
 const KeyPairs = lazy(() => import("./pages/ec2/KeyPairs"));
 const Images = lazy(() => import("./pages/ec2/Images"));
+const DdbTables = lazy(() => import("./pages/dynamodb/Tables"));
+const DdbCreateTable = lazy(() => import("./pages/dynamodb/CreateTable"));
+const DdbTableDetail = lazy(() => import("./pages/dynamodb/TableDetail"));
+const DdbExploreItems = lazy(() => import("./pages/dynamodb/ExploreItems"));
 const UserPools = lazy(() => import("./pages/cognito/UserPools"));
 const UserPoolDetail = lazy(() => import("./pages/cognito/UserPoolDetail"));
 const CognitoUserDetail = lazy(() => import("./pages/cognito/UserDetail"));
@@ -184,6 +188,12 @@ export default function App() {
         <Route path="/cloudfront/distributions" element={<Distributions />} />
         <Route path="/cloudfront/distributions/create" element={<CreateDistribution />} />
         <Route path="/cloudfront/distributions/:id" element={<DistributionDetail />} />
+
+        <Route path="/dynamodb" element={<Navigate to="/dynamodb/tables" replace />} />
+        <Route path="/dynamodb/tables" element={<DdbTables />} />
+        <Route path="/dynamodb/tables/create" element={<DdbCreateTable />} />
+        <Route path="/dynamodb/table" element={<DdbTableDetail />} />
+        <Route path="/dynamodb/items" element={<DdbExploreItems />} />
 
         <Route path="/cognito" element={<Navigate to="/cognito/user-pools" replace />} />
         <Route path="/cognito/user-pools" element={<UserPools />} />

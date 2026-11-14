@@ -156,6 +156,16 @@ const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: str
     ),
     docs: [{ text: "KMS developer guide", href: "https://docs.aws.amazon.com/kms/latest/developerguide/overview.html" }],
   },
+  dynamodb: {
+    title: "DynamoDB",
+    body: (
+      <>
+        <p>DynamoDB stores items in tables. Each item is found by its partition key, and by a sort key if the table has one.</p>
+        <p>A query reads items of one partition key. A scan reads the whole table.</p>
+      </>
+    ),
+    docs: [{ text: "DynamoDB developer guide", href: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html" }],
+  },
   cognito: {
     title: "Amazon Cognito",
     body: (
@@ -241,5 +251,6 @@ const EXAMPLE: Record<Exclude<Service, "home">, string> = {
   ses: "ses list-identities",
   elasticache: "elasticache describe-cache-clusters",
   kms: "kms list-keys",
+  dynamodb: "dynamodb list-tables",
   cognito: "cognito-idp list-user-pools --max-results 20",
 };
