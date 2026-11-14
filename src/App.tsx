@@ -106,6 +106,8 @@ const NatGateways = lazy(() => import("./pages/vpc/NatGateways"));
 const Stacks = lazy(() => import("./pages/cloudformation/Stacks"));
 const CreateStack = lazy(() => import("./pages/cloudformation/CreateStack"));
 const StackDetail = lazy(() => import("./pages/cloudformation/StackDetail"));
+const KinesisStreams = lazy(() => import("./pages/kinesis/Streams"));
+const KinesisStreamDetail = lazy(() => import("./pages/kinesis/StreamDetail"));
 
 const loading = (
   <Box textAlign="center" padding="xxxl">
@@ -272,6 +274,10 @@ export default function App() {
         <Route path="/cloudformation/stacks" element={<Stacks />} />
         <Route path="/cloudformation/stacks/create" element={<CreateStack />} />
         <Route path="/cloudformation/stack" element={<StackDetail />} />
+
+        <Route path="/kinesis" element={<Navigate to="/kinesis/streams" replace />} />
+        <Route path="/kinesis/streams" element={<KinesisStreams />} />
+        <Route path="/kinesis/streams/:name" element={<KinesisStreamDetail />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

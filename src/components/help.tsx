@@ -256,6 +256,15 @@ const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: str
     ),
     docs: [{ text: "CloudFormation user guide", href: "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html" }],
   },
+  kinesis: {
+    title: "Kinesis Data Streams",
+    body: (
+      <>
+        <p>A data stream keeps records in order inside shards. Producers put records, and consumers read them with a shard iterator.</p>
+      </>
+    ),
+    docs: [{ text: "Kinesis developer guide", href: "https://docs.aws.amazon.com/streams/latest/dev/introduction.html" }],
+  },
   ec2: {
     title: "EC2",
     body: (
@@ -341,4 +350,5 @@ const EXAMPLE: Record<Exclude<Service, "home">, string> = {
   states: "stepfunctions list-state-machines",
   vpc: "ec2 describe-vpcs",
   cloudformation: "cloudformation describe-stacks",
+  kinesis: "kinesis list-streams",
 };

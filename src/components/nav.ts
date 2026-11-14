@@ -1,6 +1,6 @@
 import type { SideNavigationProps } from "@cloudscape-design/components/side-navigation";
 
-export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm" | "ecs" | "ecr" | "events" | "states" | "vpc" | "cloudformation";
+export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm" | "ecs" | "ecr" | "events" | "states" | "vpc" | "cloudformation" | "kinesis";
 export type ServiceId = Exclude<Service, "home">;
 
 export const SERVICES: { id: ServiceId; name: string; fullName: string; href: string; description: string }[] = [
@@ -17,6 +17,7 @@ export const SERVICES: { id: ServiceId; name: string; fullName: string; href: st
   { id: "elasticache", name: "ElastiCache", fullName: "ElastiCache", href: "/elasticache/caches", description: "In-memory cache with Redis OSS, Valkey and Memcached" },
   { id: "events", name: "EventBridge", fullName: "EventBridge", href: "/events/rules", description: "Event buses, rules and schedules" },
   { id: "iam", name: "IAM", fullName: "IAM", href: "/iam/roles", description: "Manage access to resources" },
+  { id: "kinesis", name: "Kinesis", fullName: "Kinesis Data Streams", href: "/kinesis/streams", description: "Collect and process streaming data" },
   { id: "kms", name: "KMS", fullName: "Key Management Service", href: "/kms/keys", description: "Create and manage encryption keys" },
   { id: "lambda", name: "Lambda", fullName: "Lambda", href: "/lambda/functions", description: "Run code without thinking about servers" },
   { id: "rds", name: "RDS", fullName: "Aurora and RDS", href: "/rds/databases", description: "Managed relational database service" },
@@ -153,6 +154,10 @@ export const NAV: Record<Service, { header: SideNavigationProps.Header; items: S
   cloudformation: {
     header: { text: "CloudFormation", href: "/cloudformation/stacks" },
     items: [link("Stacks", "/cloudformation/stacks")],
+  },
+  kinesis: {
+    header: { text: "Amazon Kinesis", href: "/kinesis/streams" },
+    items: [link("Data streams", "/kinesis/streams")],
   },
   ec2: {
     header: { text: "EC2", href: "/ec2/home" },
