@@ -83,6 +83,11 @@ const HostedZoneDetail = lazy(() => import("./pages/route53/HostedZoneDetail"));
 const HealthChecks = lazy(() => import("./pages/route53/HealthChecks"));
 const Certificates = lazy(() => import("./pages/acm/Certificates"));
 const CertificateDetail = lazy(() => import("./pages/acm/CertificateDetail"));
+const EcsClusters = lazy(() => import("./pages/ecs/Clusters"));
+const EcsClusterDetail = lazy(() => import("./pages/ecs/ClusterDetail"));
+const EcsTaskDetail = lazy(() => import("./pages/ecs/TaskDetail"));
+const EcsTaskDefinitions = lazy(() => import("./pages/ecs/TaskDefinitions"));
+const EcsTaskDefinitionDetail = lazy(() => import("./pages/ecs/TaskDefinitionDetail"));
 const Repositories = lazy(() => import("./pages/ecr/Repositories"));
 const RepositoryDetail = lazy(() => import("./pages/ecr/RepositoryDetail"));
 const EventBuses = lazy(() => import("./pages/events/Buses"));
@@ -232,6 +237,13 @@ export default function App() {
         <Route path="/acm" element={<Navigate to="/acm/certificates" replace />} />
         <Route path="/acm/certificates" element={<Certificates />} />
         <Route path="/acm/certificate" element={<CertificateDetail />} />
+
+        <Route path="/ecs" element={<Navigate to="/ecs/clusters" replace />} />
+        <Route path="/ecs/clusters" element={<EcsClusters />} />
+        <Route path="/ecs/clusters/:name" element={<EcsClusterDetail />} />
+        <Route path="/ecs/task" element={<EcsTaskDetail />} />
+        <Route path="/ecs/task-definitions" element={<EcsTaskDefinitions />} />
+        <Route path="/ecs/task-definition" element={<EcsTaskDefinitionDetail />} />
 
         <Route path="/ecr" element={<Navigate to="/ecr/repositories" replace />} />
         <Route path="/ecr/repositories" element={<Repositories />} />

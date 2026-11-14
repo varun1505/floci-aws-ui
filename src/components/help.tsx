@@ -196,6 +196,16 @@ const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: str
     ),
     docs: [{ text: "ACM user guide", href: "https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html" }],
   },
+  ecs: {
+    title: "Elastic Container Service",
+    body: (
+      <>
+        <p>ECS runs containers. A task definition describes the containers. A service keeps a number of tasks running in a cluster.</p>
+        <p>In this environment each task runs as real containers on the host.</p>
+      </>
+    ),
+    docs: [{ text: "ECS developer guide", href: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html" }],
+  },
   ecr: {
     title: "Elastic Container Registry",
     body: (
@@ -325,6 +335,7 @@ const EXAMPLE: Record<Exclude<Service, "home">, string> = {
   cognito: "cognito-idp list-user-pools --max-results 20",
   route53: "route53 list-hosted-zones",
   acm: "acm list-certificates",
+  ecs: "ecs list-clusters",
   ecr: "ecr describe-repositories",
   events: "events list-rules",
   states: "stepfunctions list-state-machines",
