@@ -1,11 +1,12 @@
 import type { SideNavigationProps } from "@cloudscape-design/components/side-navigation";
 
-export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm" | "events" | "states" | "vpc";
+export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm" | "events" | "states" | "vpc" | "cloudformation";
 export type ServiceId = Exclude<Service, "home">;
 
 export const SERVICES: { id: ServiceId; name: string; fullName: string; href: string; description: string }[] = [
   { id: "apigateway", name: "API Gateway", fullName: "API Gateway", href: "/apigateway/apis", description: "Build, deploy and manage APIs" },
   { id: "acm", name: "Certificate Manager", fullName: "Certificate Manager", href: "/acm/certificates", description: "Provision and manage SSL/TLS certificates" },
+  { id: "cloudformation", name: "CloudFormation", fullName: "CloudFormation", href: "/cloudformation/stacks", description: "Create and manage resources with templates" },
   { id: "cloudfront", name: "CloudFront", fullName: "CloudFront", href: "/cloudfront/distributions", description: "Global content delivery network" },
   { id: "cloudwatch", name: "CloudWatch", fullName: "CloudWatch", href: "/cloudwatch/home", description: "Monitor resources and applications" },
   { id: "cognito", name: "Cognito", fullName: "Cognito", href: "/cognito/user-pools", description: "User sign-up, sign-in and access control" },
@@ -138,6 +139,10 @@ export const NAV: Record<Service, { header: SideNavigationProps.Header; items: S
       ]),
       section("Security", [link("Security groups", "/ec2/security-groups")]),
     ],
+  },
+  cloudformation: {
+    header: { text: "CloudFormation", href: "/cloudformation/stacks" },
+    items: [link("Stacks", "/cloudformation/stacks")],
   },
   ec2: {
     header: { text: "EC2", href: "/ec2/home" },

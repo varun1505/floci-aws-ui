@@ -226,6 +226,16 @@ const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: str
     ),
     docs: [{ text: "VPC user guide", href: "https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html" }],
   },
+  cloudformation: {
+    title: "CloudFormation",
+    body: (
+      <>
+        <p>CloudFormation creates resources from a template. The resources of one template form a stack.</p>
+        <p>Deleting a stack deletes its resources.</p>
+      </>
+    ),
+    docs: [{ text: "CloudFormation user guide", href: "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html" }],
+  },
   ec2: {
     title: "EC2",
     body: (
@@ -308,4 +318,5 @@ const EXAMPLE: Record<Exclude<Service, "home">, string> = {
   events: "events list-rules",
   states: "stepfunctions list-state-machines",
   vpc: "ec2 describe-vpcs",
+  cloudformation: "cloudformation describe-stacks",
 };

@@ -42,6 +42,7 @@ const HEALTH_KEYS: Record<string, string[]> = {
   events: ["events", "scheduler"],
   states: ["states"],
   vpc: ["ec2"],
+  cloudformation: ["cloudformation"],
 };
 
 /** One count per service. A failed call gives undefined, shown as "-". */

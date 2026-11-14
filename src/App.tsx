@@ -96,6 +96,9 @@ const Subnets = lazy(() => import("./pages/vpc/Subnets"));
 const RouteTables = lazy(() => import("./pages/vpc/RouteTables"));
 const InternetGateways = lazy(() => import("./pages/vpc/InternetGateways"));
 const NatGateways = lazy(() => import("./pages/vpc/NatGateways"));
+const Stacks = lazy(() => import("./pages/cloudformation/Stacks"));
+const CreateStack = lazy(() => import("./pages/cloudformation/CreateStack"));
+const StackDetail = lazy(() => import("./pages/cloudformation/StackDetail"));
 
 const loading = (
   <Box textAlign="center" padding="xxxl">
@@ -246,6 +249,11 @@ export default function App() {
         <Route path="/vpc/route-tables" element={<RouteTables />} />
         <Route path="/vpc/internet-gateways" element={<InternetGateways />} />
         <Route path="/vpc/nat-gateways" element={<NatGateways />} />
+
+        <Route path="/cloudformation" element={<Navigate to="/cloudformation/stacks" replace />} />
+        <Route path="/cloudformation/stacks" element={<Stacks />} />
+        <Route path="/cloudformation/stacks/create" element={<CreateStack />} />
+        <Route path="/cloudformation/stack" element={<StackDetail />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
