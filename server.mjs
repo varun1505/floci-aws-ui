@@ -96,32 +96,20 @@ async function health(res) {
   );
 }
 
-// floci's manifest (GET /_floci/info). Kept once floci answers. Undefined when floci has none.
-let info;
-async function flociInfo() {
-  if (!info) {
-    try {
-      const { status, body } = await get(new URL(process.env.FLOCI_INFO_URL || "/_floci/info", target), 2000);
-      if (status === 200) info = JSON.parse(body);
-    } catch {
-      /* older floci, or floci is down */
-    }
-  }
-  return info;
-}
-
 // The host name people use to reach floci from their own machine. Pages show it in endpoints and commands.
 // As a sidecar, this server reaches floci on a container address that nobody outside Docker can use.
-// floci's manifest has the outside address, so prefer that. Only a sidecar gets FLOCI_INFO_URL.
+// floci's manifest has the outside address, so prefer that.
+let publicHost;
 async function flociHost() {
-  if (process.env.FLOCI_INFO_URL) {
+  if (!publicHost && process.env.FLOCI_INFO_URL) {
     try {
-      return new URL((await flociInfo()).endpoint).hostname;
+      const { status, body } = await get(new URL(process.env.FLOCI_INFO_URL), 2000);
+      if (status === 200) publicHost = new URL(JSON.parse(body).endpoint).hostname;
     } catch {
       /* fall back to the address this server uses */
     }
   }
-  return target.hostname;
+  return publicHost || target.hostname;
 }
 
 const isAccountId = (id) => /^\d{12}$/.test(id);
@@ -136,10 +124,18 @@ const presetAccounts = (process.env.FLOCI_ACCOUNTS || "")
   .filter((a) => isAccountId(a.id));
 
 // floci's default account: the one it uses for a non-numeric access key such as "test".
+// floci's manifest says which it is. Without a sidecar, ask floci for its manifest directly.
+let manifestAccount;
 async function accounts() {
-  const fromManifest = (await flociInfo())?.defaults?.account_id;
-  const fromEnv = process.env.FLOCI_DEFAULT_ACCOUNT_ID;
-  const defaultAccountId = [fromManifest, fromEnv].find((id) => isAccountId(id || "")) || "000000000000";
+  if (!manifestAccount) {
+    try {
+      const { status, body } = await get(new URL(process.env.FLOCI_INFO_URL || "/_floci/info", target), 2000);
+      if (status === 200) manifestAccount = JSON.parse(body).defaults?.account_id;
+    } catch {
+      /* older floci, or floci is down */
+    }
+  }
+  const defaultAccountId = [manifestAccount, process.env.FLOCI_DEFAULT_ACCOUNT_ID].find((id) => isAccountId(id || "")) || "000000000000";
   return { defaultAccountId, accounts: presetAccounts };
 }
 
