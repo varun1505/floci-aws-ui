@@ -8,7 +8,8 @@ import Flashbar from "@cloudscape-design/components/flashbar";
 import SideNavigation from "@cloudscape-design/components/side-navigation";
 import TopNavigation from "@cloudscape-design/components/top-navigation";
 import { applyMode, Mode } from "@cloudscape-design/global-styles";
-import { ACCOUNT_ID, APP_NAME, PROXY_BASE, REGIONS, getRegion, setRegion } from "../config";
+import { APP_NAME, PROXY_BASE, REGIONS, accountId, getRegion, setRegion } from "../config";
+import { OtherAccount, accountMenuItems, onAccountItem, useAccounts } from "./AccountMenu";
 import { useNotify } from "../lib/notify";
 import { ServiceHelp } from "./help";
 import { NAV, SERVICES, markVisited, searchIndex, type Service } from "./nav";
@@ -54,8 +55,12 @@ function Search() {
 function TopBar() {
   const follow = useFollow();
   const [mode, setMode] = useState(currentMode);
+  const [otherOpen, setOtherOpen] = useState(false);
+  const accounts = useAccounts();
   const region = getRegion();
   const regionLabel = REGIONS.find((r) => r.id === region)?.label ?? region;
+  const current = accountId();
+  const currentName = accounts?.find((a) => a.id === current)?.name;
 
   const toggleMode = () => {
     const next = mode === Mode.Dark ? Mode.Light : Mode.Dark;
@@ -70,40 +75,44 @@ function TopBar() {
   };
 
   return (
-    <TopNavigation
-      identity={{ href: "/", title: APP_NAME, onFollow: (e) => follow(e as never) }}
-      search={<Search />}
-      utilities={[
-        {
-          type: "menu-dropdown",
-          text: "Services",
-          iconName: "view-full",
-          items: SERVICES.map((s) => ({ id: s.href, text: s.fullName, description: s.description, href: s.href })),
-          onItemFollow: (e) => follow(e as never),
-        },
-        {
-          type: "button",
-          iconName: mode === Mode.Dark ? "star-filled" : "star",
-          title: mode === Mode.Dark ? "Switch to light mode" : "Switch to dark mode",
-          ariaLabel: mode === Mode.Dark ? "Switch to light mode" : "Switch to dark mode",
-          onClick: toggleMode,
-        },
-        {
-          type: "menu-dropdown",
-          text: regionLabel,
-          description: "Region",
-          items: REGIONS.map((r) => ({ id: r.id, text: r.label, description: r.id, disabled: r.id === region })),
-          onItemClick: (e) => setRegion(e.detail.id),
-        },
-        {
-          type: "menu-dropdown",
-          text: "non-prod",
-          description: `Account ID: ${ACCOUNT_ID}`,
-          iconName: "user-profile",
-          items: [{ id: "floci", text: "Emulator dashboard", href: "/aws/_floci/ui", external: true }],
-        },
-      ]}
-    />
+    <>
+      <OtherAccount visible={otherOpen} onClose={() => setOtherOpen(false)} />
+      <TopNavigation
+        identity={{ href: "/", title: APP_NAME, onFollow: (e) => follow(e as never) }}
+        search={<Search />}
+        utilities={[
+          {
+            type: "menu-dropdown",
+            text: "Services",
+            iconName: "view-full",
+            items: SERVICES.map((s) => ({ id: s.href, text: s.fullName, description: s.description, href: s.href })),
+            onItemFollow: (e) => follow(e as never),
+          },
+          {
+            type: "button",
+            iconName: mode === Mode.Dark ? "star-filled" : "star",
+            title: mode === Mode.Dark ? "Switch to light mode" : "Switch to dark mode",
+            ariaLabel: mode === Mode.Dark ? "Switch to light mode" : "Switch to dark mode",
+            onClick: toggleMode,
+          },
+          {
+            type: "menu-dropdown",
+            text: regionLabel,
+            description: "Region",
+            items: REGIONS.map((r) => ({ id: r.id, text: r.label, description: r.id, disabled: r.id === region })),
+            onItemClick: (e) => setRegion(e.detail.id),
+          },
+          {
+            type: "menu-dropdown",
+            text: currentName ?? "non-prod",
+            description: `Account ID: ${current}`,
+            iconName: "user-profile",
+            items: accountMenuItems(accounts, current),
+            onItemClick: (e) => onAccountItem(e.detail.id, () => setOtherOpen(true)),
+          },
+        ]}
+      />
+    </>
   );
 }
 
@@ -125,6 +134,9 @@ function Footer() {
       <span>On-prem non-production environment</span>
       <span style={{ marginLeft: "auto" }}>
         API endpoint: <code style={{ color: "#fff" }}>{PROXY_BASE}</code>
+      </span>
+      <span>
+        Account: <code style={{ color: "#fff" }}>{accountId()}</code>
       </span>
       <span>
         Region: <code style={{ color: "#fff" }}>{getRegion()}</code>

@@ -16,7 +16,7 @@ import { Copy, Pair } from "../../components/Pair";
 import { ResourceTable } from "../../components/ResourceTable";
 import { RouterLink } from "../../components/RouterLink";
 import { Shell } from "../../components/Shell";
-import { ACCOUNT_ID, getRegion } from "../../config";
+import { accountId, getRegion } from "../../config";
 import { useNotify } from "../../lib/notify";
 import { useLoad } from "../../lib/useLoad";
 import { useSubmit } from "../../lib/useSubmit";
@@ -145,7 +145,7 @@ export default function IdentityPools() {
                   <Copy text={one.IdentityPoolId} />
                 </Pair>
                 <Pair label="ARN">
-                  <Copy text={`arn:aws:cognito-identity:${getRegion()}:${ACCOUNT_ID}:identitypool/${one.IdentityPoolId}`} />
+                  <Copy text={`arn:aws:cognito-identity:${getRegion()}:${accountId()}:identitypool/${one.IdentityPoolId}`} />
                 </Pair>
                 <Pair label="Guest access">{one.AllowUnauthenticatedIdentities ? "Active" : "Inactive"}</Pair>
                 <Pair label="Basic (classic) authentication">{one.AllowClassicFlow ? "Active" : "Inactive"}</Pair>

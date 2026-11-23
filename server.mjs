@@ -96,20 +96,51 @@ async function health(res) {
   );
 }
 
+// floci's manifest (GET /_floci/info). Kept once floci answers. Undefined when floci has none.
+let info;
+async function flociInfo() {
+  if (!info) {
+    try {
+      const { status, body } = await get(new URL(process.env.FLOCI_INFO_URL || "/_floci/info", target), 2000);
+      if (status === 200) info = JSON.parse(body);
+    } catch {
+      /* older floci, or floci is down */
+    }
+  }
+  return info;
+}
+
 // The host name people use to reach floci from their own machine. Pages show it in endpoints and commands.
 // As a sidecar, this server reaches floci on a container address that nobody outside Docker can use.
-// floci's manifest has the outside address, so prefer that.
-let publicHost;
+// floci's manifest has the outside address, so prefer that. Only a sidecar gets FLOCI_INFO_URL.
 async function flociHost() {
-  if (!publicHost && process.env.FLOCI_INFO_URL) {
+  if (process.env.FLOCI_INFO_URL) {
     try {
-      const { status, body } = await get(new URL(process.env.FLOCI_INFO_URL), 2000);
-      if (status === 200) publicHost = new URL(JSON.parse(body).endpoint).hostname;
+      return new URL((await flociInfo()).endpoint).hostname;
     } catch {
       /* fall back to the address this server uses */
     }
   }
-  return publicHost || target.hostname;
+  return target.hostname;
+}
+
+const isAccountId = (id) => /^\d{12}$/.test(id);
+
+// FLOCI_ACCOUNTS presets the account menu: "111111111111=dev,222222222222=staging". Names are optional.
+const presetAccounts = (process.env.FLOCI_ACCOUNTS || "")
+  .split(",")
+  .map((entry) => {
+    const [id, ...name] = entry.split("=");
+    return { id: id.trim(), name: name.join("=").trim() || undefined };
+  })
+  .filter((a) => isAccountId(a.id));
+
+// floci's default account: the one it uses for a non-numeric access key such as "test".
+async function accounts() {
+  const fromManifest = (await flociInfo())?.defaults?.account_id;
+  const fromEnv = process.env.FLOCI_DEFAULT_ACCOUNT_ID;
+  const defaultAccountId = [fromManifest, fromEnv].find((id) => isAccountId(id || "")) || "000000000000";
+  return { defaultAccountId, accounts: presetAccounts };
 }
 
 function serveStatic(req, res) {
@@ -137,6 +168,12 @@ http
       return flociHost().then((flociHost) => {
         res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache" });
         res.end(JSON.stringify({ flociHost }));
+      });
+    }
+    if (pathname === "/console-accounts.json") {
+      return accounts().then((body) => {
+        res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache" });
+        res.end(JSON.stringify(body));
       });
     }
     if (req.url === "/aws" || req.url.startsWith("/aws/") || req.url.startsWith("/aws?")) return proxy(req, res);

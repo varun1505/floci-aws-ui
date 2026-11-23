@@ -16,11 +16,14 @@ Options:
   -f, --floci <url>   Where floci listens.            Default: http://localhost:4566
   -p, --port <port>   Port for the console.           Default: 8080
   -H, --host <host>   Address to listen on.           Default: 127.0.0.1
+  -a, --accounts <list>
+                      Accounts for the account menu, as id=name pairs:
+                      111111111111=dev,222222222222=staging. Names are optional.
   -v, --version       Print the version.
   -h, --help          Print this help.
 
-The environment variables AWS_ENDPOINT_URL (or FLOCI_ENDPOINT), PORT and HOST set
-the same three values. An option wins over its variable.
+The environment variables AWS_ENDPOINT_URL (or FLOCI_ENDPOINT), PORT, HOST and
+FLOCI_ACCOUNTS set the same four values. An option wins over its variable.
 
 The console has no login. With the default host, only this machine can open it.
 Use --host 0.0.0.0 to let other machines in, and only on a network you trust.`;
@@ -38,6 +41,7 @@ try {
       floci: { type: "string", short: "f" },
       port: { type: "string", short: "p" },
       host: { type: "string", short: "H" },
+      accounts: { type: "string", short: "a" },
       version: { type: "boolean", short: "v" },
       help: { type: "boolean", short: "h" },
     },
@@ -76,6 +80,11 @@ if (!fs.existsSync(path.join(root, "dist", "index.html"))) fail(`The built app i
 process.env.AWS_ENDPOINT_URL = floci;
 process.env.PORT = port;
 process.env.HOST = host;
+if (values.accounts !== undefined) {
+  const bad = values.accounts.split(",").map((e) => e.split("=")[0].trim()).find((id) => !/^\d{12}$/.test(id));
+  if (bad !== undefined) fail(`--accounts takes 12-digit account IDs, like 111111111111=dev,222222222222. Got: ${bad}`);
+  process.env.FLOCI_ACCOUNTS = values.accounts;
+}
 
 await import("../server.mjs");
 

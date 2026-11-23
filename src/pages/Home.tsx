@@ -9,7 +9,7 @@ import Grid from "@cloudscape-design/components/grid";
 import Header from "@cloudscape-design/components/header";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import StatusIndicator from "@cloudscape-design/components/status-indicator";
-import { ACCOUNT_ID, CLI_PROFILE, PROXY_BASE, REGIONS, getRegion } from "../config";
+import { accountId, CLI_PROFILE, PROXY_BASE, REGIONS, getRegion } from "../config";
 import { cliProfile } from "../components/help";
 import { SERVICES, recentServices } from "../components/nav";
 import { RouterLink } from "../components/RouterLink";
@@ -202,7 +202,7 @@ export default function Home() {
               <SpaceBetween size="m">
                 <div>
                   <Box variant="awsui-key-label">Account ID</Box>
-                  <CopyToClipboard variant="inline" textToCopy={ACCOUNT_ID} copyButtonAriaLabel="Copy" copySuccessText="Copied" copyErrorText="Failed to copy" />
+                  <CopyToClipboard variant="inline" textToCopy={accountId()} copyButtonAriaLabel="Copy" copySuccessText="Copied" copyErrorText="Failed to copy" />
                 </div>
                 <div>
                   <Box variant="awsui-key-label">Region</Box>

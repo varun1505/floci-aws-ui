@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Box from "@cloudscape-design/components/box";
 import HelpPanel from "@cloudscape-design/components/help-panel";
-import { APP_NAME, CLI_PROFILE, PROXY_BASE, getRegion } from "../config";
+import { APP_NAME, CLI_PROFILE, PROXY_BASE, accessKeyFor, getRegion, getSelectedAccount } from "../config";
 import type { Service } from "./nav";
 
 const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: string; href: string }[] }> = {
@@ -303,7 +303,7 @@ export function cliProfile() {
   return `[profile ${CLI_PROFILE}]
 region = ${getRegion()}
 endpoint_url = ${PROXY_BASE}
-aws_access_key_id = test
+aws_access_key_id = ${accessKeyFor(getSelectedAccount())}
 aws_secret_access_key = test`;
 }
 

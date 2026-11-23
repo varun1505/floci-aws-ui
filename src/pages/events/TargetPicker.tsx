@@ -6,7 +6,7 @@ import Select from "@cloudscape-design/components/select";
 import { kinesis } from "../../clients/kinesis";
 import { logs } from "../../clients/logs";
 import { sfn } from "../../clients/sfn";
-import { ACCOUNT_ID, getRegion } from "../../config";
+import { accountId, getRegion } from "../../config";
 import { useLoad } from "../../lib/useLoad";
 import { listAllFunctions } from "../lambda/Functions";
 import { listTopics } from "../sns/snsutil";
@@ -46,7 +46,7 @@ export const TARGET_KINDS: Record<TargetKind, { label: string; noun: string; nee
     load: async () =>
       (await all(async (nextToken) => logs.send(new DescribeLogGroupsCommand({ nextToken })).then((r) => ({ items: r.logGroups ?? [], next: r.nextToken })))).map((g) => ({
         // Log group ARNs end in ":*". EventBridge wants the ARN without it.
-        arn: (g.arn ?? `arn:aws:logs:${getRegion()}:${ACCOUNT_ID}:log-group:${g.logGroupName}`).replace(/:\*$/, ""),
+        arn: (g.arn ?? `arn:aws:logs:${getRegion()}:${accountId()}:log-group:${g.logGroupName}`).replace(/:\*$/, ""),
         name: g.logGroupName ?? "",
       })),
   },

@@ -13,7 +13,7 @@ import SpaceBetween from "@cloudscape-design/components/space-between";
 import Spinner from "@cloudscape-design/components/spinner";
 import Table from "@cloudscape-design/components/table";
 import Tabs from "@cloudscape-design/components/tabs";
-import { ACCOUNT_ID, getRegion } from "../../config";
+import { accountId, getRegion } from "../../config";
 import { ConfirmDelete } from "../../components/ConfirmDelete";
 import { RouterLink } from "../../components/RouterLink";
 import { Shell } from "../../components/Shell";
@@ -56,7 +56,7 @@ export default function InstanceDetail() {
   };
 
   const name = tagName(i?.Tags);
-  const arn = `arn:aws:ec2:${getRegion()}:${ACCOUNT_ID}:instance/${id}`;
+  const arn = `arn:aws:ec2:${getRegion()}:${accountId()}:instance/${id}`;
 
   return (
     <Shell
@@ -147,7 +147,7 @@ export default function InstanceDetail() {
                         <Pair label="Virtualization type">{i.VirtualizationType}</Pair>
                         <Pair label="Root device name">{i.RootDeviceName}</Pair>
                         <Pair label="Number of vCPUs">{(i.CpuOptions?.CoreCount ?? 0) * (i.CpuOptions?.ThreadsPerCore ?? 1) || undefined}</Pair>
-                        <Pair label="Owner">{ACCOUNT_ID}</Pair>
+                        <Pair label="Owner">{accountId()}</Pair>
                         <Pair label="State transition reason">{i.StateTransitionReason}</Pair>
                       </ColumnLayout>
                     </Container>

@@ -96,6 +96,13 @@ describe("floci-aws-ui command", () => {
     expect(res.stderr).toContain("--floci must be an http:// or https:// URL");
   });
 
+  it("rejects an account that is not 12 digits", () => {
+    const res = run("serve", "--accounts", "111111111111=dev,12345=qa");
+    expect(res.status).toBe(1);
+    expect(res.stderr).toContain("--accounts takes 12-digit account IDs");
+    expect(res.stderr).toContain("Got: 12345");
+  });
+
   it("says so when the app is not built", () => {
     const html = path.join(dir, "dist", "index.html");
     fs.renameSync(html, `${html}.off`);
