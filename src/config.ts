@@ -45,6 +45,11 @@ export function accountId(): string {
   return getSelectedAccount() || defaultAccountId;
 }
 
+/** True for floci's default account, or no account at all. */
+export function isDefaultAccount(id: string): boolean {
+  return !id || id === defaultAccountId;
+}
+
 /** Records floci's real default account, read from its manifest at start-up. */
 export function setDefaultAccountId(id: string) {
   if (isAccountId(id)) defaultAccountId = id;

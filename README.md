@@ -191,6 +191,10 @@ The menu lists:
 
 floci has no list of every account it has seen, because an account exists as soon as something uses its ID. To open an account that is not listed, choose **Other account ID...** and type its 12-digit ID.
 
+Accounts reached through IAM access keys (`AKIA...`) or STS sessions are ordinary floci accounts too. Choose the key's account ID in the menu to see what those keys created.
+
+Before it switches, the console checks that floci accepts the account ID as an access key. floci refuses account ID keys when it checks signatures (`FLOCI_AUTH_VALIDATE_SIGNATURES`). The console then stays in the account you are in and says why. A saved account that floci stops accepting takes you back to the default account with the same notice.
+
 To use the same account from the CLI, set `aws_access_key_id` to its ID. The **Use the AWS CLI** box on Console Home shows the profile for the account you are in.
 
 ## How it works

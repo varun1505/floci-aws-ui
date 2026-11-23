@@ -6,8 +6,44 @@ import FormField from "@cloudscape-design/components/form-field";
 import Input from "@cloudscape-design/components/input";
 import Modal from "@cloudscape-design/components/modal";
 import SpaceBetween from "@cloudscape-design/components/space-between";
-import { listAccounts, type Account } from "../clients/organizations";
-import { isAccountId, setAccount } from "../config";
+import { accountRejected, listAccounts, type Account } from "../clients/organizations";
+import { isAccountId, isDefaultAccount, setAccount } from "../config";
+
+/**
+ * Switches to an account after checking that floci accepts its ID as an access key.
+ * Gives back the reason when floci refuses it. floci's default account needs no check.
+ */
+export async function switchAccount(id: string): Promise<string | undefined> {
+  const reason = isDefaultAccount(id) ? undefined : await accountRejected(id);
+  if (!reason) setAccount(id);
+  return reason;
+}
+
+const RESET_KEY = "accountReset";
+
+/** Called at start-up. Goes back to the default account if floci no longer accepts the saved one. */
+export async function dropRejectedAccount(saved: string): Promise<boolean> {
+  const reason = await accountRejected(saved);
+  if (!reason) return false;
+  try {
+    sessionStorage.setItem(RESET_KEY, reason);
+  } catch {
+    /* the notice is only a courtesy */
+  }
+  setAccount("");
+  return true;
+}
+
+/** The reason the console last went back to the default account, once. */
+export function takeAccountResetReason(): string | undefined {
+  try {
+    const reason = sessionStorage.getItem(RESET_KEY) ?? undefined;
+    sessionStorage.removeItem(RESET_KEY);
+    return reason;
+  } catch {
+    return undefined;
+  }
+}
 
 // Loaded once per page load. Switching accounts reloads the page.
 let accountsPromise: Promise<Account[]> | undefined;
@@ -28,10 +64,14 @@ export function useAccounts() {
 export function OtherAccount({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
-  const submit = () => {
+  const [checking, setChecking] = useState(false);
+  const submit = async () => {
     const id = value.trim();
     if (!isAccountId(id)) return setError("Enter an account ID of exactly 12 digits.");
-    setAccount(id);
+    setChecking(true);
+    const reason = await switchAccount(id);
+    setChecking(false);
+    if (reason) setError(reason);
   };
   return (
     <Modal
@@ -44,7 +84,7 @@ export function OtherAccount({ visible, onClose }: { visible: boolean; onClose: 
             <Button variant="link" onClick={onClose}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={submit}>
+            <Button variant="primary" loading={checking} onClick={() => void submit()}>
               Switch account
             </Button>
           </SpaceBetween>
@@ -54,7 +94,7 @@ export function OtherAccount({ visible, onClose }: { visible: boolean; onClose: 
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          submit();
+          void submit();
         }}
       >
         <FormField
@@ -101,8 +141,10 @@ export function accountMenuItems(accounts: Account[] | undefined, current: strin
   ];
 }
 
-/** Handles a click in the account menu. */
-export function onAccountItem(id: string, openOther: () => void) {
-  if (id === "other") openOther();
-  else if (id.startsWith("account:")) setAccount(id.slice("account:".length));
+/** Handles a click in the account menu. `onRejected` gets the reason when floci refuses the account. */
+export async function onAccountItem(id: string, openOther: () => void, onRejected: (reason: string) => void) {
+  if (id === "other") return openOther();
+  if (!id.startsWith("account:")) return;
+  const reason = await switchAccount(id.slice("account:".length));
+  if (reason) onRejected(reason);
 }

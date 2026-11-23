@@ -9,7 +9,7 @@ import SideNavigation from "@cloudscape-design/components/side-navigation";
 import TopNavigation from "@cloudscape-design/components/top-navigation";
 import { applyMode, Mode } from "@cloudscape-design/global-styles";
 import { APP_NAME, PROXY_BASE, REGIONS, accountId, getRegion, setRegion } from "../config";
-import { OtherAccount, accountMenuItems, onAccountItem, useAccounts } from "./AccountMenu";
+import { OtherAccount, accountMenuItems, onAccountItem, takeAccountResetReason, useAccounts } from "./AccountMenu";
 import { useNotify } from "../lib/notify";
 import { ServiceHelp } from "./help";
 import { NAV, SERVICES, markVisited, searchIndex, type Service } from "./nav";
@@ -56,7 +56,15 @@ function TopBar() {
   const follow = useFollow();
   const [mode, setMode] = useState(currentMode);
   const [otherOpen, setOtherOpen] = useState(false);
+  const notify = useNotify();
   const accounts = useAccounts();
+
+  // Tell the user when start-up went back to the default account.
+  useEffect(() => {
+    const reason = takeAccountResetReason();
+    if (reason) notify.error("Back to the default account", reason);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const region = getRegion();
   const regionLabel = REGIONS.find((r) => r.id === region)?.label ?? region;
   const current = accountId();
@@ -108,7 +116,7 @@ function TopBar() {
             description: `Account ID: ${current}`,
             iconName: "user-profile",
             items: accountMenuItems(accounts, current),
-            onItemClick: (e) => onAccountItem(e.detail.id, () => setOtherOpen(true)),
+            onItemClick: (e) => void onAccountItem(e.detail.id, () => setOtherOpen(true), (reason) => notify.error("Cannot switch account", reason)),
           },
         ]}
       />

@@ -1,5 +1,27 @@
 import { DescribeOrganizationCommand, OrganizationsClient, paginateListAccounts } from "@aws-sdk/client-organizations";
+import { ListQueuesCommand, SQSClient } from "@aws-sdk/client-sqs";
 import { accessKeyFor, accountSettings, clientBase, getSelectedAccount, isAccountId } from "../config";
+
+// The errors floci gives for an access key it does not accept.
+const KEY_REJECTED = new Set(["UnrecognizedClientException", "InvalidClientTokenId", "InvalidAccessKeyId"]);
+
+/**
+ * Why floci will not work as this account, or undefined when it will.
+ * floci refuses 12-digit account ID keys when it checks signatures (FLOCI_AUTH_VALIDATE_SIGNATURES).
+ * Any other failure, such as floci being down, is not a reason to refuse the account.
+ */
+export async function accountRejected(id: string): Promise<string | undefined> {
+  if (!isAccountId(id)) return undefined;
+  try {
+    const sqs = new SQSClient({ ...clientBase, credentials: { accessKeyId: id, secretAccessKey: "test" }, useQueueUrlAsEndpoint: false });
+    await sqs.send(new ListQueuesCommand({}));
+  } catch (e) {
+    if (KEY_REJECTED.has((e as Error).name)) {
+      return `floci does not accept account ID ${id} as an access key. floci refuses account ID keys when it checks signatures (FLOCI_AUTH_VALIDATE_SIGNATURES).`;
+    }
+  }
+  return undefined;
+}
 
 /** An Organizations client that calls floci as the given account. */
 function clientAs(account: string) {
