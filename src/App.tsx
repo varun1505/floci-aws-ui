@@ -90,6 +90,11 @@ const EcsTaskDefinitions = lazy(() => import("./pages/ecs/TaskDefinitions"));
 const EcsTaskDefinitionDetail = lazy(() => import("./pages/ecs/TaskDefinitionDetail"));
 const Repositories = lazy(() => import("./pages/ecr/Repositories"));
 const RepositoryDetail = lazy(() => import("./pages/ecr/RepositoryDetail"));
+const OrgAccounts = lazy(() => import("./pages/organizations/Accounts"));
+const OrgAccountDetail = lazy(() => import("./pages/organizations/AccountDetail"));
+const OrgUnitDetail = lazy(() => import("./pages/organizations/UnitDetail"));
+const OrgPolicies = lazy(() => import("./pages/organizations/Policies"));
+const OrgPolicyDetail = lazy(() => import("./pages/organizations/PolicyDetail"));
 const EventBuses = lazy(() => import("./pages/events/Buses"));
 const EventRules = lazy(() => import("./pages/events/Rules"));
 const EventRuleDetail = lazy(() => import("./pages/events/RuleDetail"));
@@ -254,6 +259,13 @@ export default function App() {
         <Route path="/ecr" element={<Navigate to="/ecr/repositories" replace />} />
         <Route path="/ecr/repositories" element={<Repositories />} />
         <Route path="/ecr/repository" element={<RepositoryDetail />} />
+
+        <Route path="/organizations" element={<Navigate to="/organizations/accounts" replace />} />
+        <Route path="/organizations/accounts" element={<OrgAccounts />} />
+        <Route path="/organizations/account" element={<OrgAccountDetail />} />
+        <Route path="/organizations/ou" element={<OrgUnitDetail />} />
+        <Route path="/organizations/policies" element={<OrgPolicies />} />
+        <Route path="/organizations/policy" element={<OrgPolicyDetail />} />
 
         <Route path="/events" element={<Navigate to="/events/buses" replace />} />
         <Route path="/events/buses" element={<EventBuses />} />

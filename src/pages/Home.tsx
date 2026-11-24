@@ -48,6 +48,7 @@ const HEALTH_KEYS: Record<string, string[]> = {
   kinesis: ["kinesis"],
   opensearch: ["es"],
   appsync: ["appsync"],
+  organizations: ["organizations"],
 };
 
 /** One count per service. A failed call gives undefined, shown as "-". */

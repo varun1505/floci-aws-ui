@@ -284,6 +284,17 @@ const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: str
     ),
     docs: [{ text: "AppSync developer guide", href: "https://docs.aws.amazon.com/appsync/latest/devguide/what-is-appsync.html" }],
   },
+  organizations: {
+    title: "AWS Organizations",
+    body: (
+      <>
+        <p>An organization groups accounts under one management account. Organizational units group accounts inside it.</p>
+        <p>Service control policies set the most an account can do. floci applies them only when IAM enforcement and SCP enforcement are both on.</p>
+        <p>Only the management account can see and change the organization. Use the account menu at the top right to switch to it.</p>
+      </>
+    ),
+    docs: [{ text: "Organizations user guide", href: "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_introduction.html" }],
+  },
   ec2: {
     title: "EC2",
     body: (
@@ -372,4 +383,5 @@ const EXAMPLE: Record<Exclude<Service, "home">, string> = {
   kinesis: "kinesis list-streams",
   opensearch: "opensearch list-domain-names",
   appsync: "appsync list-graphql-apis",
+  organizations: "organizations list-accounts",
 };

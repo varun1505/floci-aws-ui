@@ -86,6 +86,7 @@ The same clip with sound: [docs/video/floci-console.mp4](docs/video/floci-consol
 | **Kinesis** | Create data streams. Read and put records. Change shards, retention and capacity mode. Manage enhanced fan-out consumers. |
 | **OpenSearch** | Create and delete domains. See how to connect. Edit cluster settings, access policy and tags. |
 | **AppSync** | Create GraphQL APIs. Edit the schema. Add data sources and resolvers. Manage API keys. Run queries. |
+| **Organizations** | Create an organization. See its accounts as a tree of organizational units. Add accounts, create, rename and delete OUs, move and remove accounts. Turn on service control policies, then create, edit and attach them. Tag accounts, OUs and policies. |
 
 The top bar has a search box for services and pages. Every page has a help panel with the CLI profile.
 
@@ -187,9 +188,13 @@ The menu lists:
 
 - floci's default account, read from floci's manifest (`/_floci/info`).
 - The accounts you preset with `FLOCI_ACCOUNTS` or `--accounts`: `111111111111=dev,222222222222=staging`. Names are optional.
-- Every account in the AWS Organization, if you created one in floci. The console asks the organization's management account for the list.
+- Every account in the AWS Organizations these accounts belong to. floci can hold several organizations, each run by its own management account. The console asks each known account which organization it is in, then asks that organization's management account for its accounts.
 
 floci has no list of every account it has seen, because an account exists as soon as something uses its ID. To open an account that is not listed, choose **Other account ID...** and type its 12-digit ID.
+
+floci names the management account `management-account` when it creates an organization. The console shows it as `management`. A name you preset with `FLOCI_ACCOUNTS` wins.
+
+The **Organizations** pages show the organization of the account you are in. Only the management account can see and change it. In a member account the page says which account manages the organization and offers to switch to it.
 
 Accounts reached through IAM access keys (`AKIA...`) or STS sessions are ordinary floci accounts too. Choose the key's account ID in the menu to see what those keys created.
 

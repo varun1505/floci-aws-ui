@@ -1,12 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Account } from "../clients/organizations";
+import type { Account } from "../lib/accounts";
 
 const setAccount = vi.fn();
 const accountRejected = vi.fn<(id: string) => Promise<string | undefined>>();
 vi.mock("../config", async (orig) => ({ ...(await orig<typeof import("../config")>()), setAccount: (id: string) => setAccount(id) }));
-vi.mock("../clients/organizations", () => ({ accountRejected: (id: string) => accountRejected(id), listAccounts: async () => [] }));
+vi.mock("../lib/accounts", () => ({ accountRejected: (id: string) => accountRejected(id), listAccounts: async () => [] }));
 
 const { OtherAccount, accountMenuItems, dropRejectedAccount, onAccountItem, takeAccountResetReason } = await import("./AccountMenu");
 

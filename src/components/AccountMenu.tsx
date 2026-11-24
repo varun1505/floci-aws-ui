@@ -6,7 +6,7 @@ import FormField from "@cloudscape-design/components/form-field";
 import Input from "@cloudscape-design/components/input";
 import Modal from "@cloudscape-design/components/modal";
 import SpaceBetween from "@cloudscape-design/components/space-between";
-import { accountRejected, listAccounts, type Account } from "../clients/organizations";
+import { accountRejected, listAccounts, type Account } from "../lib/accounts";
 import { isAccountId, isDefaultAccount, setAccount } from "../config";
 
 /**

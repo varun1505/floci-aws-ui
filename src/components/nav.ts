@@ -1,6 +1,6 @@
 import type { SideNavigationProps } from "@cloudscape-design/components/side-navigation";
 
-export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm" | "ecs" | "ecr" | "events" | "states" | "vpc" | "cloudformation" | "kinesis" | "opensearch" | "appsync";
+export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm" | "ecs" | "ecr" | "events" | "states" | "vpc" | "cloudformation" | "kinesis" | "opensearch" | "appsync" | "organizations";
 export type ServiceId = Exclude<Service, "home">;
 
 export const SERVICES: { id: ServiceId; name: string; fullName: string; href: string; description: string }[] = [
@@ -21,6 +21,7 @@ export const SERVICES: { id: ServiceId; name: string; fullName: string; href: st
   { id: "kinesis", name: "Kinesis", fullName: "Kinesis Data Streams", href: "/kinesis/streams", description: "Collect and process streaming data" },
   { id: "kms", name: "KMS", fullName: "Key Management Service", href: "/kms/keys", description: "Create and manage encryption keys" },
   { id: "lambda", name: "Lambda", fullName: "Lambda", href: "/lambda/functions", description: "Run code without thinking about servers" },
+  { id: "organizations", name: "Organizations", fullName: "AWS Organizations", href: "/organizations/accounts", description: "Group accounts and apply policies to them" },
   { id: "opensearch", name: "OpenSearch", fullName: "OpenSearch Service", href: "/opensearch/domains", description: "Search and analytics domains" },
   { id: "rds", name: "RDS", fullName: "Aurora and RDS", href: "/rds/databases", description: "Managed relational database service" },
   { id: "route53", name: "Route 53", fullName: "Route 53", href: "/route53/hosted-zones", description: "DNS hosted zones and records" },
@@ -168,6 +169,10 @@ export const NAV: Record<Service, { header: SideNavigationProps.Header; items: S
   appsync: {
     header: { text: "AWS AppSync", href: "/appsync/apis" },
     items: [link("APIs", "/appsync/apis")],
+  },
+  organizations: {
+    header: { text: "AWS Organizations", href: "/organizations/accounts" },
+    items: [link("AWS accounts", "/organizations/accounts"), link("Policies", "/organizations/policies")],
   },
   ec2: {
     header: { text: "EC2", href: "/ec2/home" },
