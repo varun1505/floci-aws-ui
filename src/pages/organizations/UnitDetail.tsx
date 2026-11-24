@@ -1,5 +1,5 @@
 import { useSearchParams } from "react-router-dom";
-import { DescribeOrganizationalUnitCommand, type Organization, type Root, paginateListAccountsForParent, paginateListOrganizationalUnitsForParent } from "@aws-sdk/client-organizations";
+import { DescribeOrganizationalUnitCommand, type Organization, type Root } from "@aws-sdk/client-organizations";
 import Alert from "@cloudscape-design/components/alert";
 import Box from "@cloudscape-design/components/box";
 import Button from "@cloudscape-design/components/button";
@@ -18,7 +18,7 @@ import { Shell } from "../../components/Shell";
 import { accountName } from "../../lib/accounts";
 import { useLoad } from "../../lib/useLoad";
 import { OrgGate, OrgIdInNav } from "./OrgGate";
-import { type OrgNode, byKindThenName, loadOrgState, parentOf, scpsEnabled, targetHref, unitHref } from "./orgutil";
+import { type OrgNode, byKindThenName, listAccountsIn, listUnits, loadOrgState, parentOf, scpsEnabled, targetHref, unitHref } from "./orgutil";
 import { TargetPolicies, TargetTags } from "./TargetParts";
 
 /** The root or one organizational unit, with what it holds. */
@@ -27,12 +27,8 @@ function UnitView({ id, org, root }: { id: string; org: Organization; root: Root
   const data = useLoad(async () => {
     const [ou, parent] = isRoot ? [undefined, undefined] : await Promise.all([organizations.send(new DescribeOrganizationalUnitCommand({ OrganizationalUnitId: id })).then((r) => r.OrganizationalUnit), parentOf(id)]);
     const children: OrgNode[] = [];
-    for await (const page of paginateListOrganizationalUnitsForParent({ client: organizations }, { ParentId: id })) {
-      for (const u of page.OrganizationalUnits ?? []) children.push({ id: u.Id ?? "", parentId: id, kind: "ou", name: u.Name ?? u.Id ?? "" });
-    }
-    for await (const page of paginateListAccountsForParent({ client: organizations }, { ParentId: id })) {
-      for (const a of page.Accounts ?? []) children.push({ id: a.Id ?? "", parentId: id, kind: "account", name: accountName(a.Name, a.Id === org.MasterAccountId) ?? a.Id ?? "", account: a });
-    }
+    for (const u of await listUnits(id)) children.push({ id: u.Id ?? "", parentId: id, kind: "ou", name: u.Name ?? u.Id ?? "" });
+    for (const a of await listAccountsIn(id)) children.push({ id: a.Id ?? "", parentId: id, kind: "account", name: accountName(a.Name, a.Id === org.MasterAccountId) ?? a.Id ?? "", account: a });
     return { name: isRoot ? "Root" : ou?.Name ?? id, arn: isRoot ? root.Arn : ou?.Arn, parent, children: children.sort(byKindThenName) };
   }, [id, isRoot]);
   const d = data.data;

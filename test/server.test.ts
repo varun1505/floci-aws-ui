@@ -165,6 +165,17 @@ describe("console contract", () => {
       child.kill();
     }
   });
+  it("uses FLOCI_DEFAULT_ACCOUNT_ID when floci's manifest does not say", async () => {
+    const dead = await freePort();
+    const port = await freePort();
+    const child = await start({ PORT: String(port), FLOCI_ENDPOINT: `http://127.0.0.1:${dead}`, FLOCI_DEFAULT_ACCOUNT_ID: "222222222222" });
+    try {
+      expect((await (await fetch(`http://127.0.0.1:${port}/console-accounts.json`)).json()).defaultAccountId).toBe("222222222222");
+    } finally {
+      child.removeAllListeners("exit");
+      child.kill();
+    }
+  });
   it("falls back to 000000000000 when floci does not say", async () => {
     const dead = await freePort();
     const port = await freePort();

@@ -129,6 +129,16 @@ describe("floci-aws-ui serve", () => {
     }
   });
 
+  it("passes --accounts to the account menu", async () => {
+    const port = await freePort();
+    const server = await serve(["--port", String(port), "--floci", "http://floci.test:4566", "--accounts", "111111111111=storefront,222222222222"]);
+    try {
+      expect((await (await fetch(`http://127.0.0.1:${port}/console-accounts.json`)).json()).accounts).toEqual([{ id: "111111111111", name: "storefront" }, { id: "222222222222" }]);
+    } finally {
+      server.stop();
+    }
+  });
+
   it("reads the environment variables", async () => {
     const port = await freePort();
     const server = await serve([], { PORT: String(port), FLOCI_ENDPOINT: "http://from-env:4566", HOST: "localhost" });

@@ -6,8 +6,6 @@ import {
   type Tag,
   TagResourceCommand,
   UntagResourceCommand,
-  paginateListPoliciesForTarget,
-  paginateListTagsForResource,
 } from "@aws-sdk/client-organizations";
 import Alert from "@cloudscape-design/components/alert";
 import Button from "@cloudscape-design/components/button";
@@ -22,17 +20,12 @@ import { errorMessage } from "../../lib/format";
 import { useNotify } from "../../lib/notify";
 import { useLoad } from "../../lib/useLoad";
 import { useSubmit } from "../../lib/useSubmit";
-import { SCP, listScps, policyHref } from "./orgutil";
+import { listPoliciesFor, listScps, listTags, policyHref } from "./orgutil";
 
 /** The service control policies attached directly to an account, an OU or the root. */
 export function TargetPolicies({ targetId, enabled }: { targetId: string; enabled: boolean }) {
   const notify = useNotify();
-  const attached = useLoad(async () => {
-    if (!enabled) return [];
-    const out: PolicySummary[] = [];
-    for await (const page of paginateListPoliciesForTarget({ client: organizations }, { TargetId: targetId, Filter: SCP })) out.push(...(page.Policies ?? []));
-    return out.sort((a, b) => (a.Name ?? "").localeCompare(b.Name ?? ""));
-  }, [targetId, enabled]);
+  const attached = useLoad(() => (enabled ? listPoliciesFor(targetId) : Promise.resolve([])), [targetId, enabled]);
   const form = useSubmit();
   const [selected, setSelected] = useState<PolicySummary[]>([]);
   const [attaching, setAttaching] = useState(false);
@@ -130,11 +123,7 @@ export function TargetPolicies({ targetId, enabled }: { targetId: string; enable
 /** The tags of an account, an OU, the root or a policy. */
 export function TargetTags({ resourceId }: { resourceId: string }) {
   const notify = useNotify();
-  const tags = useLoad(async () => {
-    const out: Tag[] = [];
-    for await (const page of paginateListTagsForResource({ client: organizations }, { ResourceId: resourceId })) out.push(...(page.Tags ?? []));
-    return out.sort((a, b) => (a.Key ?? "").localeCompare(b.Key ?? ""));
-  }, [resourceId]);
+  const tags = useLoad(() => listTags(resourceId), [resourceId]);
   const form = useSubmit();
   const [selected, setSelected] = useState<Tag[]>([]);
   const [adding, setAdding] = useState(false);

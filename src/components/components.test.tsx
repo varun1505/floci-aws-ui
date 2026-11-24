@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { CLI_PROFILE } from "../config";
 import { ConfirmDelete } from "./ConfirmDelete";
+import { cliProfile } from "./help";
 import { ResourceTable } from "./ResourceTable";
 
 describe("ConfirmDelete", () => {
@@ -81,5 +82,15 @@ describe("ResourceTable", () => {
     table({ onRefresh });
     await userEvent.click(screen.getByRole("button", { name: /refresh/i }));
     expect(onRefresh).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("cliProfile", () => {
+  it("uses the account in use as the access key", () => {
+    localStorage.removeItem("account");
+    expect(cliProfile()).toContain("aws_access_key_id = test");
+    localStorage.setItem("account", "111111111111");
+    expect(cliProfile()).toContain("aws_access_key_id = 111111111111");
+    localStorage.removeItem("account");
   });
 });

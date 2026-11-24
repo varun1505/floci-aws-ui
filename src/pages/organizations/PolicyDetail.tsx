@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { AttachPolicyCommand, DeletePolicyCommand, DescribePolicyCommand, DetachPolicyCommand, type Organization, type PolicyTargetSummary, type Root, UpdatePolicyCommand, paginateListTargetsForPolicy } from "@aws-sdk/client-organizations";
+import { AttachPolicyCommand, DeletePolicyCommand, DescribePolicyCommand, DetachPolicyCommand, type Organization, type PolicyTargetSummary, type Root, UpdatePolicyCommand } from "@aws-sdk/client-organizations";
 import Alert from "@cloudscape-design/components/alert";
 import Box from "@cloudscape-design/components/box";
 import Button from "@cloudscape-design/components/button";
@@ -27,7 +27,7 @@ import { useNotify } from "../../lib/notify";
 import { useLoad } from "../../lib/useLoad";
 import { useSubmit } from "../../lib/useSubmit";
 import { OrgGate, OrgIdInNav } from "./OrgGate";
-import { checkPolicyJson, loadOrgState, loadTree, policyHref, targetHref } from "./orgutil";
+import { checkPolicyJson, listTargets, loadOrgState, loadTree, policyHref, targetHref } from "./orgutil";
 import { TargetTags } from "./TargetParts";
 
 const TARGET_TYPE: Record<string, string> = { ROOT: "Root", ORGANIZATIONAL_UNIT: "Organizational unit", ACCOUNT: "Account" };
@@ -36,11 +36,7 @@ function PolicyView({ id, org, root }: { id: string; org: Organization; root: Ro
   const navigate = useNavigate();
   const notify = useNotify();
   const policy = useLoad(async () => (await organizations.send(new DescribePolicyCommand({ PolicyId: id }))).Policy, [id]);
-  const targets = useLoad(async () => {
-    const out: PolicyTargetSummary[] = [];
-    for await (const page of paginateListTargetsForPolicy({ client: organizations }, { PolicyId: id })) out.push(...(page.Targets ?? []));
-    return out.sort((a, b) => (a.Name ?? "").localeCompare(b.Name ?? ""));
-  }, [id]);
+  const targets = useLoad(() => listTargets(id), [id]);
   const form = useSubmit();
   const [dialog, setDialog] = useState<"edit" | "attach" | "delete" | undefined>(undefined);
   const [selected, setSelected] = useState<PolicyTargetSummary[]>([]);

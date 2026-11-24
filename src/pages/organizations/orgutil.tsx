@@ -3,14 +3,20 @@ import {
   DescribeCreateAccountStatusCommand,
   DescribeOrganizationCommand,
   DescribeOrganizationalUnitCommand,
+  ListAccountsForParentCommand,
+  ListOrganizationalUnitsForParentCommand,
   ListParentsCommand,
+  ListPoliciesCommand,
+  ListPoliciesForTargetCommand,
+  ListRootsCommand,
+  ListTagsForResourceCommand,
+  ListTargetsForPolicyCommand,
   type Organization,
+  type OrganizationalUnit,
   type PolicySummary,
+  type PolicyTargetSummary,
   type Root,
-  paginateListAccountsForParent,
-  paginateListOrganizationalUnitsForParent,
-  paginateListPolicies,
-  paginateListRoots,
+  type Tag,
 } from "@aws-sdk/client-organizations";
 import { organizations } from "../../clients/organizations";
 import { accountId } from "../../config";
@@ -39,9 +45,78 @@ export async function loadOrgState(): Promise<OrgState> {
     throw e;
   }
   if (!org || org.MasterAccountId !== accountId()) return { kind: "member", org: org ?? {} };
-  const roots: Root[] = [];
-  for await (const page of paginateListRoots({ client: organizations }, {})) roots.push(...(page.Roots ?? []));
+  const roots = await listRoots();
   return { kind: "management", org, root: roots[0] ?? {} };
+}
+
+async function listRoots(): Promise<Root[]> {
+  const out: Root[] = [];
+  let NextToken: string | undefined;
+  do {
+    const res = await organizations.send(new ListRootsCommand({ NextToken }));
+    out.push(...(res.Roots ?? []));
+    NextToken = res.NextToken;
+  } while (NextToken);
+  return out;
+}
+
+/** The OUs directly under the root or an OU. */
+export async function listUnits(ParentId: string): Promise<OrganizationalUnit[]> {
+  const out: OrganizationalUnit[] = [];
+  let NextToken: string | undefined;
+  do {
+    const res = await organizations.send(new ListOrganizationalUnitsForParentCommand({ ParentId, NextToken }));
+    out.push(...(res.OrganizationalUnits ?? []));
+    NextToken = res.NextToken;
+  } while (NextToken);
+  return out;
+}
+
+/** The accounts directly under the root or an OU. */
+export async function listAccountsIn(ParentId: string): Promise<Account[]> {
+  const out: Account[] = [];
+  let NextToken: string | undefined;
+  do {
+    const res = await organizations.send(new ListAccountsForParentCommand({ ParentId, NextToken }));
+    out.push(...(res.Accounts ?? []));
+    NextToken = res.NextToken;
+  } while (NextToken);
+  return out;
+}
+
+/** The service control policies attached directly to an account, an OU or the root. */
+export async function listPoliciesFor(TargetId: string): Promise<PolicySummary[]> {
+  const out: PolicySummary[] = [];
+  let NextToken: string | undefined;
+  do {
+    const res = await organizations.send(new ListPoliciesForTargetCommand({ TargetId, Filter: SCP, NextToken }));
+    out.push(...(res.Policies ?? []));
+    NextToken = res.NextToken;
+  } while (NextToken);
+  return out.sort((a, b) => (a.Name ?? "").localeCompare(b.Name ?? ""));
+}
+
+/** The root, OUs and accounts a policy is attached to. */
+export async function listTargets(PolicyId: string): Promise<PolicyTargetSummary[]> {
+  const out: PolicyTargetSummary[] = [];
+  let NextToken: string | undefined;
+  do {
+    const res = await organizations.send(new ListTargetsForPolicyCommand({ PolicyId, NextToken }));
+    out.push(...(res.Targets ?? []));
+    NextToken = res.NextToken;
+  } while (NextToken);
+  return out.sort((a, b) => (a.Name ?? "").localeCompare(b.Name ?? ""));
+}
+
+export async function listTags(ResourceId: string): Promise<Tag[]> {
+  const out: Tag[] = [];
+  let NextToken: string | undefined;
+  do {
+    const res = await organizations.send(new ListTagsForResourceCommand({ ResourceId, NextToken }));
+    out.push(...(res.Tags ?? []));
+    NextToken = res.NextToken;
+  } while (NextToken);
+  return out.sort((a, b) => (a.Key ?? "").localeCompare(b.Key ?? ""));
 }
 
 /** One row of the AWS accounts tree: the root, an organizational unit or an account. */
@@ -58,13 +133,8 @@ export type OrgNode = {
 export async function loadTree(root: Root, masterId?: string): Promise<OrgNode[]> {
   const nodes: OrgNode[] = [{ id: root.Id ?? "", parentId: null, kind: "root", name: "Root", arn: root.Arn }];
   const walk = async (parentId: string): Promise<void> => {
-    const units: OrgNode[] = [];
-    for await (const page of paginateListOrganizationalUnitsForParent({ client: organizations }, { ParentId: parentId })) {
-      for (const ou of page.OrganizationalUnits ?? []) units.push({ id: ou.Id ?? "", parentId, kind: "ou", name: ou.Name ?? ou.Id ?? "", arn: ou.Arn });
-    }
-    for await (const page of paginateListAccountsForParent({ client: organizations }, { ParentId: parentId })) {
-      for (const a of page.Accounts ?? []) nodes.push({ id: a.Id ?? "", parentId, kind: "account", name: accountName(a.Name, a.Id === masterId) ?? a.Id ?? "", arn: a.Arn, account: a });
-    }
+    const units: OrgNode[] = (await listUnits(parentId)).map((ou) => ({ id: ou.Id ?? "", parentId, kind: "ou", name: ou.Name ?? ou.Id ?? "", arn: ou.Arn }));
+    for (const a of await listAccountsIn(parentId)) nodes.push({ id: a.Id ?? "", parentId, kind: "account", name: accountName(a.Name, a.Id === masterId) ?? a.Id ?? "", arn: a.Arn, account: a });
     nodes.push(...units);
     await Promise.all(units.map((u) => walk(u.id)));
   };
@@ -88,7 +158,12 @@ export function destinations(nodes: OrgNode[]): { value: string; label: string }
 
 export async function listScps(): Promise<PolicySummary[]> {
   const out: PolicySummary[] = [];
-  for await (const page of paginateListPolicies({ client: organizations }, { Filter: SCP })) out.push(...(page.Policies ?? []));
+  let NextToken: string | undefined;
+  do {
+    const res = await organizations.send(new ListPoliciesCommand({ Filter: SCP, NextToken }));
+    out.push(...(res.Policies ?? []));
+    NextToken = res.NextToken;
+  } while (NextToken);
   return out.sort((a, b) => (a.Name ?? "").localeCompare(b.Name ?? ""));
 }
 

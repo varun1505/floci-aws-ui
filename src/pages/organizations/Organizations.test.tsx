@@ -5,22 +5,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NotifyProvider } from "../../lib/notify";
 
 // No network in this test. The Organizations client answers from this fake.
-// The SDK paginators need a real client object, so only its send is replaced.
 const send = vi.hoisted(() => vi.fn());
-vi.mock("../../clients/organizations", async () => {
-  const { OrganizationsClient } = await import("@aws-sdk/client-organizations");
-  const client = new OrganizationsClient({ region: "us-east-1" });
-  client.send = send as never;
-  return { organizations: client };
-});
+vi.mock("../../clients/organizations", () => ({ organizations: { send } }));
 
+import AccountDetail from "./AccountDetail";
 import Accounts from "./Accounts";
 import { checkPolicyJson, destinations, type OrgNode } from "./orgutil";
 import Policies from "./Policies";
 
 type Command = { constructor: { name: string }; input: Record<string, unknown> };
 
-// 000000000000 is the account in use. By default it manages an organization with one OU.
+// 000000000000 is the account in use. By default it manages an organization with one OU, Workloads,
+// which holds the account dev.
 let org: "none" | "member" | "management";
 let scps: boolean;
 
@@ -44,14 +40,32 @@ beforeEach(() => {
               ? [{ Id: "000000000000", Name: "management-account", Email: "m@example.com", Status: "ACTIVE", JoinedMethod: "INVITED" }]
               : [{ Id: "111111111111", Name: "dev", Email: "dev@example.com", Status: "ACTIVE", JoinedMethod: "CREATED" }],
         };
-      case "CreateOrganizationCommand":
-      case "MoveAccountCommand":
-      case "EnablePolicyTypeCommand":
-        return {};
+      case "DescribeAccountCommand":
+        return { Account: { Id: "111111111111", Name: "dev", Email: "dev@example.com", Status: "ACTIVE", JoinedMethod: "CREATED", Arn: "arn:aws:organizations::000000000000:account/o-1/111111111111" } };
+      case "ListParentsCommand":
+        return { Parents: [{ Id: "ou-1", Type: "ORGANIZATIONAL_UNIT" }] };
+      case "DescribeOrganizationalUnitCommand":
+        return { OrganizationalUnit: { Id: "ou-1", Name: "Workloads" } };
+      case "ListPoliciesForTargetCommand":
+        return { Policies: [{ Id: "p-full", Name: "FullAWSAccess", AwsManaged: true }] };
+      case "ListPoliciesCommand":
+        return { Policies: [{ Id: "p-full", Name: "FullAWSAccess", AwsManaged: true }, { Id: "p-deny", Name: "deny-leave-organization" }] };
+      case "ListTagsForResourceCommand":
+        return { Tags: [{ Key: "team", Value: "checkout" }] };
       case "CreateAccountCommand":
         return { CreateAccountStatus: { Id: "car-1", State: "SUCCEEDED", AccountId: "222222222222" } };
-      case "ListPoliciesCommand":
-        return { Policies: [] };
+      case "CreateOrganizationCommand":
+      case "CreateOrganizationalUnitCommand":
+      case "UpdateOrganizationalUnitCommand":
+      case "DeleteOrganizationalUnitCommand":
+      case "MoveAccountCommand":
+      case "RemoveAccountFromOrganizationCommand":
+      case "EnablePolicyTypeCommand":
+      case "AttachPolicyCommand":
+      case "DetachPolicyCommand":
+      case "TagResourceCommand":
+      case "UntagResourceCommand":
+        return {};
       default:
         throw new Error(`Unexpected command ${command.constructor.name}`);
     }
@@ -59,14 +73,25 @@ beforeEach(() => {
 });
 
 const sent = (name: string) => send.mock.calls.map(([c]) => c as Command).filter((c) => c.constructor.name === name);
+
+// The dialogs are in the page even when closed, so a button name can match twice.
+// The page's own button comes first. The dialog's button comes last.
 const dialogButton = (name: string) => screen.getAllByRole("button", { name }).at(-1)!;
 
-function open(page: React.ReactNode) {
+function open(page: React.ReactNode, path = "/") {
   render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[path]}>
       <NotifyProvider>{page}</NotifyProvider>
     </MemoryRouter>,
   );
+}
+
+/** Selects a row of the AWS accounts tree, then picks an item of the Actions menu. */
+async function action(row: string, item: string) {
+  const link = await screen.findByRole("link", { name: row });
+  await userEvent.click(within(link.closest("tr")!).getByRole("radio"));
+  await userEvent.click(screen.getByRole("button", { name: "Actions" }));
+  await userEvent.click(screen.getByRole("menuitem", { name: item }));
 }
 
 describe("AWS accounts page", () => {
@@ -117,6 +142,119 @@ describe("AWS accounts page", () => {
     expect((await screen.findAllByText(/^Enter the email address of the account owner/)).length).toBeGreaterThan(0);
     expect(sent("CreateAccountCommand")).toHaveLength(0);
   });
+
+  it("creates an organizational unit in the selected OU", async () => {
+    open(<Accounts />);
+    const workloads = await screen.findByRole("link", { name: "Workloads" });
+    await userEvent.click(within(workloads.closest("tr")!).getByRole("radio"));
+    await userEvent.click(screen.getByRole("button", { name: "Create organizational unit" }));
+    await userEvent.type(screen.getByPlaceholderText("Applications"), "Production");
+    await userEvent.click(dialogButton("Create"));
+    await waitFor(() => expect(sent("CreateOrganizationalUnitCommand")).toHaveLength(1));
+    expect(sent("CreateOrganizationalUnitCommand")[0].input).toEqual({ ParentId: "ou-1", Name: "Production" });
+  });
+
+  it("moves an account to another place", async () => {
+    open(<Accounts />);
+    await action("dev", "Move account");
+    await userEvent.click(screen.getByText("Choose the root or an organizational unit"));
+    await userEvent.click(await screen.findByRole("option", { name: "Root" }));
+    await userEvent.click(dialogButton("Move"));
+    await waitFor(() => expect(sent("MoveAccountCommand")).toHaveLength(1));
+    expect(sent("MoveAccountCommand")[0].input).toEqual({ AccountId: "111111111111", SourceParentId: "ou-1", DestinationParentId: "r-1" });
+  });
+
+  it("renames an organizational unit", async () => {
+    open(<Accounts />);
+    await action("Workloads", "Rename organizational unit");
+    const dialog = within(await screen.findByRole("dialog", { name: "Rename organizational unit" }));
+    const name = dialog.getByDisplayValue("Workloads");
+    await userEvent.clear(name);
+    await userEvent.type(name, "Applications");
+    await userEvent.click(dialog.getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(sent("UpdateOrganizationalUnitCommand")).toHaveLength(1));
+    expect(sent("UpdateOrganizationalUnitCommand")[0].input).toEqual({ OrganizationalUnitId: "ou-1", Name: "Applications" });
+  });
+
+  it("deletes an organizational unit only after the user confirms", async () => {
+    open(<Accounts />);
+    await action("Workloads", "Delete organizational unit");
+    expect(sent("DeleteOrganizationalUnitCommand")).toHaveLength(0);
+    const dialog = within(await screen.findByRole("dialog", { name: "Delete organizational unit" }));
+    await userEvent.type(dialog.getByPlaceholderText("delete"), "delete");
+    await userEvent.click(dialog.getByRole("button", { name: "Delete" }));
+    await waitFor(() => expect(sent("DeleteOrganizationalUnitCommand")).toHaveLength(1));
+    expect(sent("DeleteOrganizationalUnitCommand")[0].input).toEqual({ OrganizationalUnitId: "ou-1" });
+  });
+
+  it("removes an account from the organization only after the user confirms", async () => {
+    open(<Accounts />);
+    await action("dev", "Remove account from organization");
+    expect(sent("RemoveAccountFromOrganizationCommand")).toHaveLength(0);
+    await userEvent.type(await screen.findByPlaceholderText("remove"), "remove");
+    await userEvent.click(dialogButton("Remove"));
+    await waitFor(() => expect(sent("RemoveAccountFromOrganizationCommand")).toHaveLength(1));
+    expect(sent("RemoveAccountFromOrganizationCommand")[0].input).toEqual({ AccountId: "111111111111" });
+  });
+
+  it("does not offer to remove the management account", async () => {
+    open(<Accounts />);
+    const management = await screen.findByRole("link", { name: "management" });
+    await userEvent.click(within(management.closest("tr")!).getByRole("radio"));
+    await userEvent.click(screen.getByRole("button", { name: "Actions" }));
+    expect(screen.getByRole("menuitem", { name: "Remove account from organization" })).toHaveAttribute("aria-disabled", "true");
+  });
+});
+
+describe("account page", () => {
+  beforeEach(() => {
+    scps = true;
+  });
+  const openDev = () => open(<AccountDetail />, "/organizations/account?id=111111111111");
+
+  it("shows the account and where it sits", async () => {
+    openDev();
+    expect(await screen.findByRole("heading", { name: "dev" })).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: "Workloads" })).toHaveAttribute("href", "/organizations/ou?id=ou-1");
+    expect(screen.getByRole("button", { name: "Switch to this account" })).toBeEnabled();
+  });
+
+  it("attaches a service control policy", async () => {
+    openDev();
+    await screen.findByRole("link", { name: "FullAWSAccess" });
+    await userEvent.click(screen.getAllByRole("button", { name: "Attach" })[0]);
+    await userEvent.click(await screen.findByText("Choose a policy"));
+    await userEvent.click(await screen.findByRole("option", { name: /deny-leave-organization/ }));
+    await userEvent.click(dialogButton("Attach"));
+    await waitFor(() => expect(sent("AttachPolicyCommand")).toHaveLength(1));
+    expect(sent("AttachPolicyCommand")[0].input).toEqual({ PolicyId: "p-deny", TargetId: "111111111111" });
+  });
+
+  it("detaches the selected policy", async () => {
+    openDev();
+    const policy = await screen.findByRole("link", { name: "FullAWSAccess" });
+    await userEvent.click(within(policy.closest("tr")!).getByRole("checkbox"));
+    await userEvent.click(screen.getByRole("button", { name: "Detach" }));
+    await waitFor(() => expect(sent("DetachPolicyCommand")).toHaveLength(1));
+    expect(sent("DetachPolicyCommand")[0].input).toEqual({ PolicyId: "p-full", TargetId: "111111111111" });
+  });
+
+  it("adds a tag and removes one", async () => {
+    openDev();
+    await userEvent.click(await screen.findByRole("tab", { name: "Tags" }));
+    const team = await screen.findByText("team");
+    await userEvent.click(screen.getAllByRole("button", { name: "Add tag" })[0]);
+    await userEvent.type(screen.getByPlaceholderText("team"), "cost-center");
+    await userEvent.type(screen.getByPlaceholderText("checkout"), "web");
+    await userEvent.click(dialogButton("Save"));
+    await waitFor(() => expect(sent("TagResourceCommand")).toHaveLength(1));
+    expect(sent("TagResourceCommand")[0].input).toEqual({ ResourceId: "111111111111", Tags: [{ Key: "cost-center", Value: "web" }] });
+
+    await userEvent.click(within(team.closest("tr")!).getByRole("checkbox"));
+    await userEvent.click(screen.getByRole("button", { name: "Remove" }));
+    await waitFor(() => expect(sent("UntagResourceCommand")).toHaveLength(1));
+    expect(sent("UntagResourceCommand")[0].input).toEqual({ ResourceId: "111111111111", TagKeys: ["team"] });
+  });
 });
 
 describe("Policies page", () => {
@@ -130,7 +268,7 @@ describe("Policies page", () => {
   it("lists the policies once they are on", async () => {
     scps = true;
     open(<Policies />);
-    expect(await screen.findByText("No policies")).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: "deny-leave-organization" })).toHaveAttribute("href", "/organizations/policy?id=p-deny");
   });
 });
 
