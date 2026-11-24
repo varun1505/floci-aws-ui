@@ -26,7 +26,7 @@ The command checks that floci answers. If it does not, it prints how to start fl
 | `--floci`, `-f` | `http://localhost:4566` | Where floci listens. |
 | `--port`, `-p` | `8080` | Port for the console. |
 | `--host`, `-H` | `127.0.0.1` | Address to listen on. Use `0.0.0.0` to let other machines in. |
-| `--accounts`, `-a` | | Accounts for the account menu, like `111111111111=storefront,222222222222=payments-api`. See [Accounts](#accounts). |
+| `--accounts`, `-a` | | Accounts for the account menu, like `111111111111=storefront,222222222222=payments-api`. See [Accounts and organizations](#accounts-and-organizations). |
 
 ## See it in 21 seconds
 
@@ -86,9 +86,20 @@ The same clip with sound: [docs/video/floci-console.mp4](docs/video/floci-consol
 | **Kinesis** | Create data streams. Read and put records. Change shards, retention and capacity mode. Manage enhanced fan-out consumers. |
 | **OpenSearch** | Create and delete domains. See how to connect. Edit cluster settings, access policy and tags. |
 | **AppSync** | Create GraphQL APIs. Edit the schema. Add data sources and resolvers. Manage API keys. Run queries. |
-| **Organizations** | Open it with **Organization** in the account menu, as in AWS. Create an organization. See its accounts as a tree of organizational units. Add accounts, create, rename and delete OUs, move and remove accounts. Turn on service control policies, then create, edit and attach them. Tag accounts, OUs and policies. |
 
 The top bar has a search box for services and pages. Every page has a help panel with the CLI profile.
+
+## Accounts and organizations
+
+Work with more than one AWS account, the way teams do in AWS. Give each project its own account and keep its resources apart.
+
+- **Switch accounts from the top bar.** The account menu lists your accounts by name. Pick one, and every page shows that account's resources.
+- **Your accounts are found for you.** The menu lists floci's default account, the accounts you name when you start the console, and every account in your organizations.
+- **Open any account.** Type an account ID to open an account that is not in the list.
+- **Manage your organization.** Choose **Organization** in the account menu, as in AWS. See your accounts grouped into organizational units, add accounts, move them between units, and attach service control policies.
+- **Use the same account from the CLI.** Console Home shows the CLI profile for the account you are in.
+
+To name your accounts in the menu, start the console with `--accounts 111111111111=storefront,222222222222=payments-api`, or set `FLOCI_ACCOUNTS`. See [Settings](#settings).
 
 ## Use the AWS CLI through the console
 
@@ -178,30 +189,6 @@ pnpm typecheck   # check the types
 
 The tests need no floci and no network. They cover the helper functions, the shared components, the navigation, one full page (SQS queues) with a fake SDK client, the production server with a fake floci, and the `floci-aws-ui` command.
 
-## Accounts
-
-floci keeps each AWS account's resources apart. It picks the account from the access key ID: a key of exactly 12 digits is the account ID, and any other key, such as `test`, means floci's default account (`000000000000` unless `FLOCI_DEFAULT_ACCOUNT_ID` changes it).
-
-The account menu at the top right switches the whole console to another account. The page reloads and shows that account's resources. The console remembers the choice in this browser.
-
-The menu lists:
-
-- floci's default account, read from floci's manifest (`/_floci/info`).
-- The accounts you preset with `FLOCI_ACCOUNTS` or `--accounts`: `111111111111=storefront,222222222222=payments-api`. Names are optional.
-- Every account in the AWS Organizations these accounts belong to. floci can hold several organizations, each run by its own management account. The console asks each known account which organization it is in, then asks that organization's management account for its accounts.
-
-floci has no list of every account it has seen, because an account exists as soon as something uses its ID. To open an account that is not listed, choose **Other account ID...** and type its 12-digit ID.
-
-floci names the management account `management-account` when it creates an organization. The console shows it as `management`. A name you preset with `FLOCI_ACCOUNTS` wins.
-
-**Organization** in the account menu opens the Organizations pages, as it does in AWS. They show the organization of the account you are in. Only the management account can see and change it. In a member account the page says which account manages the organization and offers to switch to it.
-
-Accounts reached through IAM access keys (`AKIA...`) or STS sessions are ordinary floci accounts too. Choose the key's account ID in the menu to see what those keys created.
-
-Before it switches, the console checks that floci accepts the account ID as an access key. floci refuses account ID keys when it checks signatures (`FLOCI_AUTH_VALIDATE_SIGNATURES`). The console then stays in the account you are in and says why. A saved account that floci stops accepting takes you back to the default account with the same notice.
-
-To use the same account from the CLI, set `aws_access_key_id` to its ID. The **Use the AWS CLI** box on Console Home shows the profile for the account you are in.
-
 ## How it works
 
 ```
@@ -221,12 +208,13 @@ browser  ->  this server (/aws/*)  ->  floci (:4566)
 | `FLOCI_TLS_SKIP_VERIFY` | not set | Set to `1` to accept floci's self-signed certificate. |
 | `PORT` | `8080` | Port for the production server. |
 | `HOST` | all addresses | Address the production server listens on. `npx floci-aws-ui serve` uses `127.0.0.1` unless you set it. |
-| `FLOCI_ACCOUNTS` | not set | Accounts for the account menu, like `111111111111=storefront,222222222222=payments-api`. See [Accounts](#accounts). |
+| `FLOCI_ACCOUNTS` | not set | Accounts for the account menu, like `111111111111=storefront,222222222222=payments-api`. See [Accounts and organizations](#accounts-and-organizations). |
 | `FLOCI_DEFAULT_ACCOUNT_ID` | `000000000000` | floci's default account, when floci's manifest does not say. Set it to the same value you give floci. |
 
 ## Known limits
 
 - **No login.** Anyone who can open the console can change everything in floci. Keep it on a private network.
+- **Switching accounts needs floci to accept account IDs as keys.** When floci checks signatures (`FLOCI_AUTH_VALIDATE_SIGNATURES`), it accepts only its default account, and the console says so.
 - **floci keeps state in memory** unless it was started with `--persist`. A floci restart wipes all resources.
 - floci does not write the `START`, `END` and `REPORT` lines to Lambda logs. You only see what your code prints.
 - floci does not publish Lambda or EC2 metrics on its own. The Metrics page shows only metrics your apps send.
