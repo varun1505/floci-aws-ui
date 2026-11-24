@@ -35,6 +35,27 @@ describe("account menu", () => {
   it("opens the organization from the account menu, as AWS does", () => {
     expect(accountMenuItems(ACCOUNTS, "000000000000")[0]).toEqual({ id: "organization", text: "Organization", href: "/organizations/accounts" });
   });
+  it("groups the accounts by organization when there are several", () => {
+    const items = accountMenuItems(
+      [
+        { id: "000000000000", name: "management (o-first)", isDefault: true, orgId: "o-first", source: "default" },
+        { id: "111111111111", name: "storefront", orgId: "o-first", source: "organization" },
+        { id: "333333333333", name: "management (o-second)", orgId: "o-second", source: "organization" },
+        { id: "555555555555", name: "legacy-billing", source: "preset" },
+      ],
+      "000000000000",
+    );
+    const groups = items.filter((i) => "items" in i).map((g) => [g.text, ("items" in g ? g.items : []).map((i) => i.text)]);
+    expect(groups).toEqual([
+      ["Organization o-first", ["management (o-first)", "storefront"]],
+      ["Organization o-second", ["management (o-second)"]],
+      ["Other accounts", ["legacy-billing"]],
+    ]);
+  });
+  it("keeps one list with a single organization", () => {
+    const items = accountMenuItems(ACCOUNTS.map((a) => ({ ...a, orgId: "o-first" })), "000000000000");
+    expect(items.filter((i) => "items" in i).map((g) => g.text)).toEqual(["Switch account"]);
+  });
   it("says so while the accounts load", () => {
     const group = accountMenuItems(undefined, "000000000000").find((i) => i.id === "accounts")!;
     expect("items" in group && group.items).toEqual([{ id: "loading", text: "Loading accounts...", disabled: true }]);

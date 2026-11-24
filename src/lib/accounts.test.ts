@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Two organizations in floci: 000000000000 manages dev, 333333333333 manages qa.
 // 555555555555 is in none. Each fake client answers as the account its access key names.
-const ORGS: Record<string, { master: string; accounts: { Id: string; Name: string }[] }> = {
-  "000000000000": { master: "000000000000", accounts: [{ Id: "000000000000", Name: "management-account" }, { Id: "111111111111", Name: "dev" }] },
-  "333333333333": { master: "333333333333", accounts: [{ Id: "333333333333", Name: "management-account" }, { Id: "444444444444", Name: "qa" }] },
+const ORGS: Record<string, { id: string; master: string; accounts: { Id: string; Name: string }[] }> = {
+  "000000000000": { id: "o-first", master: "000000000000", accounts: [{ Id: "000000000000", Name: "management-account" }, { Id: "111111111111", Name: "dev" }] },
+  "333333333333": { id: "o-second", master: "333333333333", accounts: [{ Id: "333333333333", Name: "management-account" }, { Id: "444444444444", Name: "qa" }] },
 };
 const memberOf = (account: string) => Object.values(ORGS).find((o) => o.accounts.some((a) => a.Id === account));
 const asAccount = (key: string) => (key === "test" ? "000000000000" : key);
@@ -19,7 +19,7 @@ vi.mock("@aws-sdk/client-organizations", async (orig) => {
     async send() {
       const org = memberOf(this.account);
       if (!org) throw Object.assign(new Error("not in an organization"), { name: "AWSOrganizationsNotInUseException" });
-      return { Organization: { MasterAccountId: org.master } };
+      return { Organization: { Id: org.id, MasterAccountId: org.master } };
     }
   }
   async function* paginateListAccounts({ client }: { client: OrganizationsClient }) {
@@ -53,8 +53,15 @@ describe("listAccounts", () => {
     const fromDefault = summary(await listAccounts());
     localStorage.setItem("account", "444444444444");
     const fromQa = summary(await listAccounts());
-    expect(fromDefault).toEqual(["management:000000000000", "dev:111111111111", "management:333333333333", "qa:444444444444"]);
+    expect(fromDefault).toEqual(["management (o-first):000000000000", "dev:111111111111", "management (o-second):333333333333", "qa:444444444444"]);
     expect(fromQa).toEqual(fromDefault);
+  });
+
+  it("records the organization of each account", async () => {
+    settings.accounts = [{ id: "333333333333" }];
+    localStorage.setItem("account", "555555555555");
+    const orgOf = Object.fromEntries((await listAccounts()).map((a) => [a.id, a.orgId]));
+    expect(orgOf).toEqual({ "000000000000": "o-first", "111111111111": "o-first", "333333333333": "o-second", "444444444444": "o-second", "555555555555": undefined });
   });
 
   it("keeps a preset name over floci's", async () => {
@@ -73,5 +80,9 @@ describe("accountName", () => {
     expect(accountName("management-account", true)).toBe("management");
     expect(accountName("management-account", false)).toBe("management-account");
     expect(accountName("payments", true)).toBe("payments");
+  });
+  it("adds the organization ID when there are several management accounts", () => {
+    expect(accountName("management-account", true, "o-first")).toBe("management (o-first)");
+    expect(accountName("payments", true, "o-first")).toBe("payments");
   });
 });

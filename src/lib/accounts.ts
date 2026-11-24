@@ -31,9 +31,14 @@ function clientAs(account: string) {
 // floci names the management account this when it creates an organization.
 const FLOCI_MANAGEMENT_NAME = "management-account";
 
-/** The name to show for an account. floci's built-in name for the management account shows as "management". */
-export function accountName(name: string | undefined, isManagement: boolean): string | undefined {
-  return isManagement && name === FLOCI_MANAGEMENT_NAME ? "management" : name;
+/**
+ * The name to show for an account. floci's built-in name for the management account shows as "management".
+ * floci gives every organization's management account that name, so with several organizations pass
+ * `orgId` to tell them apart: "management (o-abc123)".
+ */
+export function accountName(name: string | undefined, isManagement: boolean, orgId?: string): string | undefined {
+  if (!isManagement || name !== FLOCI_MANAGEMENT_NAME) return name;
+  return orgId ? `management (${orgId})` : "management";
 }
 
 export type Account = {
@@ -43,11 +48,13 @@ export type Account = {
   isDefault?: boolean;
   /** The management account of an organization. */
   isManagement?: boolean;
+  /** The organization the account is in, if any. */
+  orgId?: string;
   /** Where the console learned about this account. */
   source: "default" | "preset" | "organization" | "selected";
 };
 
-type OrgAccount = { id: string; name?: string; isManagement: boolean };
+type OrgAccount = { id: string; name?: string; isManagement: boolean; orgId: string };
 
 /**
  * The accounts of every organization the callers belong to. floci can hold several organizations and
@@ -55,21 +62,27 @@ type OrgAccount = { id: string; name?: string; isManagement: boolean };
  * organization's management account ID, and the management account can list every account.
  */
 async function organizationAccounts(callers: string[]): Promise<OrgAccount[]> {
-  const masters = await Promise.all(
+  const orgs = await Promise.all(
     callers.map(async (caller) => {
       try {
-        return (await clientAs(caller).send(new DescribeOrganizationCommand({}))).Organization?.MasterAccountId;
+        return (await clientAs(caller).send(new DescribeOrganizationCommand({}))).Organization;
       } catch {
         return undefined; // not in an organization, or floci has no Organizations
       }
     }),
   );
+  // Each organization once: its management account and its ID.
+  const masters = new Map<string, string>();
+  for (const o of orgs) if (o?.MasterAccountId) masters.set(o.MasterAccountId, o.Id ?? "");
+  const several = masters.size > 1;
   const lists = await Promise.all(
-    [...new Set(masters.filter((m): m is string => !!m))].map(async (master) => {
+    [...masters].map(async ([master, orgId]) => {
       const found: OrgAccount[] = [];
       try {
         for await (const page of paginateListAccounts({ client: clientAs(master) }, {})) {
-          for (const a of page.Accounts ?? []) if (a.Id && a.Status !== "SUSPENDED") found.push({ id: a.Id, name: accountName(a.Name, a.Id === master), isManagement: a.Id === master });
+          for (const a of page.Accounts ?? []) {
+            if (a.Id && a.Status !== "SUSPENDED") found.push({ id: a.Id, name: accountName(a.Name, a.Id === master, several ? orgId : undefined), isManagement: a.Id === master, orgId });
+          }
         }
       } catch {
         /* keep what the other organizations gave */
@@ -93,19 +106,20 @@ export async function listAccounts(): Promise<Account[]> {
   const org = await organizationAccounts(callers);
 
   const byId = new Map<string, Account>();
-  const add = (id: string, name: string | undefined, source: Account["source"], isManagement = false) => {
+  const add = (id: string, name: string | undefined, source: Account["source"], isManagement = false, orgId?: string) => {
     if (!isAccountId(id)) return;
     const had = byId.get(id);
     if (had) {
       had.name ??= name;
       had.isManagement ||= isManagement;
+      had.orgId ??= orgId;
       return;
     }
-    byId.set(id, { id, name, source, isDefault: id === settings.defaultAccountId, isManagement });
+    byId.set(id, { id, name, source, isDefault: id === settings.defaultAccountId, isManagement, orgId });
   };
   add(settings.defaultAccountId, undefined, "default");
   for (const a of settings.accounts) add(a.id, a.name, "preset");
-  for (const a of org) add(a.id, a.name, "organization", a.isManagement);
+  for (const a of org) add(a.id, a.name, "organization", a.isManagement, a.orgId);
   if (selected) add(selected, undefined, "selected");
 
   const [first, ...rest] = [...byId.values()];

@@ -120,24 +120,32 @@ export function OtherAccount({ visible, onClose }: { visible: boolean; onClose: 
 
 const accountText = (a: Account) => a.name ?? (a.isDefault ? "Default account" : a.id);
 
+const accountItem = (a: Account, current: string): ButtonDropdownProps.Item => ({
+  id: `account:${a.id}`,
+  text: accountText(a),
+  secondaryText: a.id,
+  labelTag: a.isDefault ? "default" : undefined,
+  disabled: a.id === current,
+});
+
+/**
+ * The accounts to switch to. With several organizations, each gets its own group, and accounts in
+ * no organization go under "Other accounts". Otherwise one list.
+ */
+function accountGroups(accounts: Account[], current: string): ButtonDropdownProps.ItemGroup[] {
+  const orgIds = [...new Set(accounts.flatMap((a) => (a.orgId ? [a.orgId] : [])))];
+  if (orgIds.length < 2) return [{ id: "accounts", text: "Switch account", items: accounts.map((a) => accountItem(a, current)) }];
+  const groups = orgIds.map((orgId) => ({ id: `org:${orgId}`, text: `Organization ${orgId}`, items: accounts.filter((a) => a.orgId === orgId).map((a) => accountItem(a, current)) }));
+  const others = accounts.filter((a) => !a.orgId);
+  return others.length ? [...groups, { id: "others", text: "Other accounts", items: others.map((a) => accountItem(a, current)) }] : groups;
+}
+
 /** Items for the account menu in the top bar. `accounts` is undefined while they load. */
 export function accountMenuItems(accounts: Account[] | undefined, current: string): ButtonDropdownProps.ItemOrGroup[] {
   return [
     // Where AWS puts it: the account menu, not the list of services.
     { id: "organization", text: "Organization", href: "/organizations/accounts" },
-    {
-      id: "accounts",
-      text: "Switch account",
-      items: accounts
-        ? accounts.map((a) => ({
-            id: `account:${a.id}`,
-            text: accountText(a),
-            secondaryText: a.id,
-            labelTag: a.isDefault ? "default" : undefined,
-            disabled: a.id === current,
-          }))
-        : [{ id: "loading", text: "Loading accounts...", disabled: true }],
-    },
+    ...(accounts ? accountGroups(accounts, current) : [{ id: "accounts", text: "Switch account", items: [{ id: "loading", text: "Loading accounts...", disabled: true }] }]),
     { id: "other", text: "Other account ID..." },
     { id: "floci", text: "Emulator dashboard", href: "/aws/_floci/ui", external: true },
   ];
