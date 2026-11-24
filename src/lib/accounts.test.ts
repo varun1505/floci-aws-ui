@@ -53,7 +53,7 @@ describe("listAccounts", () => {
     const fromDefault = summary(await listAccounts());
     localStorage.setItem("account", "444444444444");
     const fromQa = summary(await listAccounts());
-    expect(fromDefault).toEqual(["management (o-first):000000000000", "dev:111111111111", "management (o-second):333333333333", "qa:444444444444"]);
+    expect(fromDefault).toEqual(["management:000000000000", "dev:111111111111", "management:333333333333", "qa:444444444444"]);
     expect(fromQa).toEqual(fromDefault);
   });
 
@@ -80,9 +80,6 @@ describe("accountName", () => {
     expect(accountName("management-account", true)).toBe("management");
     expect(accountName("management-account", false)).toBe("management-account");
     expect(accountName("payments", true)).toBe("payments");
-  });
-  it("adds the organization ID when there are several management accounts", () => {
-    expect(accountName("management-account", true, "o-first")).toBe("management (o-first)");
-    expect(accountName("payments", true, "o-first")).toBe("payments");
+
   });
 });

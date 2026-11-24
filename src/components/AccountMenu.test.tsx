@@ -8,7 +8,7 @@ const accountRejected = vi.fn<(id: string) => Promise<string | undefined>>();
 vi.mock("../config", async (orig) => ({ ...(await orig<typeof import("../config")>()), setAccount: (id: string) => setAccount(id) }));
 vi.mock("../lib/accounts", () => ({ accountRejected: (id: string) => accountRejected(id), listAccounts: async () => [] }));
 
-const { OtherAccount, accountMenuItems, dropRejectedAccount, onAccountItem, takeAccountResetReason } = await import("./AccountMenu");
+const { OtherAccount, accountLabel, accountMenuItems, dropRejectedAccount, groupsByOrganization, onAccountItem, takeAccountResetReason } = await import("./AccountMenu");
 
 const ACCOUNTS: Account[] = [
   { id: "000000000000", isDefault: true, source: "default" },
@@ -38,19 +38,36 @@ describe("account menu", () => {
   it("groups the accounts by organization when there are several", () => {
     const items = accountMenuItems(
       [
-        { id: "000000000000", name: "management (o-first)", isDefault: true, orgId: "o-first", source: "default" },
+        { id: "000000000000", name: "management", isDefault: true, isManagement: true, orgId: "o-first", source: "default" },
         { id: "111111111111", name: "storefront", orgId: "o-first", source: "organization" },
-        { id: "333333333333", name: "management (o-second)", orgId: "o-second", source: "organization" },
-        { id: "555555555555", name: "legacy-billing", source: "preset" },
+        { id: "333333333333", name: "legacy-billing", isManagement: true, orgId: "o-second", source: "preset" },
+        { id: "555555555555", name: "prototype", source: "preset" },
       ],
       "000000000000",
     );
-    const groups = items.filter((i) => "items" in i).map((g) => [g.text, ("items" in g ? g.items : []).map((i) => i.text)]);
+    const switchGroup = items.find((i) => i.id === "accounts")!;
+    expect(switchGroup.text).toBe("Switch account");
+    const groups = ("items" in switchGroup ? switchGroup.items : []).map((g) => [g.text, ("items" in g ? g.items : []).map((i) => i.text)]);
     expect(groups).toEqual([
-      ["Organization o-first", ["management (o-first)", "storefront"]],
-      ["Organization o-second", ["management (o-second)"]],
-      ["Other accounts", ["legacy-billing"]],
+      ["Organization o-first", ["management", "storefront"]],
+      ["Organization o-second", ["legacy-billing"]],
+      ["Other accounts", ["prototype"]],
     ]);
+    const tags = Object.fromEntries(("items" in switchGroup ? switchGroup.items : []).flatMap((g) => ("items" in g ? g.items : [])).map((i) => [i.text, "labelTag" in i ? i.labelTag : undefined]));
+    expect(tags).toEqual({ management: "default", storefront: undefined, "legacy-billing": "management", prototype: undefined });
+    expect(groupsByOrganization([{ id: "000000000000", orgId: "o-first", source: "default" }])).toBe(false);
+  });
+  it("names the organization of a management account in the top bar when there are several", () => {
+    const several: Account[] = [
+      { id: "000000000000", name: "management", isDefault: true, isManagement: true, orgId: "o-first", source: "default" },
+      { id: "111111111111", name: "storefront", orgId: "o-first", source: "organization" },
+      { id: "333333333333", name: "legacy-billing", isManagement: true, orgId: "o-second", source: "preset" },
+    ];
+    expect(accountLabel(several, "000000000000")).toBe("management (o-first)");
+    expect(accountLabel(several, "333333333333")).toBe("legacy-billing (o-second)");
+    expect(accountLabel(several, "111111111111")).toBe("storefront");
+    expect(accountLabel(several.slice(0, 2), "000000000000")).toBe("management");
+    expect(accountLabel(several, "999999999999")).toBeUndefined();
   });
   it("keeps one list with a single organization", () => {
     const items = accountMenuItems(ACCOUNTS.map((a) => ({ ...a, orgId: "o-first" })), "000000000000");

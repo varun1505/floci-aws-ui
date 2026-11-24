@@ -9,7 +9,7 @@ import SideNavigation from "@cloudscape-design/components/side-navigation";
 import TopNavigation from "@cloudscape-design/components/top-navigation";
 import { applyMode, Mode } from "@cloudscape-design/global-styles";
 import { APP_NAME, PROXY_BASE, REGIONS, accountId, getRegion, setRegion } from "../config";
-import { OtherAccount, accountMenuItems, onAccountItem, takeAccountResetReason, useAccounts } from "./AccountMenu";
+import { OtherAccount, accountLabel, accountMenuItems, groupsByOrganization, onAccountItem, takeAccountResetReason, useAccounts } from "./AccountMenu";
 import { useNotify } from "../lib/notify";
 import { ServiceHelp } from "./help";
 import { NAV, SERVICES, markVisited, searchIndex, type Service } from "./nav";
@@ -68,7 +68,7 @@ function TopBar() {
   const region = getRegion();
   const regionLabel = REGIONS.find((r) => r.id === region)?.label ?? region;
   const current = accountId();
-  const currentName = accounts?.find((a) => a.id === current)?.name;
+  const currentName = accountLabel(accounts, current);
 
   const toggleMode = () => {
     const next = mode === Mode.Dark ? Mode.Light : Mode.Dark;
@@ -116,6 +116,7 @@ function TopBar() {
             description: `Account ID: ${current}`,
             iconName: "user-profile",
             items: accountMenuItems(accounts, current),
+            expandableGroups: groupsByOrganization(accounts),
             onItemFollow: (e) => follow(e as never),
             onItemClick: (e) => void onAccountItem(e.detail.id, () => setOtherOpen(true), (reason) => notify.error("Cannot switch account", reason)),
           },

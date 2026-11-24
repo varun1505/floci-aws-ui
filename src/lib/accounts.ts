@@ -31,14 +31,9 @@ function clientAs(account: string) {
 // floci names the management account this when it creates an organization.
 const FLOCI_MANAGEMENT_NAME = "management-account";
 
-/**
- * The name to show for an account. floci's built-in name for the management account shows as "management".
- * floci gives every organization's management account that name, so with several organizations pass
- * `orgId` to tell them apart: "management (o-abc123)".
- */
-export function accountName(name: string | undefined, isManagement: boolean, orgId?: string): string | undefined {
-  if (!isManagement || name !== FLOCI_MANAGEMENT_NAME) return name;
-  return orgId ? `management (${orgId})` : "management";
+/** The name to show for an account. floci's built-in name for the management account shows as "management". */
+export function accountName(name: string | undefined, isManagement: boolean): string | undefined {
+  return isManagement && name === FLOCI_MANAGEMENT_NAME ? "management" : name;
 }
 
 export type Account = {
@@ -74,14 +69,13 @@ async function organizationAccounts(callers: string[]): Promise<OrgAccount[]> {
   // Each organization once: its management account and its ID.
   const masters = new Map<string, string>();
   for (const o of orgs) if (o?.MasterAccountId) masters.set(o.MasterAccountId, o.Id ?? "");
-  const several = masters.size > 1;
   const lists = await Promise.all(
     [...masters].map(async ([master, orgId]) => {
       const found: OrgAccount[] = [];
       try {
         for await (const page of paginateListAccounts({ client: clientAs(master) }, {})) {
           for (const a of page.Accounts ?? []) {
-            if (a.Id && a.Status !== "SUSPENDED") found.push({ id: a.Id, name: accountName(a.Name, a.Id === master, several ? orgId : undefined), isManagement: a.Id === master, orgId });
+            if (a.Id && a.Status !== "SUSPENDED") found.push({ id: a.Id, name: accountName(a.Name, a.Id === master), isManagement: a.Id === master, orgId });
           }
         }
       } catch {

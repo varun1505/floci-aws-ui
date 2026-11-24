@@ -120,24 +120,43 @@ export function OtherAccount({ visible, onClose }: { visible: boolean; onClose: 
 
 const accountText = (a: Account) => a.name ?? (a.isDefault ? "Default account" : a.id);
 
+// Tags next to the name: floci's default account, and a management account whose name does not say so.
+const tagsFor = (a: Account) => [a.isDefault && "default", a.isManagement && accountText(a) !== "management" && "management"].filter(Boolean).join(", ") || undefined;
+
 const accountItem = (a: Account, current: string): ButtonDropdownProps.Item => ({
   id: `account:${a.id}`,
   text: accountText(a),
   secondaryText: a.id,
-  labelTag: a.isDefault ? "default" : undefined,
+  labelTag: tagsFor(a),
   disabled: a.id === current,
 });
 
+const orgCount = (accounts: Account[]) => new Set(accounts.flatMap((a) => (a.orgId ? [a.orgId] : []))).size;
+
+/** With several organizations, "Switch account" opens a submenu that groups the accounts by organization. */
+export const groupsByOrganization = (accounts?: Account[]) => !!accounts && orgCount(accounts) > 1;
+
 /**
- * The accounts to switch to. With several organizations, each gets its own group, and accounts in
- * no organization go under "Other accounts". Otherwise one list.
+ * The name in the top bar for the account in use. With several organizations, a management account
+ * gets its organization ID, so you know which organization you manage: "management (o-abc123)".
+ */
+export function accountLabel(accounts: Account[] | undefined, current: string): string | undefined {
+  const a = accounts?.find((x) => x.id === current);
+  if (!a?.name) return undefined;
+  return a.isManagement && a.orgId && groupsByOrganization(accounts) ? `${a.name} (${a.orgId})` : a.name;
+}
+
+/**
+ * The accounts to switch to, under "Switch account". With several organizations, each gets its own
+ * group inside it, and accounts in no organization go under "Other accounts". Otherwise one list.
  */
 function accountGroups(accounts: Account[], current: string): ButtonDropdownProps.ItemGroup[] {
   const orgIds = [...new Set(accounts.flatMap((a) => (a.orgId ? [a.orgId] : [])))];
-  if (orgIds.length < 2) return [{ id: "accounts", text: "Switch account", items: accounts.map((a) => accountItem(a, current)) }];
+  if (!groupsByOrganization(accounts)) return [{ id: "accounts", text: "Switch account", items: accounts.map((a) => accountItem(a, current)) }];
   const groups = orgIds.map((orgId) => ({ id: `org:${orgId}`, text: `Organization ${orgId}`, items: accounts.filter((a) => a.orgId === orgId).map((a) => accountItem(a, current)) }));
   const others = accounts.filter((a) => !a.orgId);
-  return others.length ? [...groups, { id: "others", text: "Other accounts", items: others.map((a) => accountItem(a, current)) }] : groups;
+  const items = others.length ? [...groups, { id: "others", text: "Other accounts", items: others.map((a) => accountItem(a, current)) }] : groups;
+  return [{ id: "accounts", text: "Switch account", items }];
 }
 
 /** Items for the account menu in the top bar. `accounts` is undefined while they load. */
