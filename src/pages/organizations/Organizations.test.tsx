@@ -99,8 +99,8 @@ describe("AWS accounts page", () => {
     const workloads = await screen.findByRole("link", { name: "Workloads" });
     await userEvent.click(within(workloads.closest("tr")!).getByRole("radio"));
     await userEvent.click(screen.getByRole("button", { name: "Add an AWS account" }));
-    await userEvent.type(screen.getByPlaceholderText("dev"), "tools");
-    await userEvent.type(screen.getByPlaceholderText("dev@example.com"), "tools@example.com");
+    await userEvent.type(screen.getByPlaceholderText("storefront"), "tools");
+    await userEvent.type(screen.getByPlaceholderText("storefront@example.com"), "tools@example.com");
     await userEvent.click(dialogButton("Create account"));
     await waitFor(() => expect(sent("MoveAccountCommand")).toHaveLength(1));
     expect(sent("CreateAccountCommand")[0].input).toEqual({ AccountName: "tools", Email: "tools@example.com" });
@@ -111,8 +111,8 @@ describe("AWS accounts page", () => {
     open(<Accounts />);
     await screen.findByRole("link", { name: "Workloads" });
     await userEvent.click(screen.getByRole("button", { name: "Add an AWS account" }));
-    await userEvent.type(screen.getByPlaceholderText("dev"), "tools");
-    await userEvent.type(screen.getByPlaceholderText("dev@example.com"), "not-an-email");
+    await userEvent.type(screen.getByPlaceholderText("storefront"), "tools");
+    await userEvent.type(screen.getByPlaceholderText("storefront@example.com"), "not-an-email");
     await userEvent.click(dialogButton("Create account"));
     expect((await screen.findAllByText(/^Enter the email address of the account owner/)).length).toBeGreaterThan(0);
     expect(sent("CreateAccountCommand")).toHaveLength(0);

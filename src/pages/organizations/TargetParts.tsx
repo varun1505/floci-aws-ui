@@ -204,7 +204,7 @@ export function TargetTags({ resourceId }: { resourceId: string }) {
           <Input value={key} placeholder="team" onChange={(e) => setKey(e.detail.value)} />
         </FormField>
         <FormField label="Value">
-          <Input value={value} placeholder="payments" onChange={(e) => setValue(e.detail.value)} />
+          <Input value={value} placeholder="checkout" onChange={(e) => setValue(e.detail.value)} />
         </FormField>
       </FormModal>
     </>

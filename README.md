@@ -26,7 +26,7 @@ The command checks that floci answers. If it does not, it prints how to start fl
 | `--floci`, `-f` | `http://localhost:4566` | Where floci listens. |
 | `--port`, `-p` | `8080` | Port for the console. |
 | `--host`, `-H` | `127.0.0.1` | Address to listen on. Use `0.0.0.0` to let other machines in. |
-| `--accounts`, `-a` | | Accounts for the account menu, like `111111111111=dev,222222222222=staging`. See [Accounts](#accounts). |
+| `--accounts`, `-a` | | Accounts for the account menu, like `111111111111=storefront,222222222222=payments-api`. See [Accounts](#accounts). |
 
 ## See it in 21 seconds
 
@@ -187,7 +187,7 @@ The account menu at the top right switches the whole console to another account.
 The menu lists:
 
 - floci's default account, read from floci's manifest (`/_floci/info`).
-- The accounts you preset with `FLOCI_ACCOUNTS` or `--accounts`: `111111111111=dev,222222222222=staging`. Names are optional.
+- The accounts you preset with `FLOCI_ACCOUNTS` or `--accounts`: `111111111111=storefront,222222222222=payments-api`. Names are optional.
 - Every account in the AWS Organizations these accounts belong to. floci can hold several organizations, each run by its own management account. The console asks each known account which organization it is in, then asks that organization's management account for its accounts.
 
 floci has no list of every account it has seen, because an account exists as soon as something uses its ID. To open an account that is not listed, choose **Other account ID...** and type its 12-digit ID.
@@ -221,7 +221,7 @@ browser  ->  this server (/aws/*)  ->  floci (:4566)
 | `FLOCI_TLS_SKIP_VERIFY` | not set | Set to `1` to accept floci's self-signed certificate. |
 | `PORT` | `8080` | Port for the production server. |
 | `HOST` | all addresses | Address the production server listens on. `npx floci-aws-ui serve` uses `127.0.0.1` unless you set it. |
-| `FLOCI_ACCOUNTS` | not set | Accounts for the account menu, like `111111111111=dev,222222222222=staging`. See [Accounts](#accounts). |
+| `FLOCI_ACCOUNTS` | not set | Accounts for the account menu, like `111111111111=storefront,222222222222=payments-api`. See [Accounts](#accounts). |
 | `FLOCI_DEFAULT_ACCOUNT_ID` | `000000000000` | floci's default account, when floci's manifest does not say. Set it to the same value you give floci. |
 
 ## Known limits

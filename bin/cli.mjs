@@ -18,7 +18,7 @@ Options:
   -H, --host <host>   Address to listen on.           Default: 127.0.0.1
   -a, --accounts <list>
                       Accounts for the account menu, as id=name pairs:
-                      111111111111=dev,222222222222=staging. Names are optional.
+                      111111111111=storefront,222222222222=payments-api. Names are optional.
   -v, --version       Print the version.
   -h, --help          Print this help.
 
@@ -82,7 +82,7 @@ process.env.PORT = port;
 process.env.HOST = host;
 if (values.accounts !== undefined) {
   const bad = values.accounts.split(",").map((e) => e.split("=")[0].trim()).find((id) => !/^\d{12}$/.test(id));
-  if (bad !== undefined) fail(`--accounts takes 12-digit account IDs, like 111111111111=dev,222222222222. Got: ${bad}`);
+  if (bad !== undefined) fail(`--accounts takes 12-digit account IDs, like 111111111111=storefront,222222222222. Got: ${bad}`);
   process.env.FLOCI_ACCOUNTS = values.accounts;
 }
 

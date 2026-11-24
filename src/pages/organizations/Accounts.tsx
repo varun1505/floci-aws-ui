@@ -84,7 +84,7 @@ function OrgTree({ org, root, onOrgDeleted }: { org: Organization; root: Root; o
 
   const addAccount = async () => {
     if (!name.trim()) return form.setError("Enter an account name.");
-    if (!EMAIL_RULE.test(email.trim())) return form.setError("Enter the email address of the account owner, such as dev@example.com.");
+    if (!EMAIL_RULE.test(email.trim())) return form.setError("Enter the email address of the account owner, such as storefront@example.com.");
     const ok = await form.run(async () => {
       const s = (await organizations.send(new CreateAccountCommand({ AccountName: name.trim(), Email: email.trim() }))).CreateAccountStatus;
       const id = await waitForAccount(s?.Id ?? "", s?.State, s?.AccountId);
@@ -224,6 +224,8 @@ function OrgTree({ org, root, onOrgDeleted }: { org: Organization; root: Root; o
             id: "name",
             header: "Name",
             isRowHeader: true,
+            // Room for the tree indent and a project name.
+            minWidth: 260,
             cell: (n) => <RouterLink to={n.kind === "account" ? accountHref(n.id) : unitHref(n.id)}>{n.name}</RouterLink>,
           },
           { id: "id", header: "ID", cell: (n) => n.id },
@@ -240,10 +242,10 @@ function OrgTree({ org, root, onOrgDeleted }: { org: Organization; root: Root; o
 
       <FormModal visible={dialog === "account"} header="Add an AWS account" submitLabel="Create account" busy={form.busy} error={form.error} onDismiss={() => setDialog(undefined)} onSubmit={addAccount}>
         <FormField label="Account name">
-          <Input value={name} placeholder="dev" onChange={(e) => setName(e.detail.value)} />
+          <Input value={name} placeholder="storefront" onChange={(e) => setName(e.detail.value)} />
         </FormField>
         <FormField label="Email address of the account owner" description="floci stores it. It sends no email.">
-          <Input value={email} placeholder="dev@example.com" type="email" onChange={(e) => setEmail(e.detail.value)} />
+          <Input value={email} placeholder="storefront@example.com" type="email" onChange={(e) => setEmail(e.detail.value)} />
         </FormField>
         <FormField label="Place it in">
           <Select selectedOption={places.find((p) => p.value === target) ?? null} options={places} onChange={(e) => setTarget(e.detail.selectedOption.value ?? "")} />
@@ -252,7 +254,7 @@ function OrgTree({ org, root, onOrgDeleted }: { org: Organization; root: Root; o
 
       <FormModal visible={dialog === "ou"} header="Create organizational unit" submitLabel="Create" busy={form.busy} error={form.error} onDismiss={() => setDialog(undefined)} onSubmit={createOu}>
         <FormField label="Name">
-          <Input value={name} placeholder="Workloads" onChange={(e) => setName(e.detail.value)} />
+          <Input value={name} placeholder="Applications" onChange={(e) => setName(e.detail.value)} />
         </FormField>
         <FormField label="Parent">
           <Select selectedOption={places.find((p) => p.value === target) ?? null} options={places} onChange={(e) => setTarget(e.detail.selectedOption.value ?? "")} />
