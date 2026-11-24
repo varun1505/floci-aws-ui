@@ -48,7 +48,17 @@ const HEALTH_KEYS: Record<string, string[]> = {
   kinesis: ["kinesis"],
   opensearch: ["es"],
   appsync: ["appsync"],
+  organizations: ["organizations"],
 };
+
+// Organizations is not in the list of services: it opens from the account menu, as in AWS.
+// Its floci API still has a health status, so it gets a row here, in alphabetical order.
+const HEALTH_ROWS = (() => {
+  const rows = SERVICES.map((s) => ({ id: s.id as string, name: s.fullName, href: s.href }));
+  const at = SERVICES.findIndex((s) => s.name.localeCompare("Organizations") > 0);
+  rows.splice(at < 0 ? rows.length : at, 0, { id: "organizations", name: "AWS Organizations", href: "/organizations/accounts" });
+  return rows;
+})();
 
 /** One count per service. A failed call gives undefined, shown as "-". */
 async function loadCounts() {
@@ -189,9 +199,9 @@ export default function Home() {
           <SpaceBetween size="l">
             <Container header={<Header variant="h2">Service health</Header>}>
               <SpaceBetween size="s">
-                {SERVICES.map((s) => (
+                {HEALTH_ROWS.map((s) => (
                   <div key={s.id} style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                    <RouterLink to={s.href}>{s.fullName}</RouterLink>
+                    <RouterLink to={s.href}>{s.name}</RouterLink>
                     {status(s.id)}
                   </div>
                 ))}
