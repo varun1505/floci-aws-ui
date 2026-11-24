@@ -123,6 +123,8 @@ const accountText = (a: Account) => a.name ?? (a.isDefault ? "Default account" :
 /** Items for the account menu in the top bar. `accounts` is undefined while they load. */
 export function accountMenuItems(accounts: Account[] | undefined, current: string): ButtonDropdownProps.ItemOrGroup[] {
   return [
+    // Where AWS puts it: the account menu, not the list of services.
+    { id: "organization", text: "Organization", href: "/organizations/accounts" },
     {
       id: "accounts",
       text: "Switch account",

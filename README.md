@@ -86,7 +86,7 @@ The same clip with sound: [docs/video/floci-console.mp4](docs/video/floci-consol
 | **Kinesis** | Create data streams. Read and put records. Change shards, retention and capacity mode. Manage enhanced fan-out consumers. |
 | **OpenSearch** | Create and delete domains. See how to connect. Edit cluster settings, access policy and tags. |
 | **AppSync** | Create GraphQL APIs. Edit the schema. Add data sources and resolvers. Manage API keys. Run queries. |
-| **Organizations** | Create an organization. See its accounts as a tree of organizational units. Add accounts, create, rename and delete OUs, move and remove accounts. Turn on service control policies, then create, edit and attach them. Tag accounts, OUs and policies. |
+| **Organizations** | Open it with **Organization** in the account menu, as in AWS. Create an organization. See its accounts as a tree of organizational units. Add accounts, create, rename and delete OUs, move and remove accounts. Turn on service control policies, then create, edit and attach them. Tag accounts, OUs and policies. |
 
 The top bar has a search box for services and pages. Every page has a help panel with the CLI profile.
 
@@ -194,7 +194,7 @@ floci has no list of every account it has seen, because an account exists as soo
 
 floci names the management account `management-account` when it creates an organization. The console shows it as `management`. A name you preset with `FLOCI_ACCOUNTS` wins.
 
-The **Organizations** pages show the organization of the account you are in. Only the management account can see and change it. In a member account the page says which account manages the organization and offers to switch to it.
+**Organization** in the account menu opens the Organizations pages, as it does in AWS. They show the organization of the account you are in. Only the management account can see and change it. In a member account the page says which account manages the organization and offers to switch to it.
 
 Accounts reached through IAM access keys (`AKIA...`) or STS sessions are ordinary floci accounts too. Choose the key's account ID in the menu to see what those keys created.
 

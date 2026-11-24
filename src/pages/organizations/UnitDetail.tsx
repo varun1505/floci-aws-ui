@@ -17,7 +17,7 @@ import { RouterLink } from "../../components/RouterLink";
 import { Shell } from "../../components/Shell";
 import { accountName } from "../../lib/accounts";
 import { useLoad } from "../../lib/useLoad";
-import { OrgGate } from "./OrgGate";
+import { OrgGate, OrgIdInNav } from "./OrgGate";
 import { type OrgNode, byKindThenName, loadOrgState, parentOf, scpsEnabled, targetHref, unitHref } from "./orgutil";
 import { TargetPolicies, TargetTags } from "./TargetParts";
 
@@ -122,6 +122,7 @@ export default function UnitDetail() {
   return (
     <Shell
       service="organizations"
+      navExtra={<OrgIdInNav state={state} />}
       breadcrumbs={[
         { text: "AWS Organizations", href: "/organizations/accounts" },
         { text: "AWS accounts", href: "/organizations/accounts" },

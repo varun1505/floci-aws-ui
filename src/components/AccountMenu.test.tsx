@@ -25,15 +25,18 @@ beforeEach(() => {
 
 describe("account menu", () => {
   it("lists every account and disables the one in use", () => {
-    const [group] = accountMenuItems(ACCOUNTS, "132032265019");
+    const group = accountMenuItems(ACCOUNTS, "132032265019").find((i) => i.id === "accounts")!;
     expect("items" in group && group.items).toEqual([
       { id: "account:000000000000", text: "Default account", secondaryText: "000000000000", labelTag: "default", disabled: false },
       { id: "account:132032265019", text: "dev", secondaryText: "132032265019", labelTag: undefined, disabled: true },
       { id: "account:444444444444", text: "444444444444", secondaryText: "444444444444", labelTag: undefined, disabled: false },
     ]);
   });
+  it("opens the organization from the account menu, as AWS does", () => {
+    expect(accountMenuItems(ACCOUNTS, "000000000000")[0]).toEqual({ id: "organization", text: "Organization", href: "/organizations/accounts" });
+  });
   it("says so while the accounts load", () => {
-    const [group] = accountMenuItems(undefined, "000000000000");
+    const group = accountMenuItems(undefined, "000000000000").find((i) => i.id === "accounts")!;
     expect("items" in group && group.items).toEqual([{ id: "loading", text: "Loading accounts...", disabled: true }]);
   });
   it("switches to the account clicked, or opens the dialog for another one", async () => {

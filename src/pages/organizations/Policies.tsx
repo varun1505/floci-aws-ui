@@ -18,7 +18,7 @@ import { Shell } from "../../components/Shell";
 import { useNotify } from "../../lib/notify";
 import { useLoad } from "../../lib/useLoad";
 import { useSubmit } from "../../lib/useSubmit";
-import { OrgGate } from "./OrgGate";
+import { OrgGate, OrgIdInNav } from "./OrgGate";
 import { SCP, SCP_SAMPLE, checkPolicyJson, listScps, loadOrgState, policyHref, scpsEnabled } from "./orgutil";
 
 /** Shown while service control policies are off. A new root starts with them off. */
@@ -183,7 +183,7 @@ function PolicyList({ root, onTypeChanged }: { root: Root; onTypeChanged: () => 
 export default function Policies() {
   const state = useLoad(loadOrgState, []);
   return (
-    <Shell service="organizations" contentType="table" breadcrumbs={[{ text: "AWS Organizations", href: "/organizations/accounts" }, { text: "Policies", href: "/organizations/policies" }]}>
+    <Shell service="organizations" navExtra={<OrgIdInNav state={state} />} contentType="table" breadcrumbs={[{ text: "AWS Organizations", href: "/organizations/accounts" }, { text: "Policies", href: "/organizations/policies" }]}>
       <OrgGate state={state}>
         {(_org, root) =>
           scpsEnabled(root) ? (

@@ -4,6 +4,7 @@ import Alert from "@cloudscape-design/components/alert";
 import Box from "@cloudscape-design/components/box";
 import Button from "@cloudscape-design/components/button";
 import Container from "@cloudscape-design/components/container";
+import CopyToClipboard from "@cloudscape-design/components/copy-to-clipboard";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 import Spinner from "@cloudscape-design/components/spinner";
 import { organizations } from "../../clients/organizations";
@@ -74,6 +75,20 @@ function MemberNotice({ org }: { org: Organization }) {
     >
       Account {accountId()} belongs to organization {org.Id}. Only its management account, {master}, can see and manage the organization.
     </Alert>
+  );
+}
+
+/** The organization ID under the side navigation, as in the AWS console. Members see it too. */
+export function OrgIdInNav({ state }: { state: { data?: OrgState } }) {
+  const s = state.data;
+  if (!s || s.kind === "none" || !s.org.Id) return null;
+  return (
+    <Box padding={{ horizontal: "xl", vertical: "m" }}>
+      <div style={{ borderTop: "1px solid var(--color-border-divider-default-cx07f2, #c6c6cd)", paddingTop: 16 }}>
+        <Box variant="awsui-key-label">Organization ID</Box>
+        <CopyToClipboard variant="inline" textToCopy={s.org.Id} copyButtonAriaLabel="Copy organization ID" copySuccessText="Copied" copyErrorText="Failed to copy" />
+      </div>
+    </Box>
   );
 }
 

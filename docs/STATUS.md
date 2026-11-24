@@ -2,7 +2,7 @@
 
 **Summary**
 
-- The console covers **29 AWS services** plus load balancers. All pages build and type-check.
+- The console covers **28 AWS services** plus load balancers and Organizations. All pages build and type-check.
 - The first 15 services were checked by hand in a browser against **floci 2.4.0**.
 - The 13 newer services had every API call checked with the AWS CLI against floci 2.4.0. In a browser, each page was only opened once with sample data. See section 1.
 - **182 automated tests** cover the helpers, the shared components, the navigation, the server, the command line, and the main list page of 14 services.

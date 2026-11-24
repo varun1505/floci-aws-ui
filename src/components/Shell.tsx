@@ -116,6 +116,7 @@ function TopBar() {
             description: `Account ID: ${current}`,
             iconName: "user-profile",
             items: accountMenuItems(accounts, current),
+            onItemFollow: (e) => follow(e as never),
             onItemClick: (e) => void onAccountItem(e.detail.id, () => setOtherOpen(true), (reason) => notify.error("Cannot switch account", reason)),
           },
         ]}
@@ -158,11 +159,14 @@ export function Shell({
   breadcrumbs,
   children,
   contentType = "default",
+  navExtra,
 }: {
   service: Service;
   breadcrumbs: { text: string; href: string }[];
   children: ReactNode;
   contentType?: AppLayoutProps.ContentType;
+  /** Shown under the side navigation, such as the organization ID on the Organizations pages. */
+  navExtra?: ReactNode;
 }) {
   const follow = useFollow();
   const location = useLocation();
@@ -210,7 +214,12 @@ export function Shell({
           navOpenState = e.detail.open;
           setNavOpenLocal(e.detail.open);
         }}
-        navigation={<SideNavigation header={nav.header} items={nav.items} activeHref={active} onFollow={follow} />}
+        navigation={
+          <>
+            <SideNavigation header={nav.header} items={nav.items} activeHref={active} onFollow={follow} />
+            {navExtra}
+          </>
+        }
         breadcrumbs={
           <BreadcrumbGroup items={[{ text: "Console Home", href: "/" }, ...breadcrumbs]} onFollow={follow} ariaLabel="Breadcrumbs" />
         }

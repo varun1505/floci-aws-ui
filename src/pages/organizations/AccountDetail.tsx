@@ -21,7 +21,7 @@ import { accountName } from "../../lib/accounts";
 import { formatDate } from "../../lib/format";
 import { useNotify } from "../../lib/notify";
 import { useLoad } from "../../lib/useLoad";
-import { OrgGate } from "./OrgGate";
+import { OrgGate, OrgIdInNav } from "./OrgGate";
 import { JOINED, accountHref, loadOrgState, parentOf, scpsEnabled, unitHref } from "./orgutil";
 import { TargetPolicies, TargetTags } from "./TargetParts";
 
@@ -105,6 +105,7 @@ export default function AccountDetail() {
   return (
     <Shell
       service="organizations"
+      navExtra={<OrgIdInNav state={state} />}
       breadcrumbs={[
         { text: "AWS Organizations", href: "/organizations/accounts" },
         { text: "AWS accounts", href: "/organizations/accounts" },

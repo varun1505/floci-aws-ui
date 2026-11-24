@@ -26,7 +26,7 @@ import { errorMessage } from "../../lib/format";
 import { useNotify } from "../../lib/notify";
 import { useLoad } from "../../lib/useLoad";
 import { useSubmit } from "../../lib/useSubmit";
-import { OrgGate } from "./OrgGate";
+import { OrgGate, OrgIdInNav } from "./OrgGate";
 import { checkPolicyJson, loadOrgState, loadTree, policyHref, targetHref } from "./orgutil";
 import { TargetTags } from "./TargetParts";
 
@@ -261,6 +261,7 @@ export default function PolicyDetail() {
   return (
     <Shell
       service="organizations"
+      navExtra={<OrgIdInNav state={state} />}
       breadcrumbs={[
         { text: "AWS Organizations", href: "/organizations/accounts" },
         { text: "Policies", href: "/organizations/policies" },

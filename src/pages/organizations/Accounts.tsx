@@ -33,7 +33,7 @@ import { formatDate } from "../../lib/format";
 import { useNotify } from "../../lib/notify";
 import { useLoad } from "../../lib/useLoad";
 import { useSubmit } from "../../lib/useSubmit";
-import { OrgGate } from "./OrgGate";
+import { OrgGate, OrgIdInNav } from "./OrgGate";
 import { EMAIL_RULE, JOINED, type OrgNode, accountHref, destinations, loadOrgState, loadTree, unitHref, waitForAccount } from "./orgutil";
 
 type Dialog = "account" | "ou" | "move" | "rename" | "deleteOu" | "remove" | "deleteOrg";
@@ -308,7 +308,7 @@ function OrgTree({ org, root, onOrgDeleted }: { org: Organization; root: Root; o
 export default function Accounts() {
   const state = useLoad(loadOrgState, []);
   return (
-    <Shell service="organizations" breadcrumbs={[{ text: "AWS Organizations", href: "/organizations/accounts" }, { text: "AWS accounts", href: "/organizations/accounts" }]}>
+    <Shell service="organizations" navExtra={<OrgIdInNav state={state} />} breadcrumbs={[{ text: "AWS Organizations", href: "/organizations/accounts" }, { text: "AWS accounts", href: "/organizations/accounts" }]}>
       <SpaceBetween size="l">
         <Header variant="h1" description="The accounts of the organization this account manages.">
           AWS accounts
