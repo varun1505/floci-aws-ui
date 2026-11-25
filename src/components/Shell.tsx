@@ -98,7 +98,9 @@ function TopBar() {
           },
           {
             type: "button",
-            iconName: mode === Mode.Dark ? "star-filled" : "star",
+            // Shows the mode you switch to: a moon to go dark, a sun to go light.
+            text: mode === Mode.Dark ? "Light mode" : "Dark mode",
+            iconSvg: mode === Mode.Dark ? SUN : MOON,
             title: mode === Mode.Dark ? "Switch to light mode" : "Switch to dark mode",
             ariaLabel: mode === Mode.Dark ? "Switch to light mode" : "Switch to dark mode",
             onClick: toggleMode,
@@ -154,6 +156,20 @@ function Footer() {
     </div>
   );
 }
+
+
+// Cloudscape has no sun or moon icon, so the dark mode button draws its own.
+const MOON = (
+  <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+    <path d="M13.5 9.5A5.5 5.5 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7Z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+  </svg>
+);
+const SUN = (
+  <svg viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+    <circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" strokeWidth="2" />
+    <path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3 3l1 1M12 12l1 1M3 13l1-1M12 4l1-1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
 
 export function Shell({
   service,
