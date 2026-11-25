@@ -1,8 +1,12 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 import { afterEach } from "vitest";
 
 afterEach(cleanup);
+
+// findBy* and waitFor give up after 1 second by default. A full, parallel test run on a busy
+// machine can take longer than that to render a page, so wait up to 5 seconds.
+configure({ asyncUtilTimeout: 5000 });
 
 // jsdom does not have these browser APIs. Cloudscape layout components call them.
 class Observer {
