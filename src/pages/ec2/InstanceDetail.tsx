@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Alert from "@cloudscape-design/components/alert";
 import Box from "@cloudscape-design/components/box";
 import Button from "@cloudscape-design/components/button";
@@ -25,6 +25,7 @@ import { InstanceState, Pair, TRANSITIONAL, listInstances, tagName } from "./ec2
 
 export default function InstanceDetail() {
   const { id = "" } = useParams();
+  const navigate = useNavigate();
   const notify = useNotify();
   const [terminating, setTerminating] = useState(false);
   const instance = useLoad(async () => {
@@ -74,6 +75,9 @@ export default function InstanceDetail() {
             actions={
               <SpaceBetween direction="horizontal" size="xs">
                 <Button iconName="refresh" ariaLabel="Refresh" onClick={() => instance.reload()} />
+                <Button disabled={state !== "running"} onClick={() => navigate(`/ec2/instances/${id}/connect`)}>
+                  Connect
+                </Button>
                 <ButtonDropdown
                   disabled={!i}
                   items={[

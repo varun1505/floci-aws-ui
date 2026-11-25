@@ -1,5 +1,6 @@
 // Production server. Serves the built app from ./dist and forwards /aws/* to floci.
 // No dependencies. Run: AWS_ENDPOINT_URL=http://floci:4566 PORT=8080 node server.mjs
+// EC2_TERMINAL=1 adds a browser terminal for EC2 instances. See terminal.mjs.
 // FLOCI_ENDPOINT is read when AWS_ENDPOINT_URL is not set.
 // Set HOST to listen on one address only. Without it the server listens on all of them.
 //
@@ -10,6 +11,7 @@ import https from "node:https";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createTerminal } from "./terminal.mjs";
 
 const target = new URL(process.env.AWS_ENDPOINT_URL || process.env.FLOCI_ENDPOINT || "http://localhost:4566");
 const secure = target.protocol === "https:";
@@ -20,6 +22,8 @@ const port = Number(process.env.PORT || 8080);
 const host = process.env.HOST || undefined;
 const root = path.dirname(fileURLToPath(import.meta.url));
 const dist = path.join(root, "dist");
+// Browser terminal for EC2 instances. Off unless EC2_TERMINAL=1. See terminal.mjs.
+const terminal = createTerminal(process.env);
 
 let version;
 try {
@@ -156,23 +160,29 @@ function serveStatic(req, res) {
   fs.createReadStream(file).pipe(res);
 }
 
-http
-  .createServer((req, res) => {
-    const pathname = req.url.split("?")[0];
-    if (pathname === "/api/health") return health(res);
-    if (pathname === "/console-config.json") {
-      return flociHost().then((flociHost) => {
-        res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache" });
-        res.end(JSON.stringify({ flociHost }));
-      });
-    }
-    if (pathname === "/console-accounts.json") {
-      return accounts().then((body) => {
-        res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache" });
-        res.end(JSON.stringify(body));
-      });
-    }
-    if (req.url === "/aws" || req.url.startsWith("/aws/") || req.url.startsWith("/aws?")) return proxy(req, res);
-    serveStatic(req, res);
-  })
-  .listen(port, host, () => console.log(`Console on http://${host || "localhost"}:${port}  ->  floci at ${target.origin}`));
+const server = http.createServer((req, res) => {
+  const pathname = req.url.split("?")[0];
+  if (pathname === "/api/health") return health(res);
+  if (terminal.handleRequest(req, res)) return;
+  if (pathname === "/console-config.json") {
+    return flociHost().then((flociHost) => {
+      res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache" });
+      res.end(JSON.stringify({ flociHost }));
+    });
+  }
+  if (pathname === "/console-accounts.json") {
+    return accounts().then((body) => {
+      res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache" });
+      res.end(JSON.stringify(body));
+    });
+  }
+  if (req.url === "/aws" || req.url.startsWith("/aws/") || req.url.startsWith("/aws?")) return proxy(req, res);
+  serveStatic(req, res);
+});
+server.on("upgrade", (req, socket) => {
+  socket.on("error", () => {});
+  if (!terminal.handleUpgrade(req, socket)) socket.end("HTTP/1.1 404 Not Found\r\nconnection: close\r\n\r\n");
+});
+server.listen(port, host, () =>
+  console.log(`Console on http://${host || "localhost"}:${port}  ->  floci at ${target.origin}${terminal.enabled ? "  (EC2 browser terminal on)" : ""}`),
+);

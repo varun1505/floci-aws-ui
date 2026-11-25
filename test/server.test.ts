@@ -28,7 +28,7 @@ async function freePort(): Promise<number> {
 
 function start(env: Record<string, string>): Promise<ChildProcess> {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [path.join(dir, "server.mjs")], { env: { ...process.env, AWS_ENDPOINT_URL: "", FLOCI_INFO_URL: "", ...env }, stdio: ["ignore", "pipe", "inherit"] });
+    const child = spawn(process.execPath, [path.join(dir, "server.mjs")], { env: { ...process.env, AWS_ENDPOINT_URL: "", FLOCI_INFO_URL: "", EC2_TERMINAL: "", DOCKER_HOST: "", ...env }, stdio: ["ignore", "pipe", "inherit"] });
     child.stdout!.on("data", (d) => String(d).includes("Console on") && resolve(child));
     child.on("error", reject);
     child.on("exit", (code) => reject(new Error(`server.mjs exited with code ${code}`)));
@@ -38,6 +38,7 @@ function start(env: Record<string, string>): Promise<ChildProcess> {
 beforeAll(async () => {
   dir = fs.mkdtempSync(path.join(os.tmpdir(), "console-server-"));
   fs.copyFileSync(path.resolve("server.mjs"), path.join(dir, "server.mjs"));
+  fs.copyFileSync(path.resolve("terminal.mjs"), path.join(dir, "terminal.mjs"));
   fs.mkdirSync(path.join(dir, "dist", "assets"), { recursive: true });
   fs.writeFileSync(path.join(dir, "dist", "index.html"), "<html>app</html>");
   fs.writeFileSync(path.join(dir, "dist", "assets", "app.js"), "console.log(1)");
@@ -227,6 +228,165 @@ describe("floci is down", () => {
     } finally {
       child.removeAllListeners("exit");
       child.kill();
+    }
+  });
+});
+
+describe("EC2 browser terminal", () => {
+  const RUNNING = "i-0123456789abcdef0";
+  const STOPPED = "i-0fedcba9876543210";
+  const calls: { method?: string; url: string; body: string }[] = [];
+  let docker: http.Server;
+  let sock: string;
+  let child: ChildProcess;
+  let tbase: string;
+
+  // A fake Docker daemon: finds the container by floci's labels, creates an exec,
+  // and on start upgrades the connection and echoes what it reads, like a TTY would.
+  const containers = (url: string) => {
+    const filters = JSON.parse(new URL(url, "http://x").searchParams.get("filters") ?? "{}");
+    const labels: string[] = filters.label ?? [];
+    if (!labels.includes("io.floci.service=ec2")) return [];
+    if (labels.includes(`io.floci.resource-id=${RUNNING}`)) return [{ Id: "c1", State: "running", Ports: [{ PrivatePort: 22, PublicPort: 2201, Type: "tcp" }] }];
+    if (labels.includes(`io.floci.resource-id=${STOPPED}`)) return [{ Id: "c2", State: "exited", Ports: [] }];
+    return [];
+  };
+
+  beforeAll(async () => {
+    sock = path.join(dir, "docker.sock");
+    docker = http.createServer((req, res) => {
+      let body = "";
+      req.on("data", (c) => (body += c));
+      req.on("end", () => {
+        calls.push({ method: req.method, url: req.url ?? "", body });
+        const send = (status: number, value: unknown) => {
+          res.writeHead(status, { "content-type": "application/json" });
+          res.end(JSON.stringify(value));
+        };
+        if (req.url === "/_ping") return send(200, "OK");
+        if (req.url?.startsWith("/containers/json")) return send(200, containers(req.url));
+        if (req.url === "/containers/c1/exec") return send(201, { Id: "e1" });
+        if (req.url?.startsWith("/exec/e1/resize")) return send(200, {});
+        send(404, { message: "no such route" });
+      });
+    });
+    docker.on("upgrade", (req, socket, head) => {
+      calls.push({ method: req.method, url: req.url ?? "", body: String(head) });
+      socket.write("HTTP/1.1 101 UPGRADED\r\nconnection: Upgrade\r\nupgrade: tcp\r\n\r\nwelcome$ ");
+      socket.on("data", (d) => {
+        // The start request's JSON body can arrive after the headers. It is not a keystroke.
+        if (String(d).startsWith('{"Detach"')) return;
+        if (String(d) === "exit\r") return socket.end();
+        socket.write(`echo:${d}`);
+      });
+    });
+    await new Promise<void>((r) => docker.listen(sock, r));
+    const port = await freePort();
+    child = await start({ PORT: String(port), FLOCI_ENDPOINT: `http://127.0.0.1:${(fake.address() as AddressInfo).port}`, EC2_TERMINAL: "1", DOCKER_HOST: `unix://${sock}` });
+    tbase = `http://127.0.0.1:${port}`;
+  });
+
+  afterAll(() => {
+    child?.removeAllListeners("exit");
+    child?.kill();
+    docker?.close();
+  });
+
+  // Opens the terminal WebSocket and collects what the shell prints.
+  function open(id: string, query = "") {
+    const ws = new WebSocket(`${tbase.replace("http", "ws")}/api/terminal/${id}/ws${query}`);
+    ws.binaryType = "arraybuffer";
+    let out = "";
+    const waiters: { text: string; resolve: () => void }[] = [];
+    ws.addEventListener("message", (e) => {
+      out += new TextDecoder().decode(e.data as ArrayBuffer);
+      for (const w of waiters.splice(0)) (out.includes(w.text) ? w.resolve : () => waiters.push(w))();
+    });
+    const closed = new Promise<{ code: number; reason: string }>((resolve) => ws.addEventListener("close", (e) => resolve({ code: e.code, reason: e.reason })));
+    const until = (text: string) => new Promise<void>((resolve) => (out.includes(text) ? resolve() : waiters.push({ text, resolve })));
+    return { ws, closed, until, output: () => out };
+  }
+
+  // A raw upgrade request, so a test can set the Origin header and read a refusal.
+  function rawUpgrade(base: string, pathname: string, headers: Record<string, string> = {}) {
+    return new Promise<number | undefined>((resolve) => {
+      const req = http.request(`${base}${pathname}`, {
+        headers: { connection: "Upgrade", upgrade: "websocket", "sec-websocket-version": "13", "sec-websocket-key": "dGhlIHNhbXBsZSBub25jZQ==", ...headers },
+      });
+      req.on("upgrade", (res, socket) => {
+        socket.destroy();
+        resolve(res.statusCode);
+      });
+      req.on("response", (res) => {
+        res.resume();
+        resolve(res.statusCode);
+      });
+      req.end();
+    });
+  }
+
+  it("is off by default", async () => {
+    const body = await (await fetch(`${base}/api/terminal`)).json();
+    expect(body.enabled).toBe(false);
+    expect(body.reason).toContain("EC2_TERMINAL=1");
+    expect(await rawUpgrade(base, `/api/terminal/${RUNNING}/ws`)).toBe(404);
+  });
+
+  it("reports on when the Docker daemon answers", async () => {
+    expect(await (await fetch(`${tbase}/api/terminal`)).json()).toEqual({ enabled: true, reason: null });
+  });
+
+  it("finds the instance's container and its SSH port", async () => {
+    expect(await (await fetch(`${tbase}/api/terminal/${RUNNING}`)).json()).toEqual({ enabled: true, reason: null, state: "running", sshPort: 2201 });
+    const missing = await (await fetch(`${tbase}/api/terminal/i-00000000000000000`)).json();
+    expect(missing).toMatchObject({ enabled: true, state: null, sshPort: null });
+    expect((await fetch(`${tbase}/api/terminal/not-an-id`)).status).toBe(400);
+  });
+
+  it("streams a shell in both directions and passes resizes to Docker", async () => {
+    const t = open(RUNNING, "?cols=100&rows=30");
+    await t.until("welcome$ ");
+    t.ws.send(new TextEncoder().encode("ls\r"));
+    await t.until("echo:ls\r");
+
+    const create = calls.find((c) => c.url === "/containers/c1/exec");
+    expect(JSON.parse(create!.body)).toMatchObject({ Tty: true, AttachStdin: true, ConsoleSize: [30, 100], Cmd: ["/bin/sh", "-c", expect.stringContaining("bash")] });
+    expect(calls.some((c) => c.url.startsWith("/exec/e1/start"))).toBe(true);
+
+    t.ws.send(JSON.stringify({ type: "resize", cols: 120, rows: 40 }));
+    await expect.poll(() => calls.some((c) => c.url === "/exec/e1/resize?h=40&w=120")).toBe(true);
+
+    t.ws.send(new TextEncoder().encode("exit\r"));
+    expect((await t.closed).reason).toBe("The shell exited.");
+  });
+
+  it("closes with the reason when the instance is not running", async () => {
+    const t = open(STOPPED);
+    const { code, reason } = await t.closed;
+    expect(code).toBe(1011);
+    expect(reason).toContain("exited");
+  });
+
+  it("refuses a WebSocket from another web site", async () => {
+    expect(await rawUpgrade(tbase, `/api/terminal/${RUNNING}/ws`, { origin: "http://evil.test" })).toBe(403);
+    expect(await rawUpgrade(tbase, `/api/terminal/${RUNNING}/ws`, { origin: tbase })).toBe(101);
+  });
+
+  it("refuses a WebSocket for something that is not an instance ID", async () => {
+    expect(await rawUpgrade(tbase, "/api/terminal/i-nope/ws")).toBe(400);
+    expect(await rawUpgrade(tbase, "/somewhere-else")).toBe(404);
+  });
+
+  it("reports off with the reason when the Docker daemon cannot be reached", async () => {
+    const port = await freePort();
+    const other = await start({ PORT: String(port), FLOCI_ENDPOINT: "http://127.0.0.1:1", EC2_TERMINAL: "1", DOCKER_HOST: `unix://${path.join(dir, "missing.sock")}` });
+    try {
+      const body = await (await fetch(`http://127.0.0.1:${port}/api/terminal`)).json();
+      expect(body.enabled).toBe(false);
+      expect(body.reason).toContain("Cannot reach the Docker daemon");
+    } finally {
+      other.removeAllListeners("exit");
+      other.kill();
     }
   });
 });

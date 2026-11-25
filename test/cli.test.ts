@@ -18,6 +18,7 @@ beforeAll(() => {
   fs.mkdirSync(path.join(dir, "dist"));
   fs.copyFileSync(path.resolve("bin/cli.mjs"), path.join(dir, "bin", "cli.mjs"));
   fs.copyFileSync(path.resolve("server.mjs"), path.join(dir, "server.mjs"));
+  fs.copyFileSync(path.resolve("terminal.mjs"), path.join(dir, "terminal.mjs"));
   fs.writeFileSync(path.join(dir, "package.json"), JSON.stringify({ version: "9.8.7", type: "module" }));
   fs.writeFileSync(path.join(dir, "dist", "index.html"), "<html>app</html>");
   cli = path.join(dir, "bin", "cli.mjs");
@@ -33,6 +34,8 @@ const cleanEnv = () => {
   delete env.FLOCI_INFO_URL;
   delete env.PORT;
   delete env.HOST;
+  delete env.EC2_TERMINAL;
+  delete env.DOCKER_HOST;
   return env;
 };
 
@@ -154,6 +157,16 @@ describe("floci-aws-ui serve", () => {
     const server = await serve(["--port", String(port), "-f", "http://from-option:4566"], { PORT: "1", FLOCI_ENDPOINT: "http://from-env:4566" });
     try {
       expect(server.line).toBe(`Console on http://127.0.0.1:${port}  ->  floci at http://from-option:4566`);
+    } finally {
+      server.stop();
+    }
+  });
+
+  it("turns on the EC2 browser terminal with --terminal", async () => {
+    const port = await freePort();
+    const server = await serve(["--port", String(port), "--floci", "http://floci.test:4566", "--terminal"]);
+    try {
+      expect(server.line).toBe(`Console on http://127.0.0.1:${port}  ->  floci at http://floci.test:4566  (EC2 browser terminal on)`);
     } finally {
       server.stop();
     }

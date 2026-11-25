@@ -27,6 +27,7 @@ The command checks that floci answers. If it does not, it prints how to start fl
 | `--port`, `-p` | `8080` | Port for the console. |
 | `--host`, `-H` | `127.0.0.1` | Address to listen on. Use `0.0.0.0` to let other machines in. |
 | `--accounts`, `-a` | | Accounts for the account menu, like `111111111111=storefront,222222222222=payments-api`. See [Accounts and organizations](#accounts-and-organizations). |
+| `--terminal`, `-t` | off | Turn on the [EC2 browser terminal](#connect-to-an-ec2-instance). |
 
 ## See it in 21 seconds
 
@@ -60,7 +61,7 @@ The same clip with sound: [docs/video/floci-console.mp4](docs/video/floci-consol
 | **Lambda** | Dashboard. List, create and delete functions. Edit code in the browser and deploy. Run test events. Read logs. Change memory, timeout, handler and environment variables. Manage layers and event source mappings. |
 | **S3** | Create, empty and delete buckets. Browse folders. Upload, download, open, preview and delete objects. |
 | **CloudWatch** | Overview. Browse log groups and streams. Read log events with a time filter and live tail. Create and delete alarms. Graph metrics. |
-| **EC2** | Dashboard. Launch, start, stop, reboot and terminate instances. Manage security groups, key pairs, volumes, snapshots and Elastic IPs. List AMIs. |
+| **EC2** | Dashboard. Launch, start, stop, reboot and terminate instances. Connect to an instance in a browser terminal or with SSH. Manage security groups, key pairs, volumes, snapshots and Elastic IPs. List AMIs. |
 | **API Gateway** | REST APIs: resources, methods (Lambda, HTTP or mock), deploy to a stage. HTTP APIs: routes, integrations, stages. Send a test request to a stage from the page. |
 | **CloudFront** | List, create, enable, disable and delete distributions. See origins and behaviors. Create invalidations. |
 | **RDS** | Create, stop, start, reboot and delete databases. Shows the connect command. Snapshots and subnet groups. |
@@ -117,6 +118,36 @@ aws_secret_access_key = test
 ```sh
 aws --profile floci s3 ls
 ```
+
+## Connect to an EC2 instance
+
+Select a running instance and choose **Connect**, as in the AWS console. The page has two tabs.
+
+- **Browser terminal** opens a shell on the instance in a new browser tab. No key pair or open port is needed.
+- **SSH client** shows the `ssh` command for an instance that was launched with a key pair. floci installs the key for `root` and publishes port 22 on a host port from 2200 up.
+
+![The Connect to instance page](docs/screenshots/ec2-connect.png)
+
+![A shell on an instance in the browser terminal](docs/screenshots/ec2-terminal.png)
+
+floci has no EC2 Instance Connect or Session Manager for EC2, so the browser terminal does it another way. Each instance is a container on the floci host, and the console server opens a shell in it with the Docker Engine API (`docker exec` with a TTY), then streams it to the page over a WebSocket. It finds the container by the labels floci puts on it.
+
+The browser terminal is **off by default**. To turn it on, start the console with `EC2_TERMINAL=1` and give it the Docker daemon that floci uses:
+
+```yaml
+  console:
+    image: ghcr.io/varun1505/floci-aws-ui:latest
+    user: root                       # the image runs as "node", which cannot open the socket
+    environment:
+      FLOCI_ENDPOINT: http://floci:4566
+      EC2_TERMINAL: "1"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+```
+
+With npx: `npx floci-aws-ui serve --terminal`. From source: set `EC2_TERMINAL=1` in `.env.local`.
+
+> **Access to the Docker daemon is root on the Docker host.** With the terminal on, anyone who can open the console can run commands in your instances, and a determined user can reach the host. The server only opens shells in containers that floci labels as EC2 instances, and it refuses WebSocket connections from other web sites, but the console still has no login. Turn the terminal on only on a private network you trust.
 
 ## Run it from source
 
@@ -210,6 +241,8 @@ browser  ->  this server (/aws/*)  ->  floci (:4566)
 | `HOST` | all addresses | Address the production server listens on. `npx floci-aws-ui serve` uses `127.0.0.1` unless you set it. |
 | `FLOCI_ACCOUNTS` | not set | Accounts for the account menu, like `111111111111=storefront,222222222222=payments-api`. See [Accounts and organizations](#accounts-and-organizations). |
 | `FLOCI_DEFAULT_ACCOUNT_ID` | `000000000000` | floci's default account, when floci's manifest does not say. Set it to the same value you give floci. |
+| `EC2_TERMINAL` | not set | Set to `1` to turn on the EC2 browser terminal. |
+| `DOCKER_HOST` | `unix:///var/run/docker.sock` | The Docker daemon the browser terminal uses. `unix://` or plain `tcp://`. Must be the one floci starts instances on. |
 
 ## Known limits
 
@@ -218,7 +251,7 @@ browser  ->  this server (/aws/*)  ->  floci (:4566)
 - **floci keeps state in memory** unless it was started with `--persist`. A floci restart wipes all resources.
 - floci does not write the `START`, `END` and `REPORT` lines to Lambda logs. You only see what your code prints.
 - floci does not publish Lambda or EC2 metrics on its own. The Metrics page shows only metrics your apps send.
-- EC2 instances run as containers on the floci host. There is no serial console output.
+- EC2 instances run as containers on the floci host. There is no serial console output. The browser terminal logs in as `root`, not `ec2-user`.
 - IAM stores users, roles and policies, but floci does not enforce them. A call that a policy denies still works here.
 - SES sends no real email. Read sent messages on the Mailbox page.
 - Load balancers are created and listed. Sending traffic through one is not tested.
