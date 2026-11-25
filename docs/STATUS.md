@@ -71,7 +71,7 @@ These were found on floci 2.4.0. Check them again on newer versions.
 | **Parameter Store** | `GetParameter` returns a SecureString decrypted even without `WithDecryption`. |
 | **RDS** | The endpoint address is internal to Docker. Connect to the floci host on the port shown. |
 | **Lambda** | Logs have no `START`, `END` or `REPORT` lines. No metrics are published. |
-| **EC2** | Instances run as containers on the floci host. There is no serial console output. |
+| **EC2** | Instances run as containers on the floci host. There is no serial console output. `SendSSHPublicKey` (EC2 Instance Connect) answers success but installs no key, and Session Manager is not there for EC2, so the browser terminal uses `docker exec` instead. SSH works only for an instance launched with a key pair, as `root`, on a host port from 2200 up. |
 | **DynamoDB** | Table size is always 0 bytes. A new index is active at once. |
 | **Cognito** | No email or SMS is sent. Create user always asks for a password. A password reset sends no code. Token issuer and JWKS URLs are floci URLs. Identity pools are stored, but cannot hand out credentials. Test sign-in with a client secret works only on `localhost` or HTTPS. |
 | **Route 53** | Records of a private zone resolve only for containers that use floci's DNS. A public zone answers only TXT, NS and SOA records. floci accepts any record value, so the form checks it. Health checks never call the endpoint and always report success. |
@@ -90,8 +90,9 @@ These were found on floci 2.4.0. Check them again on newer versions.
 
 ```
 server.mjs            production server: serves dist/ and proxies /aws/* to floci
+terminal.mjs          EC2 browser terminal: a small WebSocket server bridged to docker exec (off unless EC2_TERMINAL=1)
 bin/cli.mjs           the `floci-aws-ui serve` command; checks its options, then runs server.mjs
-vite.config.ts        dev server with the same /aws proxy
+vite.config.ts        dev server with the same /aws proxy and terminal
 src/config.ts         shared SDK client settings (endpoint, region, credentials)
 src/clients/          one SDK client per service
 src/pages/<service>/  the pages of one service
@@ -99,7 +100,7 @@ src/components/       shared parts (Shell, ResourceTable, FormModal, ConfirmDele
 src/lib/              hooks (useLoad, useSubmit, useNotify) and formatters
 src/components/nav.ts the service list and side navigation
 src/App.tsx           all routes, loaded lazily per page
-test/                 test setup, and the tests of server.mjs
+test/                 test setup, and the tests of server.mjs (with a fake Docker daemon for the terminal)
 ```
 
 **Patterns to follow**

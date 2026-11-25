@@ -290,6 +290,10 @@ const ABOUT: Record<Service, { title: string; body: ReactNode; docs: { text: str
       <>
         <p>EC2 provides virtual servers. In this environment each instance runs as a container on the host.</p>
         <p>Security groups, key pairs, volumes and Elastic IPs behave like their AWS counterparts at the API level.</p>
+        <p>
+          Connect opens a shell on a running instance in the browser, when the console runs with <code>EC2_TERMINAL=1</code>. An instance launched with a key
+          pair also takes SSH on a port that floci publishes on its host.
+        </p>
       </>
     ),
     docs: [{ text: "EC2 user guide", href: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html" }],

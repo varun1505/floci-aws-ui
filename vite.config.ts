@@ -1,6 +1,7 @@
 import { loadEnv } from "vite";
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
+import { createTerminal } from "./terminal.mjs";
 
 // The browser cannot call floci directly: floci does not answer CORS preflight
 // requests. So the dev server forwards /aws/* to floci, and the page stays same-origin.
@@ -18,6 +19,12 @@ export default defineConfig(({ mode }) => {
             res.setHeader("content-type", "application/json");
             res.end(JSON.stringify({ flociHost: new URL(target).hostname }));
           });
+          // The EC2 browser terminal, as in server.mjs. Set EC2_TERMINAL=1 in .env.local to turn it on.
+          const terminal = createTerminal({ ...process.env, ...env });
+          server.middlewares.use((req, res, next) => {
+            if (!terminal.handleRequest(req, res)) next();
+          });
+          server.httpServer?.on("upgrade", (req, socket) => terminal.handleUpgrade(req, socket));
         },
       },
     ],

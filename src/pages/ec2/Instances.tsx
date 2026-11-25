@@ -89,6 +89,9 @@ export default function Instances() {
         emptyAction={<Button onClick={() => navigate("/ec2/instances/launch")}>Launch instances</Button>}
         actions={
           <>
+            <Button disabled={live.length !== 1 || states[0] !== "running"} onClick={() => navigate(`/ec2/instances/${ids[0]}/connect`)}>
+              Connect
+            </Button>
             <ButtonDropdown
               disabled={live.length === 0}
               items={[

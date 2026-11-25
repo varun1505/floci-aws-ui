@@ -66,6 +66,8 @@ const Metrics = lazy(() => import("./pages/cloudwatch/Metrics"));
 const Instances = lazy(() => import("./pages/ec2/Instances"));
 const LaunchInstance = lazy(() => import("./pages/ec2/LaunchInstance"));
 const InstanceDetail = lazy(() => import("./pages/ec2/InstanceDetail"));
+const ConnectInstance = lazy(() => import("./pages/ec2/ConnectInstance"));
+const InstanceTerminal = lazy(() => import("./pages/ec2/InstanceTerminal"));
 const SecurityGroups = lazy(() => import("./pages/ec2/SecurityGroups"));
 const SecurityGroupDetail = lazy(() => import("./pages/ec2/SecurityGroupDetail"));
 const KeyPairs = lazy(() => import("./pages/ec2/KeyPairs"));
@@ -201,6 +203,8 @@ export default function App() {
         <Route path="/ec2/instances" element={<Instances />} />
         <Route path="/ec2/instances/launch" element={<LaunchInstance />} />
         <Route path="/ec2/instances/:id" element={<InstanceDetail />} />
+        <Route path="/ec2/instances/:id/connect" element={<ConnectInstance />} />
+        <Route path="/ec2/instances/:id/terminal" element={<InstanceTerminal />} />
         <Route path="/ec2/security-groups" element={<SecurityGroups />} />
         <Route path="/ec2/security-groups/:id" element={<SecurityGroupDetail />} />
         <Route path="/ec2/key-pairs" element={<KeyPairs />} />
