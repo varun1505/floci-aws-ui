@@ -2,7 +2,7 @@
 
 **Summary**
 
-- The console covers **28 AWS services** plus load balancers. All pages build and type-check.
+- The console covers **28 AWS services** plus load balancers and Organizations. All pages build and type-check.
 - The first 15 services were checked by hand in a browser against **floci 2.4.0**.
 - The 13 newer services had every API call checked with the AWS CLI against floci 2.4.0. In a browser, each page was only opened once with sample data. See section 1.
 - **182 automated tests** cover the helpers, the shared components, the navigation, the server, the command line, and the main list page of 14 services.
@@ -45,6 +45,7 @@ For these, "Tested" means the API calls behind the page ran against floci with t
 | **Kinesis** | Every call the pages use. | - |
 | **OpenSearch** | Versions, create, describe, update settings, tags, delete. | A second domain. |
 | **AppSync** | All four auth types, keys, schema, data sources, resolvers. Queries return data from a resolver with no data source. | Resolvers on DynamoDB or Lambda. The query box in a page. |
+| **Organizations** | In a browser against floci 2.5.0: create, rename and delete an OU. Add an account into an OU, move it, remove it. Account and OU details, tags. Create, edit, attach, detach and delete a policy. Turn SCPs off and on. The member and no-organization views. Two organizations in one floci. | Delete the organization. Handshakes and delegated administrators have no page. |
 
 ## 2. What floci does differently from AWS
 
@@ -85,6 +86,7 @@ These were found on floci 2.4.0. Check them again on newer versions.
 | **Kinesis** | An on-demand stream starts with 1 shard. AWS starts with 4. |
 | **OpenSearch** | Each domain is a real container. Create does not answer until it is ready. The first one took about 5 minutes. The endpoint in the API is a container address. Connect to the floci host on a port from 9400 to 9499. Cluster health is always green. The access policy is not enforced. |
 | **AppSync** | The first schema save takes about 2 minutes and the first query can time out, because floci starts containers. `ListTypes` is empty, so the page reads types from the schema text. The real-time endpoint is not served. |
+| **Organizations** | One floci can hold several organizations. The management account is named `management-account`. A new root has service control policies off. Turning them on attaches `FullAWSAccess` everywhere. Policies are enforced only when IAM enforcement and `FLOCI_SERVICES_ORGANIZATIONS_SCP_ENFORCEMENT_ENABLED` are both on. Policy content is not checked. |
 
 ## 3. How the code is laid out
 

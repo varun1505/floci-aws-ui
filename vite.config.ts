@@ -19,6 +19,25 @@ export default defineConfig(({ mode }) => {
             res.setHeader("content-type", "application/json");
             res.end(JSON.stringify({ flociHost: new URL(target).hostname }));
           });
+          // Same as server.mjs: floci's default account and the FLOCI_ACCOUNTS presets.
+          server.middlewares.use("/console-accounts.json", async (_req, res) => {
+            const isId = (id: unknown): id is string => typeof id === "string" && /^\d{12}$/.test(id);
+            let fromManifest: unknown;
+            try {
+              fromManifest = (await (await fetch(new URL("/_floci/info", target), { signal: AbortSignal.timeout(2000) })).json())?.defaults?.account_id;
+            } catch {
+              /* older floci, or floci is down */
+            }
+            const accounts = (env.FLOCI_ACCOUNTS || "")
+              .split(",")
+              .map((entry) => {
+                const [id, ...name] = entry.split("=");
+                return { id: id.trim(), name: name.join("=").trim() || undefined };
+              })
+              .filter((a) => isId(a.id));
+            res.setHeader("content-type", "application/json");
+            res.end(JSON.stringify({ defaultAccountId: [fromManifest, env.FLOCI_DEFAULT_ACCOUNT_ID].find(isId) ?? "000000000000", accounts }));
+          });
           // The EC2 browser terminal, as in server.mjs. Set EC2_TERMINAL=1 in .env.local to turn it on.
           const terminal = createTerminal({ ...process.env, ...env });
           server.middlewares.use((req, res, next) => {

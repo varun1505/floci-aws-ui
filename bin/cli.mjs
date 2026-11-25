@@ -16,14 +16,17 @@ Options:
   -f, --floci <url>   Where floci listens.            Default: http://localhost:4566
   -p, --port <port>   Port for the console.           Default: 8080
   -H, --host <host>   Address to listen on.           Default: 127.0.0.1
+  -a, --accounts <list>
+                      Accounts for the account menu, as id=name pairs:
+                      111111111111=storefront,222222222222=payments-api. Names are optional.
   -t, --terminal      Turn on the EC2 browser terminal. It runs a shell in
                       the instance's container through the Docker daemon
                       (DOCKER_HOST, default /var/run/docker.sock).
   -v, --version       Print the version.
   -h, --help          Print this help.
 
-The environment variables AWS_ENDPOINT_URL (or FLOCI_ENDPOINT), PORT, HOST and
-EC2_TERMINAL=1 set the same values. An option wins over its variable.
+The environment variables AWS_ENDPOINT_URL (or FLOCI_ENDPOINT), PORT, HOST,
+FLOCI_ACCOUNTS and EC2_TERMINAL=1 set the same values. An option wins over its variable.
 
 The console has no login. With the default host, only this machine can open it.
 Use --host 0.0.0.0 to let other machines in, and only on a network you trust.`;
@@ -41,6 +44,7 @@ try {
       floci: { type: "string", short: "f" },
       port: { type: "string", short: "p" },
       host: { type: "string", short: "H" },
+      accounts: { type: "string", short: "a" },
       terminal: { type: "boolean", short: "t" },
       version: { type: "boolean", short: "v" },
       help: { type: "boolean", short: "h" },
@@ -80,6 +84,11 @@ if (!fs.existsSync(path.join(root, "dist", "index.html"))) fail(`The built app i
 process.env.AWS_ENDPOINT_URL = floci;
 process.env.PORT = port;
 process.env.HOST = host;
+if (values.accounts !== undefined) {
+  const bad = values.accounts.split(",").map((e) => e.split("=")[0].trim()).find((id) => !/^\d{12}$/.test(id));
+  if (bad !== undefined) fail(`--accounts takes 12-digit account IDs, like 111111111111=storefront,222222222222. Got: ${bad}`);
+  process.env.FLOCI_ACCOUNTS = values.accounts;
+}
 if (values.terminal) process.env.EC2_TERMINAL = "1";
 
 await import("../server.mjs");

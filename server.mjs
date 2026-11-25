@@ -116,6 +116,33 @@ async function flociHost() {
   return publicHost || target.hostname;
 }
 
+const isAccountId = (id) => /^\d{12}$/.test(id);
+
+// FLOCI_ACCOUNTS presets the account menu: "111111111111=dev,222222222222=staging". Names are optional.
+const presetAccounts = (process.env.FLOCI_ACCOUNTS || "")
+  .split(",")
+  .map((entry) => {
+    const [id, ...name] = entry.split("=");
+    return { id: id.trim(), name: name.join("=").trim() || undefined };
+  })
+  .filter((a) => isAccountId(a.id));
+
+// floci's default account: the one it uses for a non-numeric access key such as "test".
+// floci's manifest says which it is. Without a sidecar, ask floci for its manifest directly.
+let manifestAccount;
+async function accounts() {
+  if (!manifestAccount) {
+    try {
+      const { status, body } = await get(new URL(process.env.FLOCI_INFO_URL || "/_floci/info", target), 2000);
+      if (status === 200) manifestAccount = JSON.parse(body).defaults?.account_id;
+    } catch {
+      /* older floci, or floci is down */
+    }
+  }
+  const defaultAccountId = [manifestAccount, process.env.FLOCI_DEFAULT_ACCOUNT_ID].find((id) => isAccountId(id || "")) || "000000000000";
+  return { defaultAccountId, accounts: presetAccounts };
+}
+
 function serveStatic(req, res) {
   const urlPath = decodeURIComponent(new URL(req.url, "http://x").pathname);
   let file = path.normalize(path.join(dist, urlPath));
@@ -141,6 +168,12 @@ const server = http.createServer((req, res) => {
     return flociHost().then((flociHost) => {
       res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache" });
       res.end(JSON.stringify({ flociHost }));
+    });
+  }
+  if (pathname === "/console-accounts.json") {
+    return accounts().then((body) => {
+      res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache" });
+      res.end(JSON.stringify(body));
     });
   }
   if (req.url === "/aws" || req.url.startsWith("/aws/") || req.url.startsWith("/aws?")) return proxy(req, res);

@@ -99,6 +99,13 @@ describe("floci-aws-ui command", () => {
     expect(res.stderr).toContain("--floci must be an http:// or https:// URL");
   });
 
+  it("rejects an account that is not 12 digits", () => {
+    const res = run("serve", "--accounts", "111111111111=dev,12345=qa");
+    expect(res.status).toBe(1);
+    expect(res.stderr).toContain("--accounts takes 12-digit account IDs");
+    expect(res.stderr).toContain("Got: 12345");
+  });
+
   it("says so when the app is not built", () => {
     const html = path.join(dir, "dist", "index.html");
     fs.renameSync(html, `${html}.off`);
@@ -120,6 +127,16 @@ describe("floci-aws-ui serve", () => {
       expect(server.line).toBe(`Console on http://127.0.0.1:${port}  ->  floci at http://floci.test:4566`);
       expect(await (await fetch(`http://127.0.0.1:${port}/`)).text()).toBe("<html>app</html>");
       expect(await (await fetch(`http://127.0.0.1:${port}/console-config.json`)).json()).toEqual({ flociHost: "floci.test" });
+    } finally {
+      server.stop();
+    }
+  });
+
+  it("passes --accounts to the account menu", async () => {
+    const port = await freePort();
+    const server = await serve(["--port", String(port), "--floci", "http://floci.test:4566", "--accounts", "111111111111=storefront,222222222222"]);
+    try {
+      expect((await (await fetch(`http://127.0.0.1:${port}/console-accounts.json`)).json()).accounts).toEqual([{ id: "111111111111", name: "storefront" }, { id: "222222222222" }]);
     } finally {
       server.stop();
     }

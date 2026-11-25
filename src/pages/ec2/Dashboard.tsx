@@ -20,7 +20,7 @@ import SpaceBetween from "@cloudscape-design/components/space-between";
 import StatusIndicator from "@cloudscape-design/components/status-indicator";
 import Table from "@cloudscape-design/components/table";
 import { ec2 } from "../../clients/ec2";
-import { ACCOUNT_ID, REGIONS, getRegion } from "../../config";
+import { accountId, REGIONS, getRegion } from "../../config";
 import { RouterLink } from "../../components/RouterLink";
 import { Shell } from "../../components/Shell";
 import { Stat } from "../../components/Stat";
@@ -164,7 +164,7 @@ export default function Ec2Dashboard() {
             />
             <Container header={<Header variant="h2">Account attributes</Header>}>
               <SpaceBetween size="m">
-                <Pair label="Account ID">{ACCOUNT_ID}</Pair>
+                <Pair label="Account ID">{accountId()}</Pair>
                 <Pair label="Default VPC">{defaultVpc?.VpcId}</Pair>
                 <Pair label="Default VPC CIDR">{defaultVpc?.CidrBlock}</Pair>
               </SpaceBetween>

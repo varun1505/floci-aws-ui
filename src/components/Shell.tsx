@@ -8,7 +8,8 @@ import Flashbar from "@cloudscape-design/components/flashbar";
 import SideNavigation from "@cloudscape-design/components/side-navigation";
 import TopNavigation from "@cloudscape-design/components/top-navigation";
 import { applyMode, Mode } from "@cloudscape-design/global-styles";
-import { ACCOUNT_ID, APP_NAME, PROXY_BASE, REGIONS, getRegion, setRegion } from "../config";
+import { APP_NAME, PROXY_BASE, REGIONS, accountId, getRegion, setRegion } from "../config";
+import { OtherAccount, accountLabel, accountMenuItems, groupsByOrganization, onAccountItem, takeAccountResetReason, useAccounts } from "./AccountMenu";
 import { useNotify } from "../lib/notify";
 import { ServiceHelp } from "./help";
 import { NAV, SERVICES, markVisited, searchIndex, type Service } from "./nav";
@@ -54,8 +55,20 @@ function Search() {
 function TopBar() {
   const follow = useFollow();
   const [mode, setMode] = useState(currentMode);
+  const [otherOpen, setOtherOpen] = useState(false);
+  const notify = useNotify();
+  const accounts = useAccounts();
+
+  // Tell the user when start-up went back to the default account.
+  useEffect(() => {
+    const reason = takeAccountResetReason();
+    if (reason) notify.error("Back to the default account", reason);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const region = getRegion();
   const regionLabel = REGIONS.find((r) => r.id === region)?.label ?? region;
+  const current = accountId();
+  const currentName = accountLabel(accounts, current);
 
   const toggleMode = () => {
     const next = mode === Mode.Dark ? Mode.Light : Mode.Dark;
@@ -70,40 +83,46 @@ function TopBar() {
   };
 
   return (
-    <TopNavigation
-      identity={{ href: "/", title: APP_NAME, onFollow: (e) => follow(e as never) }}
-      search={<Search />}
-      utilities={[
-        {
-          type: "menu-dropdown",
-          text: "Services",
-          iconName: "view-full",
-          items: SERVICES.map((s) => ({ id: s.href, text: s.fullName, description: s.description, href: s.href })),
-          onItemFollow: (e) => follow(e as never),
-        },
-        {
-          type: "button",
-          iconName: mode === Mode.Dark ? "star-filled" : "star",
-          title: mode === Mode.Dark ? "Switch to light mode" : "Switch to dark mode",
-          ariaLabel: mode === Mode.Dark ? "Switch to light mode" : "Switch to dark mode",
-          onClick: toggleMode,
-        },
-        {
-          type: "menu-dropdown",
-          text: regionLabel,
-          description: "Region",
-          items: REGIONS.map((r) => ({ id: r.id, text: r.label, description: r.id, disabled: r.id === region })),
-          onItemClick: (e) => setRegion(e.detail.id),
-        },
-        {
-          type: "menu-dropdown",
-          text: "non-prod",
-          description: `Account ID: ${ACCOUNT_ID}`,
-          iconName: "user-profile",
-          items: [{ id: "floci", text: "Emulator dashboard", href: "/aws/_floci/ui", external: true }],
-        },
-      ]}
-    />
+    <>
+      <OtherAccount visible={otherOpen} onClose={() => setOtherOpen(false)} />
+      <TopNavigation
+        identity={{ href: "/", title: APP_NAME, onFollow: (e) => follow(e as never) }}
+        search={<Search />}
+        utilities={[
+          {
+            type: "menu-dropdown",
+            text: "Services",
+            iconName: "view-full",
+            items: SERVICES.map((s) => ({ id: s.href, text: s.fullName, description: s.description, href: s.href })),
+            onItemFollow: (e) => follow(e as never),
+          },
+          {
+            type: "button",
+            iconName: mode === Mode.Dark ? "star-filled" : "star",
+            title: mode === Mode.Dark ? "Switch to light mode" : "Switch to dark mode",
+            ariaLabel: mode === Mode.Dark ? "Switch to light mode" : "Switch to dark mode",
+            onClick: toggleMode,
+          },
+          {
+            type: "menu-dropdown",
+            text: regionLabel,
+            description: "Region",
+            items: REGIONS.map((r) => ({ id: r.id, text: r.label, description: r.id, disabled: r.id === region })),
+            onItemClick: (e) => setRegion(e.detail.id),
+          },
+          {
+            type: "menu-dropdown",
+            text: currentName ?? "non-prod",
+            description: `Account ID: ${current}`,
+            iconName: "user-profile",
+            items: accountMenuItems(accounts, current),
+            expandableGroups: groupsByOrganization(accounts),
+            onItemFollow: (e) => follow(e as never),
+            onItemClick: (e) => void onAccountItem(e.detail.id, () => setOtherOpen(true), (reason) => notify.error("Cannot switch account", reason)),
+          },
+        ]}
+      />
+    </>
   );
 }
 
@@ -127,6 +146,9 @@ function Footer() {
         API endpoint: <code style={{ color: "#fff" }}>{PROXY_BASE}</code>
       </span>
       <span>
+        Account: <code style={{ color: "#fff" }}>{accountId()}</code>
+      </span>
+      <span>
         Region: <code style={{ color: "#fff" }}>{getRegion()}</code>
       </span>
     </div>
@@ -138,11 +160,14 @@ export function Shell({
   breadcrumbs,
   children,
   contentType = "default",
+  navExtra,
 }: {
   service: Service;
   breadcrumbs: { text: string; href: string }[];
   children: ReactNode;
   contentType?: AppLayoutProps.ContentType;
+  /** Shown under the side navigation, such as the organization ID on the Organizations pages. */
+  navExtra?: ReactNode;
 }) {
   const follow = useFollow();
   const location = useLocation();
@@ -190,7 +215,12 @@ export function Shell({
           navOpenState = e.detail.open;
           setNavOpenLocal(e.detail.open);
         }}
-        navigation={<SideNavigation header={nav.header} items={nav.items} activeHref={active} onFollow={follow} />}
+        navigation={
+          <>
+            <SideNavigation header={nav.header} items={nav.items} activeHref={active} onFollow={follow} />
+            {navExtra}
+          </>
+        }
         breadcrumbs={
           <BreadcrumbGroup items={[{ text: "Console Home", href: "/" }, ...breadcrumbs]} onFollow={follow} ariaLabel="Breadcrumbs" />
         }

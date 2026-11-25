@@ -1,6 +1,6 @@
 import type { SideNavigationProps } from "@cloudscape-design/components/side-navigation";
 
-export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm" | "ecs" | "ecr" | "events" | "states" | "vpc" | "cloudformation" | "kinesis" | "opensearch" | "appsync";
+export type Service = "home" | "lambda" | "s3" | "cloudwatch" | "ec2" | "apigateway" | "cloudfront" | "rds" | "secretsmanager" | "iam" | "ssm" | "sqs" | "sns" | "ses" | "elasticache" | "kms" | "dynamodb" | "cognito" | "route53" | "acm" | "ecs" | "ecr" | "events" | "states" | "vpc" | "cloudformation" | "kinesis" | "opensearch" | "appsync" | "organizations";
 export type ServiceId = Exclude<Service, "home">;
 
 export const SERVICES: { id: ServiceId; name: string; fullName: string; href: string; description: string }[] = [
@@ -168,6 +168,10 @@ export const NAV: Record<Service, { header: SideNavigationProps.Header; items: S
   appsync: {
     header: { text: "AWS AppSync", href: "/appsync/apis" },
     items: [link("APIs", "/appsync/apis")],
+  },
+  organizations: {
+    header: { text: "AWS Organizations", href: "/organizations/accounts" },
+    items: [link("AWS accounts", "/organizations/accounts"), link("Policies", "/organizations/policies")],
   },
   ec2: {
     header: { text: "EC2", href: "/ec2/home" },

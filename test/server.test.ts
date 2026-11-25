@@ -50,7 +50,7 @@ beforeAll(async () => {
     req.on("end", () => {
       seen.push({ method: req.method, url: req.url, host: req.headers.host, body });
       res.writeHead(req.url === "/missing" ? 404 : 200, { "content-type": "application/json", "x-fake": "floci" });
-      if (req.url === "/_floci/info") return res.end(JSON.stringify({ endpoint: "http://outside.test:4566", unknown: 1 }));
+      if (req.url === "/_floci/info") return res.end(JSON.stringify({ endpoint: "http://outside.test:4566", defaults: { region: "us-east-1", account_id: "123456789012" }, unknown: 1 }));
       res.end(JSON.stringify({ ok: true }));
     });
   });
@@ -147,6 +147,42 @@ describe("console contract", () => {
     const child = await start({ PORT: String(port), AWS_ENDPOINT_URL: `http://127.0.0.1:${flociPort}`, FLOCI_ENDPOINT: "http://wrong.test:1" });
     try {
       expect((await (await fetch(`http://127.0.0.1:${port}/api/health`)).json()).endpoint).toBe(`http://127.0.0.1:${flociPort}`);
+    } finally {
+      child.removeAllListeners("exit");
+      child.kill();
+    }
+  });
+  it("gives the page floci's default account and the preset accounts", async () => {
+    const flociPort = (fake.address() as AddressInfo).port;
+    const port = await freePort();
+    const child = await start({ PORT: String(port), FLOCI_ENDPOINT: `http://127.0.0.1:${flociPort}`, FLOCI_ACCOUNTS: "111111111111=dev, 222222222222 ,bad=x" });
+    try {
+      expect(await (await fetch(`http://127.0.0.1:${port}/console-accounts.json`)).json()).toEqual({
+        defaultAccountId: "123456789012",
+        accounts: [{ id: "111111111111", name: "dev" }, { id: "222222222222" }],
+      });
+    } finally {
+      child.removeAllListeners("exit");
+      child.kill();
+    }
+  });
+  it("uses FLOCI_DEFAULT_ACCOUNT_ID when floci's manifest does not say", async () => {
+    const dead = await freePort();
+    const port = await freePort();
+    const child = await start({ PORT: String(port), FLOCI_ENDPOINT: `http://127.0.0.1:${dead}`, FLOCI_DEFAULT_ACCOUNT_ID: "222222222222" });
+    try {
+      expect((await (await fetch(`http://127.0.0.1:${port}/console-accounts.json`)).json()).defaultAccountId).toBe("222222222222");
+    } finally {
+      child.removeAllListeners("exit");
+      child.kill();
+    }
+  });
+  it("falls back to 000000000000 when floci does not say", async () => {
+    const dead = await freePort();
+    const port = await freePort();
+    const child = await start({ PORT: String(port), FLOCI_ENDPOINT: `http://127.0.0.1:${dead}` });
+    try {
+      expect(await (await fetch(`http://127.0.0.1:${port}/console-accounts.json`)).json()).toEqual({ defaultAccountId: "000000000000", accounts: [] });
     } finally {
       child.removeAllListeners("exit");
       child.kill();
