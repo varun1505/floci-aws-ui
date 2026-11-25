@@ -10,6 +10,9 @@ import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/mode-golang";
 import "ace-builds/src-noconflict/mode-ruby";
 import "ace-builds/src-noconflict/mode-text";
+// Cloudscape loads this extension when the editor opens. Bundle it, or Ace fetches it from a
+// path next to the page, gets index.html back and logs "Unexpected token '<'".
+import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/theme-cloud_editor";
 import "ace-builds/src-noconflict/theme-cloud_editor_dark";
 import "ace-builds/css/ace.css";
