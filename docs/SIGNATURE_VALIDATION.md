@@ -17,6 +17,17 @@ services:
       FLOCI_AUTH_VALIDATE_SIGNATURES: "true"
 ```
 
+When floci starts the web console itself (`FLOCI_SERVICES_UI_IMAGE`), pass the setting to it through floci:
+
+```yaml
+services:
+  floci:
+    environment:
+      FLOCI_AUTH_VALIDATE_SIGNATURES: "true"
+      FLOCI_SERVICES_UI_IMAGE: ghcr.io/varun1505/floci-aws-ui:latest
+      FLOCI_SERVICES_UI_EXTRA_ENV: FLOCI_AUTH_VALIDATE_SIGNATURES=true
+```
+
 Without the setting, the web console asks floci whether it checks signatures. That works too, but when floci restarts with checks on while the web console runs, the first request can fail once.
 
 ## Which accounts open

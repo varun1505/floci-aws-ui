@@ -466,6 +466,49 @@ describe("re-signing when floci checks signatures", () => {
   it("uses the partition of the region in the role ARN, and keeps credentials per partition", async () => {
     await new SQSClient({ ...as(MEMBER), region: "us-gov-west-1", useQueueUrlAsEndpoint: false }).send(new ListQueuesCommand({}));
     expect(assumed.at(-1)!.roleArn).toBe(`arn:aws-us-gov:iam::${MEMBER}:role/OrganizationAccountAccessRole`);
+    await new SQSClient({ ...as(MEMBER), region: "cn-north-1", useQueueUrlAsEndpoint: false }).send(new ListQueuesCommand({}));
+    expect(assumed.at(-1)!.roleArn).toBe(`arn:aws-cn:iam::${MEMBER}:role/OrganizationAccountAccessRole`);
+    expect(got.at(-1)!.verified).toBe(true);
+  });
+
+  it("signs with its own AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_SESSION_TOKEN when they are set", async () => {
+    // A key floci issued, such as an IAM user's, with a session token.
+    keys.set("AKIAOWNKEY0000000001", { secret: "own/secret+&", token: "own-token", account: MANAGEMENT });
+    const port = await freePort();
+    const own = await start({
+      PORT: String(port),
+      FLOCI_ENDPOINT: `http://127.0.0.1:${(flociServer.address() as { port: number }).port}`,
+      AWS_ACCESS_KEY_ID: "AKIAOWNKEY0000000001",
+      AWS_SECRET_ACCESS_KEY: "own/secret+&",
+      AWS_SESSION_TOKEN: "own-token",
+      // Told, so it does not ask floci, which the probe count below would see.
+      FLOCI_AUTH_VALIDATE_SIGNATURES: "true",
+    });
+    try {
+      const obase = `http://127.0.0.1:${port}`;
+      const via = (accessKeyId: string) => new SQSClient({ ...as(accessKeyId), endpoint: `${obase}/aws`, useQueueUrlAsEndpoint: false }).send(new ListQueuesCommand({}));
+
+      // floci's default account: signed with the server's own key and token.
+      await via("test");
+      const last = got.at(-1)!;
+      expect([last.verified, sigv4.parseAuthorization(last.headers.authorization as string)?.accessKeyId, last.headers["x-amz-security-token"]]).toEqual([true, "AKIAOWNKEY0000000001", "own-token"]);
+
+      // Another account: AssumeRole is signed with the server's own key.
+      const account = "121212121212";
+      await via(account);
+      expect(assumed.at(-1)).toMatchObject({ account, signedWith: "AKIAOWNKEY0000000001" });
+      expect([got.at(-1)!.verified, got.at(-1)!.account]).toEqual([true, account]);
+
+      // A presigned URL is presigned again with the server's own key and token.
+      const date = sigv4.amzDate();
+      const query = `X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=test%2F${date.slice(0, 8)}%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=${date}&X-Amz-Expires=60&X-Amz-SignedHeaders=host&X-Amz-Signature=${"0".repeat(64)}`;
+      expect((await fetch(`${obase}/aws/bucket/key?${query}`)).status).toBe(200);
+      const params = new URL(`http://x${got.at(-1)!.url}`).searchParams;
+      expect([got.at(-1)!.verified, params.get("X-Amz-Credential")?.split("/")[0], params.get("X-Amz-Security-Token")]).toEqual([true, "AKIAOWNKEY0000000001", "own-token"]);
+    } finally {
+      own.removeAllListeners("exit");
+      own.kill();
+    }
   });
 
   it("gives the browser STS's refusal, as JSON for a JSON request and as STS's XML for S3, and asks again next time", async () => {
