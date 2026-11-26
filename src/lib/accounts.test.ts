@@ -39,7 +39,9 @@ vi.mock("@aws-sdk/client-sqs", async (orig) => {
       this.account = config.credentials.accessKeyId;
     }
     async send() {
-      if (sqsErrors.has(this.account)) throw sqsErrors.get(this.account);
+      if (sqsErrors.has(this.account)) {
+        throw sqsErrors.get(this.account);
+      }
       return {};
     }
   }

@@ -47,7 +47,9 @@ const types = {
 };
 
 function sendJson(res, status, body, headers = {}) {
-  if (res.headersSent) return res.destroy();
+  if (res.headersSent) {
+    return res.destroy();
+  }
   res.writeHead(status, { "content-type": "application/json", ...headers });
   res.end(JSON.stringify(body));
 }
@@ -66,8 +68,11 @@ function upstream(method, path, headers, body, res, onStatus) {
     },
   );
   up.on("error", (err) => unreachable(res, err));
-  if (Buffer.isBuffer(body)) up.end(body);
-  else body.pipe(up);
+  if (Buffer.isBuffer(body)) {
+    up.end(body);
+  } else {
+    body.pipe(up);
+  }
 }
 
 // Forwards the request as it came, signature and all. When floci refuses its credentials, floci may have
@@ -83,8 +88,12 @@ const escapeXml = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.codePointAt
 // An AWS-style error the browser's SDK reads: JSON for a JSON request, XML otherwise.
 function sendError(req, res, status, code, message, headers = {}) {
   const all = { "x-amzn-errortype": code, "cache-control": "no-store", ...headers };
-  if (/json/.test(String(req.headers["content-type"] || ""))) return sendJson(res, status, { __type: code, message }, all);
-  if (res.headersSent) return res.destroy();
+  if (/json/.test(String(req.headers["content-type"] || ""))) {
+    return sendJson(res, status, { __type: code, message }, all);
+  }
+  if (res.headersSent) {
+    return res.destroy();
+  }
   res.writeHead(status, { ...all, "content-type": "text/xml" });
   res.end(`<?xml version="1.0" encoding="UTF-8"?><ErrorResponse><Error><Type>Sender</Type><Code>${escapeXml(code)}</Code><Message>${escapeXml(message)}</Message></Error></ErrorResponse>`);
 }
@@ -171,12 +180,16 @@ const STRIPPED = new Set([
 function signFor(method, path, query, incoming, body, scope, credentials) {
   const headers = {};
   for (const [name, value] of Object.entries(incoming)) {
-    if (!STRIPPED.has(name) && value !== undefined) headers[name] = Array.isArray(value) ? value.join(", ") : value;
+    if (!STRIPPED.has(name) && value !== undefined) {
+      headers[name] = Array.isArray(value) ? value.join(", ") : value;
+    }
   }
   headers.host = target.host;
   headers["x-amz-date"] = amzDate();
   headers["x-amz-content-sha256"] = body ? sha256Hex(body) : "UNSIGNED-PAYLOAD";
-  if (credentials.sessionToken) headers["x-amz-security-token"] = credentials.sessionToken;
+  if (credentials.sessionToken) {
+    headers["x-amz-security-token"] = credentials.sessionToken;
+  }
   const signed = Object.fromEntries(Object.entries(headers).filter(([n]) => n === "host" || n === "content-type" || n.startsWith("x-amz-")));
   const { authorization } = signRequest({
     method,
@@ -191,7 +204,9 @@ function signFor(method, path, query, incoming, body, scope, credentials) {
   });
   headers.authorization = authorization;
   if (!body) {
-    if (incoming["content-length"] !== undefined) headers["content-length"] = incoming["content-length"];
+    if (incoming["content-length"] !== undefined) {
+      headers["content-length"] = incoming["content-length"];
+    }
   } else if (body.length > 0 || incoming["content-length"] !== undefined || incoming["transfer-encoding"] !== undefined) {
     headers["content-length"] = String(body.length);
   }
@@ -232,7 +247,9 @@ function sts(params, region, credentials) {
 let probe;
 let probing;
 function flociChecksSignatures(region) {
-  if (probe && Date.now() < probe.until) return Promise.resolve(probe.value);
+  if (probe && Date.now() < probe.until) {
+    return Promise.resolve(probe.value);
+  }
   probing ??= sts({ Action: "GetCallerIdentity" }, region, { accessKeyId: "floci-console-probe", secretAccessKey: "floci-console-probe" })
     .then(
       ({ status }) => {
@@ -252,7 +269,9 @@ function flociChecksSignatures(region) {
 // "floci does not check", floci may have restarted with checks on, so the answer is dropped once
 // RECHECK_MS has passed since the server asked. When the answer is "floci checks", nothing changes.
 function recheckSoon() {
-  if (probe && !probe.value) probe.until = Math.min(probe.until, probe.at + RECHECK_MS);
+  if (probe && !probe.value) {
+    probe.until = Math.min(probe.until, probe.at + RECHECK_MS);
+  }
 }
 
 // Role credentials per partition and account: { credentials, expiresAt } or { pending }.
@@ -264,8 +283,12 @@ function roleCredentials(account, region) {
   const partition = partitionOf(region);
   const key = `${partition}:${account}`;
   const hit = roles.get(key);
-  if (hit?.pending) return hit.pending;
-  if (hit && Date.now() < hit.expiresAt - REFRESH_MS) return Promise.resolve({ credentials: hit.credentials, expiresAt: hit.expiresAt });
+  if (hit?.pending) {
+    return hit.pending;
+  }
+  if (hit && Date.now() < hit.expiresAt - REFRESH_MS) {
+    return Promise.resolve({ credentials: hit.credentials, expiresAt: hit.expiresAt });
+  }
   const roleArn = `arn:${partition}:iam::${account}:role/${roleName}`;
   const pending = sts({ Action: "AssumeRole", RoleArn: roleArn, RoleSessionName: ROLE_SESSION_NAME, DurationSeconds: "3600" }, region, ownCredentials).then(
     (answer) => {
@@ -297,7 +320,9 @@ function roleCredentials(account, region) {
 // unless they were already replaced. The next request assumes the role again.
 function forgetRole(account, region, credentials) {
   const key = `${partitionOf(region)}:${account}`;
-  if (roles.get(key)?.credentials === credentials) roles.delete(key);
+  if (roles.get(key)?.credentials === credentials) {
+    roles.delete(key);
+  }
 }
 
 const CREDENTIAL_ERRORS = new Set([
@@ -321,19 +346,27 @@ function credentialsRefused(status, headers) {
 // x-amzn-errortype when floci sends it, otherwise the code in the first few KB of the body, which is
 // read alongside the answer on its way to the browser.
 function onCredentialError(status, headers, answer, refused) {
-  if (status !== 400 && status !== 403) return;
+  if (status !== 400 && status !== 403) {
+    return;
+  }
   const type = String(headers?.["x-amzn-errortype"] || "").split(":")[0];
   if (type) {
-    if (CREDENTIAL_ERRORS.has(type)) refused();
+    if (CREDENTIAL_ERRORS.has(type)) {
+      refused();
+    }
     return;
   }
   let text = "";
   answer.on("data", (c) => {
-    if (text.length < 4096) text += c.toString("utf8");
+    if (text.length < 4096) {
+      text += c.toString("utf8");
+    }
   });
   answer.on("end", () => {
     const code = xmlText(text, "Code") || /"__type"\s*:\s*"(?:[^"#]*#)?([^"]+)"/.exec(text)?.[1];
-    if (code && CREDENTIAL_ERRORS.has(code)) refused();
+    if (code && CREDENTIAL_ERRORS.has(code)) {
+      refused();
+    }
   });
 }
 
@@ -380,7 +413,9 @@ const represigned = (accessKeyId) => accessKeyId === "test" || isAccountId(acces
 // has answered the browser itself (AssumeRole refused, or floci unreachable).
 async function credentialsFor(req, res, scope) {
   const account = isAccountId(scope.accessKeyId) ? scope.accessKeyId : undefined;
-  if (!account || account === (await accounts()).defaultAccountId) return { credentials: ownCredentials };
+  if (!account || account === (await accounts()).defaultAccountId) {
+    return { credentials: ownCredentials };
+  }
   let role;
   try {
     role = await roleCredentials(account, scope.region);
@@ -393,7 +428,13 @@ async function credentialsFor(req, res, scope) {
     return undefined;
   }
   const { credentials, expiresAt } = role;
-  return { credentials, expiresAt, onStatus: (status, answerHeaders) => credentialsRefused(status, answerHeaders) && forgetRole(account, scope.region, credentials) };
+  // When floci refuses the role's credentials, they are dropped so the next request assumes the role again.
+  const onStatus = (status, answerHeaders) => {
+    if (credentialsRefused(status, answerHeaders)) {
+      forgetRole(account, scope.region, credentials);
+    }
+  };
+  return { credentials, expiresAt, onStatus };
 }
 
 async function proxy(req, res) {
@@ -402,7 +443,9 @@ async function proxy(req, res) {
   const presigned = parsePresigned(query);
   const scope = presigned ? presigned.valid && represigned(presigned.accessKeyId) && presigned : parseAuthorization(req.headers.authorization);
   // Unsigned requests, and presigned ones the server does not presign again, go as they came.
-  if (!scope || !(await flociChecksSignatures(scope.region))) return passThrough(req, res);
+  if (!scope || !(await flociChecksSignatures(scope.region))) {
+    return passThrough(req, res);
+  }
 
   // From here the server adds its own credentials, so only for host names it knows.
   const name = hostName(req.headers.host || "");
@@ -417,8 +460,12 @@ async function proxy(req, res) {
   }
 
   const found = await credentialsFor(req, res, scope);
-  if (!found) return;
-  if (presigned) return forwardPresigned(req, res, path, query, presigned, found);
+  if (!found) {
+    return;
+  }
+  if (presigned) {
+    return forwardPresigned(req, res, path, query, presigned, found);
+  }
   return forwardSigned(req, res, path, query, scope, found);
 }
 
@@ -426,7 +473,9 @@ async function proxy(req, res) {
 // credentials it is signed with.
 function forwardPresigned(req, res, path, query, presigned, { credentials, expiresAt, onStatus }) {
   const seconds = Math.floor((Math.min(presigned.expiresAt, expiresAt ?? Infinity) - Date.now()) / 1000);
-  if (seconds <= 0) return sendError(req, res, 403, "AccessDenied", "Request has expired");
+  if (seconds <= 0) {
+    return sendError(req, res, 403, "AccessDenied", "Request has expired");
+  }
   const signedQuery = presignQuery({ method: req.method, path, query, host: target.host, date: amzDate(), expires: seconds, region: presigned.region, service: presigned.service, credentials });
   const headers = { ...req.headers, host: target.host };
   delete headers.authorization;
@@ -471,8 +520,11 @@ function unchunk(body, headers, encodings) {
   const decoded = decodeAwsChunked(body);
   Object.assign(headers, decoded.trailers);
   const rest = encodings.filter((e) => e !== "aws-chunked");
-  if (rest.length) headers["content-encoding"] = rest.join(", ");
-  else delete headers["content-encoding"];
+  if (rest.length) {
+    headers["content-encoding"] = rest.join(", ");
+  } else {
+    delete headers["content-encoding"];
+  }
   delete headers["x-amz-decoded-content-length"];
   delete headers["x-amz-trailer"];
   return decoded.body;

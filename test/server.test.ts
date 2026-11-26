@@ -294,7 +294,9 @@ describe("re-signing when floci checks signatures", () => {
     if (params.has("X-Amz-Signature")) {
       const [keyId, , region, service] = (params.get("X-Amz-Credential") ?? "").split("/");
       const key = keys.get(keyId);
-      if (!key || !region || !service || (key.token && params.get("X-Amz-Security-Token") !== key.token)) return { ok: false };
+      if (!key || !region || !service || (key.token && params.get("X-Amz-Security-Token") !== key.token)) {
+        return { ok: false };
+      }
       const date = params.get("X-Amz-Date") ?? "";
       const expired = Date.now() > sigv4.parseAmzDate(date) + Number(params.get("X-Amz-Expires")) * 1000;
       const { signature } = sigv4.signRequest({
@@ -315,7 +317,9 @@ describe("re-signing when floci checks signatures", () => {
     }
     const scope = sigv4.parseAuthorization(req.headers.authorization);
     const key = scope && keys.get(scope.accessKeyId);
-    if (!scope || !key || (key.token && req.headers["x-amz-security-token"] !== key.token)) return { ok: false };
+    if (!scope || !key || (key.token && req.headers["x-amz-security-token"] !== key.token)) {
+      return { ok: false };
+    }
     const signedHeaders = /SignedHeaders=([^,]+)/.exec(req.headers.authorization!)![1].split(";");
     const bodyHash = createHash("sha256").update(body).digest("hex");
     const payloadHash = scope.service === "s3" && req.headers["x-amz-content-sha256"] === "UNSIGNED-PAYLOAD" ? "UNSIGNED-PAYLOAD" : bodyHash;
@@ -360,8 +364,12 @@ describe("re-signing when floci checks signatures", () => {
           const roleArn = form.get("RoleArn") ?? "";
           const account = roleArn.split(":")[4];
           assumed.push({ account, roleArn, session: form.get("RoleSessionName") ?? "", signedWith: check.ok ? check.keyId! : "bad signature" });
-          if (!check.ok) return xml(res, 403, stsError("SignatureDoesNotMatch", "no"));
-          if (account === DENIED) return xml(res, 403, stsError("AccessDenied", `Not authorized to perform sts:AssumeRole on ${roleArn}`));
+          if (!check.ok) {
+            return xml(res, 403, stsError("SignatureDoesNotMatch", "no"));
+          }
+          if (account === DENIED) {
+            return xml(res, 403, stsError("AccessDenied", `Not authorized to perform sts:AssumeRole on ${roleArn}`));
+          }
           issued++;
           const id = `ASIA${String(issued).padStart(16, "0")}`;
           keys.set(id, { secret: `secret/${issued}+&`, token: `token&${issued}`, account });
@@ -677,8 +685,12 @@ describe("asking floci again whether it checks signatures", () => {
           res.writeHead(403, { "content-type": "application/xml" });
           res.end(`<Error><Code>${code}</Code><Message>no</Message></Error>`);
         };
-        if (req.url === "/accessdenied") return xmlError("AccessDenied");
-        if (checking && /Signature=browser/.test(String(req.headers.authorization))) return xmlError("SignatureDoesNotMatch");
+        if (req.url === "/accessdenied") {
+          return xmlError("AccessDenied");
+        }
+        if (checking && /Signature=browser/.test(String(req.headers.authorization))) {
+          return xmlError("SignatureDoesNotMatch");
+        }
         res.writeHead(200);
         res.end("ok");
       });

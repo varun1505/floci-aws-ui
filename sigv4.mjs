@@ -16,7 +16,9 @@ const hmac = (key, data) => crypto.createHmac("sha256", key).update(data, "utf8"
 // Orders strings by UTF-16 code unit, as SigV4 requires. Not localeCompare: a locale can order
 // "-", "_" and upper case differently, and the signature would no longer match.
 function byCodeUnit(a, b) {
-  if (a < b) return -1;
+  if (a < b) {
+    return -1;
+  }
   return a > b ? 1 : 0;
 }
 
@@ -41,10 +43,14 @@ function decodeQueryComponent(value) {
 
 /** The canonical query string of a raw (still encoded) query string, without the leading "?". */
 export function canonicalQuery(rawQuery) {
-  if (!rawQuery) return "";
+  if (!rawQuery) {
+    return "";
+  }
   const pairs = [];
   for (const pair of rawQuery.split("&")) {
-    if (!pair) continue;
+    if (!pair) {
+      continue;
+    }
     const eq = pair.indexOf("=");
     const name = decodeQueryComponent(eq >= 0 ? pair.slice(0, eq) : pair);
     const value = decodeQueryComponent(eq >= 0 ? pair.slice(eq + 1) : "");
@@ -57,7 +63,9 @@ export function canonicalQuery(rawQuery) {
 /** The canonical URI of a raw (still encoded) path. S3 does not encode the path a second time. */
 export function canonicalUri(rawPath, service) {
   const raw = rawPath || "/";
-  if (service === "s3") return raw;
+  if (service === "s3") {
+    return raw;
+  }
   return raw
     .split("/")
     .map((segment) => uriEncode(segment))
@@ -130,12 +138,18 @@ const paramName = (pair) => {
 export function parsePresigned(rawQuery) {
   const params = new Map();
   for (const pair of String(rawQuery ?? "").split("&")) {
-    if (!pair) continue;
+    if (!pair) {
+      continue;
+    }
     const name = paramName(pair);
     const eq = pair.indexOf("=");
-    if (PRESIGN_PARAMS.has(name)) params.set(name, decodeQueryComponent(eq >= 0 ? pair.slice(eq + 1) : ""));
+    if (PRESIGN_PARAMS.has(name)) {
+      params.set(name, decodeQueryComponent(eq >= 0 ? pair.slice(eq + 1) : ""));
+    }
   }
-  if (!params.has("x-amz-signature")) return undefined;
+  if (!params.has("x-amz-signature")) {
+    return undefined;
+  }
   const parts = (params.get("x-amz-credential") ?? "").split("/");
   const signedAt = parseAmzDate(params.get("x-amz-date"));
   const expires = Number(params.get("x-amz-expires"));
@@ -179,18 +193,26 @@ export function parseAuthorization(header) {
   const text = String(header ?? "").trim();
   const algorithm = "AWS4-HMAC-SHA256";
   const rest = text.slice(algorithm.length);
-  if (!text.startsWith(algorithm) || !/^\s/.test(rest)) return undefined;
+  if (!text.startsWith(algorithm) || !/^\s/.test(rest)) {
+    return undefined;
+  }
   const credential = /(?:^|[\s,])Credential=([^,\s]+)/.exec(rest)?.[1];
   const parts = credential?.split("/");
-  if (parts?.length !== 5 || parts[4] !== "aws4_request" || parts.some((p) => !p)) return undefined;
+  if (parts?.length !== 5 || parts[4] !== "aws4_request" || parts.some((p) => !p)) {
+    return undefined;
+  }
   const [accessKeyId, date, region, service] = parts;
   return { accessKeyId, date, region, service };
 }
 
 /** The AWS partition of a region. */
 export function partitionOf(region) {
-  if (region.startsWith("us-gov-")) return "aws-us-gov";
-  if (region.startsWith("cn-")) return "aws-cn";
+  if (region.startsWith("us-gov-")) {
+    return "aws-us-gov";
+  }
+  if (region.startsWith("cn-")) {
+    return "aws-cn";
+  }
   return "aws";
 }
 
@@ -210,13 +232,21 @@ function readChunks(buf) {
   let pos = 0;
   for (;;) {
     const eol = buf.indexOf("\r\n", pos);
-    if (eol < 0) throw new Error("a chunk header has no line end");
+    if (eol < 0) {
+      throw new Error("a chunk header has no line end");
+    }
     const sizeText = buf.toString("latin1", pos, eol).split(";")[0].trim();
-    if (!/^[0-9a-fA-F]+$/.test(sizeText)) throw new Error("a chunk size is not hexadecimal");
+    if (!/^[0-9a-fA-F]+$/.test(sizeText)) {
+      throw new Error("a chunk size is not hexadecimal");
+    }
     const size = Number.parseInt(sizeText, 16);
     pos = eol + 2;
-    if (size === 0) return { chunks, end: pos };
-    if (pos + size + 2 > buf.length || buf.toString("latin1", pos + size, pos + size + 2) !== "\r\n") throw new Error("a chunk is shorter than its size");
+    if (size === 0) {
+      return { chunks, end: pos };
+    }
+    if (pos + size + 2 > buf.length || buf.toString("latin1", pos + size, pos + size + 2) !== "\r\n") {
+      throw new Error("a chunk is shorter than its size");
+    }
     chunks.push(buf.subarray(pos, pos + size));
     pos += size + 2;
   }
@@ -228,12 +258,18 @@ function readTrailers(buf, start) {
   let pos = start;
   while (pos < buf.length) {
     let eol = buf.indexOf("\r\n", pos);
-    if (eol < 0) eol = buf.length;
+    if (eol < 0) {
+      eol = buf.length;
+    }
     const line = buf.toString("latin1", pos, eol);
     pos = eol + 2;
-    if (!line) break;
+    if (!line) {
+      break;
+    }
     const [name, value] = trailerLine(line);
-    if (name !== "x-amz-trailer-signature") trailers[name] = value;
+    if (name !== "x-amz-trailer-signature") {
+      trailers[name] = value;
+    }
   }
   return trailers;
 }
@@ -241,10 +277,14 @@ function readTrailers(buf, start) {
 // One trailer line as a lower-case name and a value. Throws when it is not a valid header line.
 function trailerLine(line) {
   const colon = line.indexOf(":");
-  if (colon <= 0) throw new Error("a trailer is not a header line");
+  if (colon <= 0) {
+    throw new Error("a trailer is not a header line");
+  }
   const name = line.slice(0, colon).trim().toLowerCase();
   const value = line.slice(colon + 1).trim();
-  if (!/^[!#$%&'*+.^_`|~0-9a-z-]+$/.test(name) || !/^[\t\x20-\x7e\x80-\xff]*$/.test(value)) throw new Error("a trailer is not a valid header");
+  if (!/^[!#$%&'*+.^_`|~0-9a-z-]+$/.test(name) || !/^[\t\x20-\x7e\x80-\xff]*$/.test(value)) {
+    throw new Error("a trailer is not a valid header");
+  }
   return [name, value];
 }
 
