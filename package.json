@@ -24,7 +24,9 @@
     "bin",
     "dist",
     "server.mjs",
-    "terminal.mjs"
+    "terminal.mjs",
+    "sigv4.mjs",
+    "aws-signing.mjs"
   ],
   "engines": {
     "node": ">=20"

@@ -2,12 +2,16 @@ import { loadEnv } from "vite";
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import { createTerminal } from "./terminal.mjs";
+import { createAwsSigning } from "./aws-signing.mjs";
 
 // The browser cannot call floci directly: floci does not answer CORS preflight
 // requests. So the dev server forwards /aws/* to floci, and the page stays same-origin.
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const target = env.FLOCI_ENDPOINT || "http://localhost:4566";
+  // Same as server.mjs: when floci checks signatures, /aws requests are signed again for floci.
+  // Requests it does not sign go on to the /aws proxy below, as they came. See aws-signing.mjs.
+  const signing = createAwsSigning({ ...process.env, ...env }, target);
   return {
     plugins: [
       react(),
@@ -44,6 +48,13 @@ export default defineConfig(({ mode }) => {
             if (!terminal.handleRequest(req, res)) next();
           });
           server.httpServer?.on("upgrade", (req, socket) => terminal.handleUpgrade(req, socket));
+          server.middlewares.use((req, res, next) => {
+            signing.handleRequest(req, res).then((handled) => {
+              if (!handled) {
+                next();
+              }
+            }, next);
+          });
         },
       },
     ],
@@ -58,7 +69,12 @@ export default defineConfig(({ mode }) => {
     server: {
       host: true,
       proxy: {
-        "/aws": { target, changeOrigin: true, rewrite: (p) => p.replace(/^\/aws/, "") || "/" },
+        "/aws": {
+          target,
+          changeOrigin: true,
+          rewrite: (p) => p.replace(/^\/aws/, "") || "/",
+          configure: (proxy) => proxy.on("proxyRes", (answer) => signing.passedThrough(answer)),
+        },
       },
     },
   };

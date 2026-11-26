@@ -119,6 +119,29 @@ aws_secret_access_key = test
 aws --profile floci s3 ls
 ```
 
+## Works with floci's signature checks
+
+The web console works when floci checks request signatures the way AWS does (`FLOCI_AUTH_VALIDATE_SIGNATURES=true`). Give the web console the same setting, and it is ready from the first request. In `compose.yaml`:
+
+```yaml
+services:
+  floci:
+    environment:
+      FLOCI_AUTH_VALIDATE_SIGNATURES: "true"
+  console:
+    environment:
+      FLOCI_AUTH_VALIDATE_SIGNATURES: "true"
+```
+
+When floci starts the web console itself ([Let floci start it](#run-it-with-docker)), add `FLOCI_SERVICES_UI_EXTRA_ENV: FLOCI_AUTH_VALIDATE_SIGNATURES=true` to floci's `environment` instead.
+
+Floci's checks bring two limits:
+
+- **Accounts.** Besides floci's default account, an account opens only if it has the `OrganizationAccountAccessRole` role. Accounts created from your organization have it.
+- **Host names.** To open the web console under a name other than `localhost` or `127.0.0.1`, add the name to `FLOCI_CONSOLE_HOSTS`.
+
+See [Signature validation](docs/SIGNATURE_VALIDATION.md) for details.
+
 ## Connect to an EC2 instance
 
 Select a running instance and choose **Connect**, as in the AWS console. The page has two tabs.
@@ -228,7 +251,7 @@ browser  ->  this server (/aws/*)  ->  floci (:4566)
 
 - The pages use the normal AWS SDK for JavaScript. The SDK points at `/aws` on the same server.
 - The server forwards `/aws/*` to floci. This is needed because floci does not answer browser CORS preflight requests.
-- floci accepts any credentials. The console sends `test` / `test`, or the 12-digit ID of the account you chose as the access key. Nothing reaches real AWS.
+- The web console signs with `test` / `test`, or with the 12-digit ID of the account you chose as the access key. Nothing reaches real AWS. When floci checks signatures, the console server signs each request again with credentials floci accepts. See [Signature validation](docs/SIGNATURE_VALIDATION.md#how-it-works).
 
 ## Settings
 
@@ -241,13 +264,17 @@ browser  ->  this server (/aws/*)  ->  floci (:4566)
 | `HOST` | all addresses | Address the production server listens on. `npx floci-aws-ui serve` uses `127.0.0.1` unless you set it. |
 | `FLOCI_ACCOUNTS` | not set | Accounts for the account menu, like `111111111111=storefront,222222222222=payments-api`. See [Accounts and organizations](#accounts-and-organizations). |
 | `FLOCI_DEFAULT_ACCOUNT_ID` | `000000000000` | floci's default account, when floci's manifest does not say. Set it to the same value you give floci. |
+| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` | `test` / `test`, no token | The console server's own credentials, used when floci checks signatures. See [Signature validation](docs/SIGNATURE_VALIDATION.md#settings). |
+| `FLOCI_AUTH_VALIDATE_SIGNATURES` | not set | The value floci has, `true` or `false`, so the console server knows whether floci checks signatures. When not set, it asks floci. See [Signature validation](docs/SIGNATURE_VALIDATION.md#turn-it-on). |
+| `FLOCI_CONSOLE_ROLE_NAME` | `OrganizationAccountAccessRole` | The role the console server assumes in accounts other than floci's default one, when floci checks signatures. The console server does not start when this is not a valid role name. |
+| `FLOCI_CONSOLE_HOSTS` | not set | More host names the console server signs for when floci checks signatures, like `console.lan,10.0.0.5`. `localhost`, `127.0.0.1`, `::1` and `HOST` are always allowed. It does not change who can connect. See [Host names](docs/SIGNATURE_VALIDATION.md#host-names). |
 | `EC2_TERMINAL` | not set | Set to `1` to turn on the EC2 browser terminal. |
 | `DOCKER_HOST` | `unix:///var/run/docker.sock` | The Docker daemon the browser terminal uses. `unix://` or plain `tcp://`. Must be the one floci starts instances on. |
 
 ## Known limits
 
 - **No login.** Anyone who can open the console can change everything in floci. Keep it on a private network.
-- **Switching accounts needs floci to accept account IDs as keys.** When floci checks signatures (`FLOCI_AUTH_VALIDATE_SIGNATURES`), it accepts only its default account, and the console says so.
+- **When floci checks signatures, switching accounts needs a role.** The web console reaches accounts other than floci's default one through `OrganizationAccountAccessRole`. See [Works with floci's signature checks](#works-with-flocis-signature-checks).
 - **floci keeps state in memory** unless it was started with `--persist`. A floci restart wipes all resources.
 - floci does not write the `START`, `END` and `REPORT` lines to Lambda logs. You only see what your code prints.
 - floci does not publish Lambda or EC2 metrics on its own. The Metrics page shows only metrics your apps send.

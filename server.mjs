@@ -3,6 +3,8 @@
 // EC2_TERMINAL=1 adds a browser terminal for EC2 instances. See terminal.mjs.
 // FLOCI_ENDPOINT is read when AWS_ENDPOINT_URL is not set.
 // Set HOST to listen on one address only. Without it the server listens on all of them.
+// When floci checks signatures (FLOCI_AUTH_VALIDATE_SIGNATURES=true), signed /aws requests are signed
+// again for floci, and presigned ones presigned again. See aws-signing.mjs.
 //
 // Follows the Floci Console Contract v1 (https://floci.io/floci/ui/console-contract/),
 // so floci can start this server as its console sidecar. See GET /api/health below.
@@ -12,6 +14,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createTerminal } from "./terminal.mjs";
+import { createAwsSigning } from "./aws-signing.mjs";
 
 const target = new URL(process.env.AWS_ENDPOINT_URL || process.env.FLOCI_ENDPOINT || "http://localhost:4566");
 const secure = target.protocol === "https:";
@@ -24,6 +27,14 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 const dist = path.join(root, "dist");
 // Browser terminal for EC2 instances. Off unless EC2_TERMINAL=1. See terminal.mjs.
 const terminal = createTerminal(process.env);
+// Re-signing of /aws requests for floci when it checks signatures. See aws-signing.mjs.
+let signing;
+try {
+  signing = createAwsSigning(process.env, target);
+} catch (err) {
+  console.error(err.message);
+  process.exit(1);
+}
 
 let version;
 try {
@@ -57,6 +68,7 @@ function proxy(req, res) {
     (up) => {
       res.writeHead(up.statusCode || 502, up.headers);
       up.pipe(res);
+      signing.passedThrough(up);
     },
   );
   upstream.on("error", (err) => {
@@ -176,7 +188,14 @@ const server = http.createServer((req, res) => {
       res.end(JSON.stringify(body));
     });
   }
-  if (req.url === "/aws" || req.url.startsWith("/aws/") || req.url.startsWith("/aws?")) return proxy(req, res);
+  if (req.url === "/aws" || req.url.startsWith("/aws/") || req.url.startsWith("/aws?")) {
+    // Signed again when floci checks signatures. Otherwise forwarded as it came.
+    return signing.handleRequest(req, res).then((handled) => {
+      if (!handled) {
+        proxy(req, res);
+      }
+    });
+  }
   serveStatic(req, res);
 });
 server.on("upgrade", (req, socket) => {
