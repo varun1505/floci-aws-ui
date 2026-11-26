@@ -46,7 +46,7 @@ function raw(url: string, headers: Record<string, string>, method = "GET", body?
 
 function start(env: Record<string, string>): Promise<ChildProcess> {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [path.join(dir, "server.mjs")], { env: { ...process.env, AWS_ENDPOINT_URL: "", FLOCI_INFO_URL: "", EC2_TERMINAL: "", DOCKER_HOST: "", ...env }, stdio: ["ignore", "pipe", "inherit"] });
+    const child = spawn(process.execPath, [path.join(dir, "server.mjs")], { env: { ...process.env, AWS_ENDPOINT_URL: "", FLOCI_INFO_URL: "", EC2_TERMINAL: "", DOCKER_HOST: "", FLOCI_AUTH_VALIDATE_SIGNATURES: "", ...env }, stdio: ["ignore", "pipe", "inherit"] });
     child.stdout!.on("data", (d) => String(d).includes("Console on") && resolve(child));
     child.on("error", reject);
     child.on("exit", (code) => reject(new Error(`server.mjs exited with code ${code}`)));
@@ -734,6 +734,80 @@ describe("asking floci again whether it checks signatures", () => {
     expect(await Promise.all([send("/b/k"), send("/b/k"), send("/b/k")])).toEqual([200, 200, 200]);
     expect(probes).toBe(2);
     expect(forwarded.at(-1)!.authorization).not.toContain("Signature=browser");
+  });
+});
+
+describe("FLOCI_AUTH_VALIDATE_SIGNATURES on the console server", () => {
+  // A floci that checks signatures: it refuses the browser's own signature.
+  let probes = 0;
+  const forwarded: { authorization?: string }[] = [];
+  let flociServer: http.Server;
+  let flociPort: number;
+  const children: ChildProcess[] = [];
+
+  beforeAll(async () => {
+    flociServer = http.createServer((req, res) => {
+      const parts: Buffer[] = [];
+      req.on("data", (c) => parts.push(c));
+      req.on("end", () => {
+        if (new URLSearchParams(Buffer.concat(parts).toString()).get("Action") === "GetCallerIdentity") {
+          probes++;
+          res.writeHead(403, { "content-type": "text/xml" });
+          return res.end("<ErrorResponse><Error><Code>InvalidClientTokenId</Code></Error></ErrorResponse>");
+        }
+        forwarded.push({ authorization: req.headers.authorization });
+        if (/Signature=browser/.test(String(req.headers.authorization))) {
+          res.writeHead(403, { "content-type": "application/xml" });
+          return res.end("<Error><Code>SignatureDoesNotMatch</Code><Message>no</Message></Error>");
+        }
+        res.writeHead(200);
+        res.end("ok");
+      });
+    });
+    flociPort = await listen(flociServer);
+  });
+
+  afterAll(() => {
+    for (const child of children) {
+      child.removeAllListeners("exit");
+      child.kill();
+    }
+    flociServer?.close();
+  });
+
+  const startWith = async (value: string) => {
+    const port = await freePort();
+    const child = await start({ PORT: String(port), FLOCI_ENDPOINT: `http://127.0.0.1:${flociPort}`, AWS_ACCESS_KEY_ID: "", AWS_SECRET_ACCESS_KEY: "", AWS_SESSION_TOKEN: "", FLOCI_AUTH_VALIDATE_SIGNATURES: value });
+    children.push(child);
+    return `http://127.0.0.1:${port}`;
+  };
+  const send = async (cbase: string) => {
+    const res = await fetch(`${cbase}/aws/b/k`, { headers: { authorization: "AWS4-HMAC-SHA256 Credential=test/20250101/us-east-1/s3/aws4_request, SignedHeaders=host, Signature=browser" } });
+    await res.text();
+    return res.status;
+  };
+
+  it("signs every request again without asking floci when it is true, in any case", async () => {
+    probes = 0;
+    const cbase = await startWith(" TRUE ");
+    expect(await send(cbase)).toBe(200);
+    expect(await send(cbase)).toBe(200);
+    expect(probes).toBe(0);
+    expect(forwarded.at(-1)!.authorization).not.toContain("Signature=browser");
+  });
+
+  it("forwards every request as it came, and never asks floci, when it is false", async () => {
+    probes = 0;
+    const cbase = await startWith("false");
+    expect(await send(cbase)).toBe(403);
+    await new Promise((r) => setTimeout(r, 1100));
+    expect(await send(cbase)).toBe(403);
+    expect(probes).toBe(0);
+    expect(forwarded.at(-1)!.authorization).toContain("Signature=browser");
+  });
+
+  it("refuses to start with any other value", async () => {
+    await expect(startWith("yes")).rejects.toThrow("exited with code 1");
   });
 });
 

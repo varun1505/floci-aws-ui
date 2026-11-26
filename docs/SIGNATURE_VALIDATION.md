@@ -4,7 +4,7 @@ The web console works when floci checks request signatures the way AWS does. Thi
 
 ## Turn it on
 
-Set `FLOCI_AUTH_VALIDATE_SIGNATURES=true` on floci and restart it.
+Set `FLOCI_AUTH_VALIDATE_SIGNATURES=true` on floci and restart it. Give the web console the same setting, so it knows from the start:
 
 ```yaml
 services:
@@ -12,7 +12,12 @@ services:
     image: floci/floci:latest
     environment:
       FLOCI_AUTH_VALIDATE_SIGNATURES: "true"
+  console:
+    environment:
+      FLOCI_AUTH_VALIDATE_SIGNATURES: "true"
 ```
+
+Without the setting, the web console asks floci whether it checks signatures. That works too, but when floci restarts with checks on while the web console runs, the first request can fail once.
 
 ## Which accounts open
 
@@ -53,7 +58,8 @@ This setting does not change who can connect. That is still decided by the addre
 | --- | --- |
 | `HostNotAllowed` | Open the web console at `localhost`, or add the name you used to `FLOCI_CONSOLE_HOSTS`. |
 | The web console cannot open account ... | The account needs the `OrganizationAccountAccessRole` role. See [Which accounts open](#which-accounts-open). |
-| One request fails right after floci restarts with checks on | Try again. The next one works. |
+| A request fails right after floci restarts with checks on | Try again: the next one works. To avoid it, give the web console the same setting. See [Turn it on](#turn-it-on). |
+| Every page fails after you turn checks off or on | The web console's `FLOCI_AUTH_VALIDATE_SIGNATURES` no longer matches floci's. Change it to the same value. |
 
 ---
 
@@ -91,7 +97,7 @@ When floci does not check signatures, the console server forwards every request 
 
 A request goes through the steps below when it carries an `Authorization` header, or when it is a presigned URL made with `test` or an account ID:
 
-1. **Ask whether floci checks signatures.** floci does not report the setting, so the console server sends one `GetCallerIdentity` signed with a key floci never issued. A refusal means checks are on. The answer is kept for 5 minutes, and requests that arrive while it asks share that one request. If floci refuses the credentials of a request forwarded as it came (it restarted with checks on), the console server asks again on a following request, no sooner than one second after it last asked. Only credential errors do this: `InvalidClientTokenId`, `SignatureDoesNotMatch` and the like, read from `x-amzn-errortype` or the error code in the body. Other errors, such as `AccessDenied`, change nothing.
+1. **Know whether floci checks signatures.** When `FLOCI_AUTH_VALIDATE_SIGNATURES` is set on the console server, it uses that value and never asks: `true` signs every such request again, `false` forwards every request as it came. When it is not set, the console server asks. floci does not report the setting, so the console server sends one `GetCallerIdentity` signed with a key floci never issued. A refusal means checks are on. The answer is kept for 5 minutes, and requests that arrive while it asks share that one request. If floci refuses the credentials of a request forwarded as it came (it restarted with checks on), the console server asks again on a following request, no sooner than one second after it last asked. Only credential errors do this: `InvalidClientTokenId`, `SignatureDoesNotMatch` and the like, read from `x-amzn-errortype` or the error code in the body. Other errors, such as `AccessDenied`, change nothing.
 2. **Check the host name.** The console server adds its credentials only for `localhost`, `127.0.0.1`, `::1`, the `HOST` address (unless it is `0.0.0.0` or `::`), and the names in `FLOCI_CONSOLE_HOSTS`, in any case, with any port. Any other name gets `403 HostNotAllowed`. See [Why the host name check](#why-the-host-name-check).
 3. **Read the account and region** from the request's credential scope. A 12-digit access key names the account. Any other key means floci's default account (`defaults.account_id` in floci's manifest, `/_floci/info`).
 4. **Choose credentials.**
@@ -128,6 +134,7 @@ The check applies only where the console server adds its credentials. Requests f
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
+| `FLOCI_AUTH_VALIDATE_SIGNATURES` | not set: ask floci | floci's own setting, given to the console server too: `true` or `false`, in any case. The console server does not start with any other value. |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` | `test` / `test`, no token | The console server's own credentials, used for floci's default account and to assume roles. |
 | `FLOCI_CONSOLE_ROLE_NAME` | `OrganizationAccountAccessRole` | The role the console server assumes in accounts other than floci's default one. The console server does not start when this is not a valid role name. |
 | `FLOCI_CONSOLE_HOSTS` | not set | More host names the console server signs for, separated by commas. See [Host names](#host-names). |

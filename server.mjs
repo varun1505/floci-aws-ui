@@ -75,12 +75,15 @@ function upstream(method, path, headers, body, res, onStatus) {
   }
 }
 
-// Forwards the request as it came, signature and all. When floci refuses its credentials, floci may have
-// started checking signatures since the server last asked, so the server asks again soon.
+// Forwards the request as it came, signature and all. When the server asks floci whether it checks
+// signatures and floci refuses these credentials, floci may have started checking since the server last
+// asked, so the server asks again soon.
 function passThrough(req, res) {
-  upstream(req.method, req.url.replace(/^\/aws/, "") || "/", { ...req.headers, host: target.host }, req, res, (status, headers, answer) =>
-    onCredentialError(status, headers, answer, recheckSoon),
-  );
+  let onStatus;
+  if (configuredChecks === undefined) {
+    onStatus = (status, headers, answer) => onCredentialError(status, headers, answer, recheckSoon);
+  }
+  upstream(req.method, req.url.replace(/^\/aws/, "") || "/", { ...req.headers, host: target.host }, req, res, onStatus);
 }
 
 const escapeXml = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.codePointAt(0)};`);
@@ -115,6 +118,18 @@ const roleName = process.env.FLOCI_CONSOLE_ROLE_NAME || "OrganizationAccountAcce
 if (!/^[\w+=,.@-]{1,64}$/.test(roleName)) {
   console.error(`FLOCI_CONSOLE_ROLE_NAME must be an IAM role name, like OrganizationAccountAccessRole. Got: ${roleName}`);
   process.exit(1);
+}
+// FLOCI_AUTH_VALIDATE_SIGNATURES, set on this server to the value floci has, says whether floci checks
+// signatures, so the server does not ask: "true" signs every signed request again, "false" forwards every
+// request as it came. Not set, the server asks floci.
+const signaturesSetting = String(process.env.FLOCI_AUTH_VALIDATE_SIGNATURES ?? "").trim().toLowerCase();
+if (!["", "true", "false"].includes(signaturesSetting)) {
+  console.error(`FLOCI_AUTH_VALIDATE_SIGNATURES must be true or false, the value floci has. Got: ${process.env.FLOCI_AUTH_VALIDATE_SIGNATURES}`);
+  process.exit(1);
+}
+let configuredChecks;
+if (signaturesSetting) {
+  configuredChecks = signaturesSetting === "true";
 }
 const ROLE_SESSION_NAME = "floci-aws-ui";
 // Role credentials are used until 5 minutes before they expire.
@@ -241,12 +256,16 @@ function sts(params, region, credentials) {
   return call("POST", "/", headers, body);
 }
 
-// Whether floci checks signatures: it refuses a key it never issued only when it does.
-// floci does not report the setting itself, so the server asks with one request and keeps the answer.
-// Requests that arrive while it asks share that one request.
+// Whether floci checks signatures. FLOCI_AUTH_VALIDATE_SIGNATURES on this server says so when it is set.
+// Otherwise the server asks: floci refuses a key it never issued only when it checks, and it does not
+// report the setting itself. The server asks with one request and keeps the answer. Requests that arrive
+// while it asks share that one request.
 let probe;
 let probing;
 function flociChecksSignatures(region) {
+  if (configuredChecks !== undefined) {
+    return Promise.resolve(configuredChecks);
+  }
   if (probe && Date.now() < probe.until) {
     return Promise.resolve(probe.value);
   }
