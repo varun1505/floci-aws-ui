@@ -121,7 +121,19 @@ aws --profile floci s3 ls
 
 ## Works with floci's signature checks
 
-The web console works when floci checks request signatures the way AWS does (`FLOCI_AUTH_VALIDATE_SIGNATURES=true`). Give the web console the same setting, and it is ready from the first request.
+The web console works when floci checks request signatures the way AWS does (`FLOCI_AUTH_VALIDATE_SIGNATURES=true`). Give the web console the same setting, and it is ready from the first request. In `compose.yaml`:
+
+```yaml
+services:
+  floci:
+    environment:
+      FLOCI_AUTH_VALIDATE_SIGNATURES: "true"
+  console:
+    environment:
+      FLOCI_AUTH_VALIDATE_SIGNATURES: "true"
+```
+
+When floci starts the web console itself ([Let floci start it](#run-it-with-docker)), add `FLOCI_SERVICES_UI_EXTRA_ENV: FLOCI_AUTH_VALIDATE_SIGNATURES=true` to floci's `environment` instead.
 
 Floci's checks bring two limits:
 
