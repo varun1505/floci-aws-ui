@@ -13,11 +13,18 @@ export const EMPTY_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca49
 export const sha256Hex = (data) => crypto.createHash("sha256").update(data).digest("hex");
 const hmac = (key, data) => crypto.createHmac("sha256", key).update(data, "utf8").digest();
 
+// Orders strings by UTF-16 code unit, as SigV4 requires. Not localeCompare: a locale can order
+// "-", "_" and upper case differently, and the signature would no longer match.
+function byCodeUnit(a, b) {
+  if (a < b) return -1;
+  return a > b ? 1 : 0;
+}
+
 /** RFC 3986 percent-encoding as SigV4 defines it: only A-Z a-z 0-9 - . _ ~ stay as they are. */
 export function uriEncode(value) {
   let out = "";
   for (const b of Buffer.from(value, "utf8")) {
-    const c = String.fromCharCode(b);
+    const c = String.fromCodePoint(b);
     out += /[A-Za-z0-9\-._~]/.test(c) ? c : `%${b.toString(16).toUpperCase().padStart(2, "0")}`;
   }
   return out;
@@ -26,7 +33,7 @@ export function uriEncode(value) {
 // Percent-decodes one query component. SigV4 signers write a space as %20, so a raw "+" is a plus sign.
 function decodeQueryComponent(value) {
   try {
-    return decodeURIComponent(value.replace(/\+/g, "%2B"));
+    return decodeURIComponent(value.replaceAll("+", "%2B"));
   } catch {
     return value;
   }
@@ -43,8 +50,7 @@ export function canonicalQuery(rawQuery) {
     const value = decodeQueryComponent(eq >= 0 ? pair.slice(eq + 1) : "");
     pairs.push([uriEncode(name), uriEncode(value)]);
   }
-  const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
-  pairs.sort((a, b) => cmp(a[0], b[0]) || cmp(a[1], b[1]));
+  pairs.sort((a, b) => byCodeUnit(a[0], b[0]) || byCodeUnit(a[1], b[1]));
   return pairs.map(([n, v]) => `${n}=${v}`).join("&");
 }
 
@@ -82,7 +88,7 @@ export function amzDate(now = new Date()) {
 export function signRequest({ method, path, query, headers, payloadHash, date, region, service, credentials }) {
   const names = Object.keys(headers)
     .map((n) => n.toLowerCase())
-    .sort();
+    .sort(byCodeUnit);
   const lower = Object.fromEntries(Object.entries(headers).map(([n, v]) => [n.toLowerCase(), v]));
   const canonicalHeaders = names.map((n) => `${n}:${canonicalHeaderValue(lower[n], service)}\n`).join("");
   const signedHeaders = names.join(";");
@@ -102,7 +108,7 @@ export function signRequest({ method, path, query, headers, payloadHash, date, r
 /** Milliseconds since the epoch of a basic ISO 8601 time like 20150830T123600Z, or NaN. */
 export function parseAmzDate(value) {
   const m = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/.exec(String(value ?? ""));
-  return m ? Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]) : NaN;
+  return m ? Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]) : Number.NaN;
 }
 
 // The query parameters that make up a presigned URL's signature. presignQuery replaces all of them.
@@ -170,11 +176,13 @@ export function presignQuery({ method, path, query, host, date, expires, region,
  * Gives the access key ID, date, region and service. The signature itself is not checked.
  */
 export function parseAuthorization(header) {
-  const m = /^AWS4-HMAC-SHA256\s+(.*)$/s.exec(String(header ?? "").trim());
-  if (!m) return undefined;
-  const credential = /(?:^|[\s,])Credential=([^,\s]+)/.exec(m[1])?.[1];
+  const text = String(header ?? "").trim();
+  const algorithm = "AWS4-HMAC-SHA256";
+  const rest = text.slice(algorithm.length);
+  if (!text.startsWith(algorithm) || !/^\s/.test(rest)) return undefined;
+  const credential = /(?:^|[\s,])Credential=([^,\s]+)/.exec(rest)?.[1];
   const parts = credential?.split("/");
-  if (!parts || parts.length !== 5 || parts[4] !== "aws4_request" || parts.some((p) => !p)) return undefined;
+  if (parts?.length !== 5 || parts[4] !== "aws4_request" || parts.some((p) => !p)) return undefined;
   const [accessKeyId, date, region, service] = parts;
   return { accessKeyId, date, region, service };
 }
@@ -192,6 +200,12 @@ export function partitionOf(region) {
  * trailers (lower-case names; the trailer signature is left out). Throws on a body it cannot read.
  */
 export function decodeAwsChunked(buf) {
+  const { chunks, end } = readChunks(buf);
+  return { body: Buffer.concat(chunks), trailers: readTrailers(buf, end) };
+}
+
+// The data chunks of an aws-chunked body, and where the line of its zero-size chunk ends.
+function readChunks(buf) {
   const chunks = [];
   let pos = 0;
   for (;;) {
@@ -199,34 +213,45 @@ export function decodeAwsChunked(buf) {
     if (eol < 0) throw new Error("a chunk header has no line end");
     const sizeText = buf.toString("latin1", pos, eol).split(";")[0].trim();
     if (!/^[0-9a-fA-F]+$/.test(sizeText)) throw new Error("a chunk size is not hexadecimal");
-    const size = parseInt(sizeText, 16);
+    const size = Number.parseInt(sizeText, 16);
     pos = eol + 2;
-    if (size === 0) break;
+    if (size === 0) return { chunks, end: pos };
     if (pos + size + 2 > buf.length || buf.toString("latin1", pos + size, pos + size + 2) !== "\r\n") throw new Error("a chunk is shorter than its size");
     chunks.push(buf.subarray(pos, pos + size));
     pos += size + 2;
   }
+}
+
+// The trailer lines from `start`, up to an empty line or the end of the body. The trailer signature is left out.
+function readTrailers(buf, start) {
   const trailers = {};
+  let pos = start;
   while (pos < buf.length) {
     let eol = buf.indexOf("\r\n", pos);
     if (eol < 0) eol = buf.length;
     const line = buf.toString("latin1", pos, eol);
     pos = eol + 2;
     if (!line) break;
-    const colon = line.indexOf(":");
-    if (colon <= 0) throw new Error("a trailer is not a header line");
-    const name = line.slice(0, colon).trim().toLowerCase();
-    const value = line.slice(colon + 1).trim();
-    if (!/^[!#$%&'*+.^_`|~0-9a-z-]+$/.test(name) || !/^[\t\x20-\x7e\x80-\xff]*$/.test(value)) throw new Error("a trailer is not a valid header");
+    const [name, value] = trailerLine(line);
     if (name !== "x-amz-trailer-signature") trailers[name] = value;
   }
-  return { body: Buffer.concat(chunks), trailers };
+  return trailers;
+}
+
+// One trailer line as a lower-case name and a value. Throws when it is not a valid header line.
+function trailerLine(line) {
+  const colon = line.indexOf(":");
+  if (colon <= 0) throw new Error("a trailer is not a header line");
+  const name = line.slice(0, colon).trim().toLowerCase();
+  const value = line.slice(colon + 1).trim();
+  if (!/^[!#$%&'*+.^_`|~0-9a-z-]+$/.test(name) || !/^[\t\x20-\x7e\x80-\xff]*$/.test(value)) throw new Error("a trailer is not a valid header");
+  return [name, value];
 }
 
 const XML_ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" };
 
 /** The text of the first <tag> element in an XML document, entities decoded, or undefined. */
 export function xmlText(xml, tag) {
-  const m = new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`).exec(xml);
+  const m = new RegExp(String.raw`<${tag}>([\s\S]*?)</${tag}>`).exec(xml);
   return m ? m[1].replace(/&(amp|lt|gt|quot|apos);/g, (_, e) => XML_ENTITIES[e]).trim() : undefined;
 }
