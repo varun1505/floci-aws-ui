@@ -42,13 +42,13 @@ With checks on, the web console opens an account through its `OrganizationAccoun
 | An account outside any organization | Only if the role already exists in it |
 | An account in an organization managed by another account | No |
 
+> [!WARNING]
+> With checks on, nobody can sign in to an invited or standalone account to create the role. Create the role while checks are off, or create the account from the default account instead. AWS describes the role in [Creating OrganizationAccountAccessRole for an invited account](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_create-cross-account-role.html).
+
 When an account cannot be opened, the account menu says why and stays in the account you were in.
 
 > [!TIP]
 > Create new accounts from floci's default account: select it in the account menu, then choose **Organization > Add an AWS account**.
-
-> [!WARNING]
-> With checks on, nobody can sign in to an invited or standalone account to create the role. Create the role while checks are off, or create the account from the default account instead. AWS describes the role in [Creating OrganizationAccountAccessRole for an invited account](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_create-cross-account-role.html).
 
 ## Host names
 
@@ -76,7 +76,9 @@ This setting does not change who can connect. That is still decided by the addre
 
 ## How it works
 
-This part is for developers. It explains what the console server (`server.mjs`) does, and why.
+This part is for developers. It explains what the console server does, and why.
+
+The signing lives in `aws-signing.mjs`, which both servers use: `server.mjs` for the built web console, and `vite.config.ts` for the dev server (`pnpm dev`). Each passes its `/aws` requests to the module first. A request the module does not sign goes on to the server's own proxy, unchanged. The dev server reads the settings below from the environment or from `.env.local`.
 
 ### Why the console server signs
 
@@ -137,7 +139,6 @@ The check applies only where the console server adds its credentials. Requests f
 
 - **Request bodies other than plain S3 bodies are read whole**, up to 1 GiB each. A larger one gets `413`. AWS keeps other services' requests small, and the AWS CLI and SDKs send `aws-chunked` uploads in parts of a few MB.
 - **IAM and STS keys floci issued are not passed on.** A request signed with such a key through `/aws` is signed again as floci's default account (or the role, for a 12-digit key). A presigned URL made with such a key for the web console's address is forwarded as it came, and floci refuses it.
-- **The dev server** (`pnpm dev`) forwards requests without signing them again, so every page fails with `InvalidClientTokenId` or `SignatureDoesNotMatch` when floci checks signatures. Use the built web console.
 - **The web console's address has no login.** It lends its credentials to anyone who can reach it, while floci's own address still checks every request.
 - **The console server signs with `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`.** Do not start it in a shell that holds real AWS credentials: their key ID and session token would be sent to floci.
 

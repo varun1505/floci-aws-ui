@@ -58,6 +58,7 @@ beforeAll(async () => {
   fs.copyFileSync(path.resolve("server.mjs"), path.join(dir, "server.mjs"));
   fs.copyFileSync(path.resolve("terminal.mjs"), path.join(dir, "terminal.mjs"));
   fs.copyFileSync(path.resolve("sigv4.mjs"), path.join(dir, "sigv4.mjs"));
+  fs.copyFileSync(path.resolve("aws-signing.mjs"), path.join(dir, "aws-signing.mjs"));
   fs.mkdirSync(path.join(dir, "dist", "assets"), { recursive: true });
   fs.writeFileSync(path.join(dir, "dist", "index.html"), "<html>app</html>");
   fs.writeFileSync(path.join(dir, "dist", "assets", "app.js"), "console.log(1)");
@@ -602,7 +603,7 @@ describe("re-signing when floci checks signatures", () => {
     expect(res.status).toBe(400);
     expect((await res.json()).message).toContain("aws-chunked");
     expect((await send("0\r\nbad name: x\r\n\r\n")).status).toBe(400);
-    expect(got.length).toBe(count);
+    expect(got).toHaveLength(count);
     expect((await fetch(`${rbase}/api/health`)).status).toBe(200);
   });
 
@@ -655,7 +656,7 @@ describe("re-signing when floci checks signatures", () => {
     const res = await fetch(`${rbase}/aws/b/k.txt?${presignedQuery("test", { expires: 60, signedAt: new Date(Date.now() - 120_000) })}`);
     expect(res.status).toBe(403);
     expect(await res.text()).toContain("Request has expired");
-    expect(got.length).toBe(count);
+    expect(got).toHaveLength(count);
   });
 
   it("forwards unsigned requests, and presigned ones with other keys, as they came", async () => {
@@ -683,7 +684,7 @@ describe("re-signing when floci checks signatures", () => {
     const presignedRefused = await raw(`${rbase}/aws/b/k?${presignedQuery("test")}`, { host: `evil.example:${port}` });
     expect(presignedRefused.status).toBe(403);
     expect(presignedRefused.body).toContain("<Code>HostNotAllowed</Code>");
-    expect(got.length).toBe(count);
+    expect(got).toHaveLength(count);
     // localhost, the loopback addresses, and the names in FLOCI_CONSOLE_HOSTS, in any case, with or without a port.
     for (const host of [`localhost:${port}`, `LOCALHOST:${port}`, `127.0.0.1:${port}`, `[::1]:${port}`, `console.lan:${port}`, "Console.Lan"]) {
       expect((await signedAs(host)).status, host).toBe(200);

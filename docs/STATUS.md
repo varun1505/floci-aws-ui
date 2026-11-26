@@ -91,8 +91,9 @@ These were found on floci 2.4.0. Check them again on newer versions.
 ## 3. How the code is laid out
 
 ```
-server.mjs            production server: serves dist/ and proxies /aws/* to floci, signing again when floci checks signatures
-sigv4.mjs             SigV4 signing for that proxy, by floci's canonicalization rules
+server.mjs            production server: serves dist/ and proxies /aws/* to floci
+aws-signing.mjs       signs /aws requests again when floci checks signatures; used by server.mjs and vite.config.ts
+sigv4.mjs             SigV4 signing for aws-signing.mjs, by floci's canonicalization rules
 terminal.mjs          EC2 browser terminal: a small WebSocket server bridged to docker exec (off unless EC2_TERMINAL=1)
 bin/cli.mjs           the `floci-aws-ui serve` command; checks its options, then runs server.mjs
 vite.config.ts        dev server with the same /aws proxy and terminal
@@ -103,7 +104,7 @@ src/components/       shared parts (Shell, ResourceTable, FormModal, ConfirmDele
 src/lib/              hooks (useLoad, useSubmit, useNotify) and formatters
 src/components/nav.ts the service list and side navigation
 src/App.tsx           all routes, loaded lazily per page
-test/                 test setup, the tests of server.mjs (with a fake floci that checks signatures, and a fake Docker daemon for the terminal), of sigv4.mjs, and of bin/cli.mjs
+test/                 test setup, the tests of server.mjs (with a fake floci that checks signatures, and a fake Docker daemon for the terminal), of aws-signing.mjs, of sigv4.mjs, and of bin/cli.mjs
 ```
 
 **Patterns to follow**

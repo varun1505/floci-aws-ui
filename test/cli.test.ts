@@ -20,6 +20,7 @@ beforeAll(() => {
   fs.copyFileSync(path.resolve("server.mjs"), path.join(dir, "server.mjs"));
   fs.copyFileSync(path.resolve("terminal.mjs"), path.join(dir, "terminal.mjs"));
   fs.copyFileSync(path.resolve("sigv4.mjs"), path.join(dir, "sigv4.mjs"));
+  fs.copyFileSync(path.resolve("aws-signing.mjs"), path.join(dir, "aws-signing.mjs"));
   fs.writeFileSync(path.join(dir, "package.json"), JSON.stringify({ version: "9.8.7", type: "module" }));
   fs.writeFileSync(path.join(dir, "dist", "index.html"), "<html>app</html>");
   cli = path.join(dir, "bin", "cli.mjs");
