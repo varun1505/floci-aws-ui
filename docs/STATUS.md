@@ -54,7 +54,7 @@ These were found on floci 2.4.0. Check them again on newer versions.
 **All services**
 
 - floci has **no CORS preflight**. A browser cannot call it directly. This is why the console has the `/aws` proxy.
-- floci accepts any credentials. The console sends `test` / `test`.
+- floci accepts any credentials unless it runs with `FLOCI_AUTH_VALIDATE_SIGNATURES=true`. The web console signs with `test` / `test`, or with the chosen account ID as the access key. When floci checks signatures, the console server signs again. See [Signature validation](SIGNATURE_VALIDATION.md).
 - State is in memory unless floci runs with `--persist`.
 
 **By service**
@@ -91,7 +91,8 @@ These were found on floci 2.4.0. Check them again on newer versions.
 ## 3. How the code is laid out
 
 ```
-server.mjs            production server: serves dist/ and proxies /aws/* to floci
+server.mjs            production server: serves dist/ and proxies /aws/* to floci, signing again when floci checks signatures
+sigv4.mjs             SigV4 signing for that proxy, by floci's canonicalization rules
 terminal.mjs          EC2 browser terminal: a small WebSocket server bridged to docker exec (off unless EC2_TERMINAL=1)
 bin/cli.mjs           the `floci-aws-ui serve` command; checks its options, then runs server.mjs
 vite.config.ts        dev server with the same /aws proxy and terminal
@@ -102,7 +103,7 @@ src/components/       shared parts (Shell, ResourceTable, FormModal, ConfirmDele
 src/lib/              hooks (useLoad, useSubmit, useNotify) and formatters
 src/components/nav.ts the service list and side navigation
 src/App.tsx           all routes, loaded lazily per page
-test/                 test setup, and the tests of server.mjs (with a fake Docker daemon for the terminal)
+test/                 test setup, the tests of server.mjs (with a fake floci that checks signatures, and a fake Docker daemon for the terminal), of sigv4.mjs, and of bin/cli.mjs
 ```
 
 **Patterns to follow**

@@ -84,8 +84,9 @@ export const PROXY_BASE = `${window.location.origin}/aws`;
 export const clientBase = {
   region: getRegion(),
   endpoint: PROXY_BASE,
-  // floci accepts any credentials. These never reach real AWS.
+  // floci accepts any credentials unless it checks signatures. These never reach real AWS.
   // The access key ID chooses the account. "test" means floci's default account.
+  // When floci checks signatures, the console server signs every request again with credentials floci accepts.
   credentials: { accessKeyId: accessKeyFor(getSelectedAccount()), secretAccessKey: "test" },
 };
 

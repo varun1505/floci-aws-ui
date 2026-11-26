@@ -12,7 +12,7 @@ FROM node:22-alpine
 WORKDIR /app
 ENV NODE_ENV=production PORT=8080 FLOCI_ENDPOINT=http://floci:4566
 COPY --from=build /app/dist ./dist
-COPY server.mjs terminal.mjs package.json ./
+COPY server.mjs terminal.mjs sigv4.mjs package.json ./
 EXPOSE 8080
 # Floci Console Contract v1. floci reads these when it starts this image as its console.
 # https://floci.io/floci/ui/console-contract/

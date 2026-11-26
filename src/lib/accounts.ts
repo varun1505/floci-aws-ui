@@ -5,9 +5,13 @@ import { accessKeyFor, accountSettings, clientBase, getSelectedAccount, isAccoun
 // The errors floci gives for an access key it does not accept.
 const KEY_REJECTED = new Set(["UnrecognizedClientException", "InvalidClientTokenId", "InvalidAccessKeyId"]);
 
+type RawError = Error & { $response?: { headers?: Record<string, string | undefined> } };
+
 /**
  * Why floci will not work as this account, or undefined when it will.
- * floci refuses 12-digit account ID keys when it checks signatures (FLOCI_AUTH_VALIDATE_SIGNATURES).
+ * When floci checks signatures (FLOCI_AUTH_VALIDATE_SIGNATURES), the console server reaches an account
+ * other than floci's default one through sts:AssumeRole, and marks a refusal with x-floci-console-error.
+ * Without the console server's re-signing (the dev server), floci refuses 12-digit account ID keys.
  * Any other failure, such as floci being down, is not a reason to refuse the account.
  */
 export async function accountRejected(id: string): Promise<string | undefined> {
@@ -16,8 +20,14 @@ export async function accountRejected(id: string): Promise<string | undefined> {
     const sqs = new SQSClient({ ...clientBase, credentials: { accessKeyId: id, secretAccessKey: "test" }, useQueueUrlAsEndpoint: false });
     await sqs.send(new ListQueuesCommand({}));
   } catch (e) {
-    if (KEY_REJECTED.has((e as Error).name)) {
-      return `floci does not accept account ID ${id} as an access key. floci refuses account ID keys when it checks signatures (FLOCI_AUTH_VALIDATE_SIGNATURES).`;
+    const err = e as RawError;
+    const headers = err.$response?.headers ?? {};
+    if (headers["x-floci-console-error"] === "assume-role") {
+      const role = headers["x-floci-console-role"] || "OrganizationAccountAccessRole";
+      return `The web console cannot open account ${id}: floci refused to let the console server assume the role ${role} in that account (${err.name}: ${err.message}). floci checks signatures, so the console server reaches other accounts through this role. floci creates it in every account of an organization whose management account is floci's default account.`;
+    }
+    if (KEY_REJECTED.has(err.name)) {
+      return `floci does not accept account ID ${id} as an access key. floci refuses account ID keys when it checks signatures (FLOCI_AUTH_VALIDATE_SIGNATURES). The console server (server.mjs) signs such requests again for floci; the dev server does not.`;
     }
   }
   return undefined;
