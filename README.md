@@ -252,7 +252,6 @@ browser  ->  this server (/aws/*)  ->  floci (:4566)
 | `HOST` | all addresses | Address the production server listens on. `npx floci-aws-ui serve` uses `127.0.0.1` unless you set it. |
 | `FLOCI_ACCOUNTS` | not set | Accounts for the account menu, like `111111111111=storefront,222222222222=payments-api`. See [Accounts and organizations](#accounts-and-organizations). |
 | `FLOCI_DEFAULT_ACCOUNT_ID` | `000000000000` | floci's default account, when floci's manifest does not say. Set it to the same value you give floci. |
-| `FLOCI_INFO_URL` | `<floci>/_floci/info` for the default account | floci's manifest. The console server reads floci's default account there. It reads floci's outside host name there only when this is set. |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` | `test` / `test`, no token | The console server's own credentials, used when floci checks signatures. See [Signature validation](docs/SIGNATURE_VALIDATION.md#settings). |
 | `FLOCI_CONSOLE_ROLE_NAME` | `OrganizationAccountAccessRole` | The role the console server assumes in accounts other than floci's default one, when floci checks signatures. The console server does not start when this is not a valid role name. |
 | `FLOCI_CONSOLE_HOSTS` | not set | More host names the console server signs for when floci checks signatures, like `console.lan,10.0.0.5`. `localhost`, `127.0.0.1`, `::1` and `HOST` are always allowed. It does not change who can connect. See [Host names](docs/SIGNATURE_VALIDATION.md#host-names). |

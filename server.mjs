@@ -78,7 +78,7 @@ function passThrough(req, res) {
   );
 }
 
-const escapeXml = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+const escapeXml = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.codePointAt(0)};`);
 
 // An AWS-style error the browser's SDK reads: JSON for a JSON request, XML otherwise.
 function sendError(req, res, status, code, message, headers = {}) {
@@ -418,30 +418,35 @@ async function proxy(req, res) {
 
   const found = await credentialsFor(req, res, scope);
   if (!found) return;
-  const { credentials, expiresAt, onStatus } = found;
+  if (presigned) return forwardPresigned(req, res, path, query, presigned, found);
+  return forwardSigned(req, res, path, query, scope, found);
+}
 
-  if (presigned) {
-    // The URL stays valid for as long as it had left, and no longer than the credentials it is signed with.
-    const seconds = Math.floor((Math.min(presigned.expiresAt, expiresAt ?? Infinity) - Date.now()) / 1000);
-    if (seconds <= 0) return sendError(req, res, 403, "AccessDenied", "Request has expired");
-    const signedQuery = presignQuery({ method: req.method, path, query, host: target.host, date: amzDate(), expires: seconds, region: scope.region, service: scope.service, credentials });
-    const headers = { ...req.headers, host: target.host };
-    delete headers.authorization;
-    return upstream(req.method, `${path}?${signedQuery}`, headers, req, res, onStatus);
-  }
+// Presigns the URL again for floci. It stays valid for as long as it had left, and no longer than the
+// credentials it is signed with.
+function forwardPresigned(req, res, path, query, presigned, { credentials, expiresAt, onStatus }) {
+  const seconds = Math.floor((Math.min(presigned.expiresAt, expiresAt ?? Infinity) - Date.now()) / 1000);
+  if (seconds <= 0) return sendError(req, res, 403, "AccessDenied", "Request has expired");
+  const signedQuery = presignQuery({ method: req.method, path, query, host: target.host, date: amzDate(), expires: seconds, region: presigned.region, service: presigned.service, credentials });
+  const headers = { ...req.headers, host: target.host };
+  delete headers.authorization;
+  return upstream(req.method, `${path}?${signedQuery}`, headers, req, res, onStatus);
+}
 
+// Signs a request with an Authorization header again for floci.
+async function forwardSigned(req, res, path, query, scope, { credentials, onStatus }) {
   const incoming = { ...req.headers };
   const encodings = String(incoming["content-encoding"] || "")
     .split(",")
     .map((e) => e.trim())
     .filter(Boolean);
-  const chunked = encodings.includes("aws-chunked") || /^STREAMING-/.test(String(incoming["x-amz-content-sha256"] || ""));
+  const chunked = encodings.includes("aws-chunked") || String(incoming["x-amz-content-sha256"] || "").startsWith("STREAMING-");
+  const url = query ? `${path}?${query}` : path;
 
   // A plain S3 body is streamed to floci as it arrives, as the server does when floci does not check
   // signatures. Its payload is signed as UNSIGNED-PAYLOAD, which S3 accepts.
   if (scope.service === "s3" && !chunked && incoming["transfer-encoding"] === undefined) {
-    const headers = signFor(req.method, path, query, incoming, null, scope, credentials);
-    return upstream(req.method, query ? `${path}?${query}` : path, headers, req, res, onStatus);
+    return upstream(req.method, url, signFor(req.method, path, query, incoming, null, scope, credentials), req, res, onStatus);
   }
 
   let body;
@@ -452,20 +457,25 @@ async function proxy(req, res) {
   }
   if (chunked) {
     try {
-      const decoded = decodeAwsChunked(body);
-      body = decoded.body;
-      Object.assign(incoming, decoded.trailers);
+      body = unchunk(body, incoming, encodings);
     } catch (err) {
       return sendJson(res, 400, { message: `The console server cannot read this aws-chunked body: ${err.message}.` });
     }
-    const rest = encodings.filter((e) => e !== "aws-chunked");
-    if (rest.length) incoming["content-encoding"] = rest.join(", ");
-    else delete incoming["content-encoding"];
-    delete incoming["x-amz-decoded-content-length"];
-    delete incoming["x-amz-trailer"];
   }
-  const headers = signFor(req.method, path, query, incoming, body, scope, credentials);
-  upstream(req.method, query ? `${path}?${query}` : path, headers, body, res, onStatus);
+  upstream(req.method, url, signFor(req.method, path, query, incoming, body, scope, credentials), body, res, onStatus);
+}
+
+// Decodes an aws-chunked body. Its trailers become headers, and the aws-chunked encoding and the headers
+// that describe it are removed. Throws, changing nothing, when the body cannot be read.
+function unchunk(body, headers, encodings) {
+  const decoded = decodeAwsChunked(body);
+  Object.assign(headers, decoded.trailers);
+  const rest = encodings.filter((e) => e !== "aws-chunked");
+  if (rest.length) headers["content-encoding"] = rest.join(", ");
+  else delete headers["content-encoding"];
+  delete headers["x-amz-decoded-content-length"];
+  delete headers["x-amz-trailer"];
+  return decoded.body;
 }
 
 // One GET to floci. Resolves with the status and the body, or rejects with the reason.
